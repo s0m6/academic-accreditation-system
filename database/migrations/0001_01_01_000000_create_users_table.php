@@ -17,6 +17,15 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->enum('role', [
+            'council_secretariat', 
+            'accreditation_officer', 
+            'program_coordinator', 
+            'council_coordinator', 
+            'evaluator'
+        ]);
+        $table->string('mobile')->nullable();
+        $table->string('phone')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });

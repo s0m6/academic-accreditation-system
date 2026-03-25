@@ -1,29 +1,221 @@
-@import 'tailwindcss';
-
-@plugin '@tailwindcss/forms';
-
-@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@import "tailwindcss";
 
 @theme {
-  --font-sans:
-    Figtree, ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
-    'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  --font-sans: 'Cairo', system-ui, sans-serif;
+
+  --color-brand-50: #eff6ff;
+  --color-brand-400: #60a5fa;
+  --color-brand-500: #3b82f6;
+  --color-brand-600: #2563eb;
+  --color-brand-700: #1d4ed8;
+
+  --shadow-brand: 0 4px 14px 0 rgba(37, 99, 235, 0.39);
+
+  --sidebar-width: 16rem;
+  --sidebar-width-collapsed: 5rem;
+  --navbar-height: 4rem;
 }
 
-/*
-  The default border color has changed to `currentcolor` in Tailwind CSS v4,
-  so we've added these compatibility styles to make sure everything still
-  looks the same as it did with Tailwind CSS v3.
-
-  If we ever want to remove these styles, we need to add an explicit border
-  color utility to any element that depends on these defaults.
-*/
 @layer base {
+  :root {
+    --bg-main: #f8fafc;
+    --bg-sidebar: #ffffff;
+    --text-sidebar: #64748b;
+    --text-sidebar-hover: #2563eb;
+    --bg-sidebar-hover: #f1f5f9;
+    --bg-sidebar-active: #2563eb;
+    --text-sidebar-active: #ffffff;
+    --border-sidebar: #e2e8f0;
+    --surface-card: #ffffff;
+    --text-primary: #0f172a;
+    --text-secondary: #64748b;
+    --border-primary: #e2e8f0;
+    --border-subtle: #f1f5f9;
+  }
+
+  .dark {
+    --bg-main: #0f172a;
+    --bg-sidebar: #1e293b;
+    --text-sidebar: #94a3b8;
+    --text-sidebar-hover: #ffffff;
+    --bg-sidebar-hover: #334155;
+    --bg-sidebar-active: #3b82f6;
+    --text-sidebar-active: #ffffff;
+    --border-sidebar: #334155;
+    --surface-card: #1e293b;
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --border-primary: #334155;
+    --border-subtle: #1e293b;
+  }
+
+  body {
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
   *,
   ::after,
-  ::before,
-  ::backdrop,
-  ::file-selector-button {
-    border-color: var(--color-gray-200, currentcolor);
+  ::before {
+    border-color: var(--border-primary);
   }
+}
+
+@layer components {
+  .icon-btn {
+    @apply p-2 rounded-xl text-(--text-secondary) hover:bg-(--surface-hover) transition-all active:scale-95;
+  }
+
+  .sidebar-link {
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-all duration-200 relative;
+    background-color: transparent;
+    color: var(--text-sidebar);
+  }
+
+  .sidebar-link:hover:not(.sidebar-link-active) {
+    background-color: var(--bg-sidebar-hover);
+    color: var(--text-sidebar-hover);
+  }
+
+  .sidebar-link-active {
+    background-color: var(--bg-sidebar-active);
+    color: var(--text-sidebar-active);
+    font-weight: 700;
+    box-shadow: var(--shadow-brand);
+  }
+
+  .sidebar-icon-wrapper {
+    @apply w-10 h-10 flex items-center justify-center rounded-lg text-lg shrink-0 transition-all duration-300 group-hover:scale-110 shadow-sm;
+    background-color: var(--bg-sidebar);
+    border: 1px solid var(--border-sidebar);
+    color: inherit;
+  }
+
+  .sidebar-link-active .sidebar-icon-wrapper {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    border-color: transparent;
+  }
+
+  .sidebar-category {
+    @apply overflow-hidden transition-all duration-300;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow-brand hover:shadow-lg hover:cursor-pointer transition-all active:scale-95;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────
+   PRO LAYOUT ENGINE
+   ────────────────────────────────────────────────────────── */
+
+#sidebar,
+#main-content,
+#top-navbar {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#main-content {
+  @apply min-h-screen relative;
+  padding-top: calc(var(--navbar-height) + 3rem);
+}
+
+/* Desktop */
+@media (min-width: 1024px) {
+  #sidebar {
+    width: var(--sidebar-width);
+  }
+
+  #main-content,
+  #top-navbar {
+    margin-inline-start: var(--sidebar-width);
+    width: calc(100% - var(--sidebar-width));
+  }
+
+  body.is-sidebar-collapsed #sidebar {
+    width: var(--sidebar-width-collapsed);
+  }
+
+  body.is-sidebar-collapsed #sidebar .sidebar-text,
+  body.is-sidebar-collapsed #sidebar .sidebar-category {
+    display: none !important;
+  }
+
+  body.is-sidebar-collapsed #sidebar .sidebar-link {
+    @apply justify-center px-0 gap-0 transition-all;
+  }
+
+  body.is-sidebar-collapsed #sidebar .sidebar-icon-wrapper {
+    @apply mx-auto;
+  }
+
+  body.is-sidebar-collapsed #main-content,
+  body.is-sidebar-collapsed #top-navbar {
+    margin-inline-start: var(--sidebar-width-collapsed);
+    width: calc(100% - var(--sidebar-width-collapsed));
+  }
+}
+
+/* Tablet */
+@media (min-width: 768px) and (max-width: 1023px) {
+  #sidebar {
+    width: var(--sidebar-width-collapsed);
+  }
+
+  #sidebar .sidebar-text {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  #main-content,
+  #top-navbar {
+    margin-inline-start: var(--sidebar-width-collapsed);
+    width: calc(100% - var(--sidebar-width-collapsed));
+  }
+
+  body.is-tablet-expanded #sidebar {
+    width: var(--sidebar-width);
+    z-index: 60;
+  }
+
+  body.is-tablet-expanded #sidebar .sidebar-text {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
+/* Mobile */
+@media (max-width: 767px) {
+  #sidebar {
+    width: var(--sidebar-width);
+    position: fixed;
+    z-index: 100;
+    transform: translateX(100%);
+  }
+
+  [dir="ltr"] #sidebar {
+    transform: translateX(-100%);
+  }
+
+  body.is-mobile-open #sidebar {
+    transform: translateX(0);
+  }
+
+  #main-content,
+  #top-navbar {
+    margin-inline-start: 0;
+    width: 100% !important;
+  }
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
