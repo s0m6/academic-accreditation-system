@@ -1,4 +1,14 @@
 @import "tailwindcss";
+/* start flyonui */
+@plugin "flyonui";
+@import "flyonui/variants.css";
+@source "../node_modules/flyonui/flyonui.js"; 
+/* end flyonui */
+
+/* start iconify */
+@plugin "@iconify/tailwind4";
+/* end iconify */
+
 /* Override default system dark mode to use class-based toggling */
 @custom-variant dark (&:where(.dark, .dark *));
 

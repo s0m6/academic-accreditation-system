@@ -1,6 +1,7 @@
 import './bootstrap';
 import './dashboard';
 
+import "flyonui/flyonui"
 import Alpine from 'alpinejs';
 
 window.Alpine = Alpine;
