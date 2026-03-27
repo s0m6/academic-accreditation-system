@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 #[Fillable([
     'name', 
     'type', 
@@ -23,5 +24,13 @@ class University extends Model
     public function officer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'accreditation_officer_id');
+    }
+
+    /**
+     * University has many Colleges.
+     */
+    public function colleges(): HasMany
+    {
+        return $this->hasMany(College::class);
     }
 }

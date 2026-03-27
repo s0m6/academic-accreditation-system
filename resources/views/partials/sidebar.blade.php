@@ -97,6 +97,39 @@
                 </div>
                 <span class="sidebar-text font-semibold">الرئيسية</span>
             </a>
+
+            <!-- Category: University Management -->
+            <div class="sidebar-category mt-8 mb-1 px-3">
+                <span class="sidebar-text text-[14px] font-bold uppercase"
+                    style="color: var(--text-primary);">إدارة الجامعة</span>
+            </div>
+
+            <!-- Colleges / الكليات -->
+            <a href="{{ route('accreditation_officer.colleges') }}"
+                class="sidebar-link {{ request()->routeIs('accreditation_officer.colleges') ? 'sidebar-link-active' : '' }} group">
+                <div class="sidebar-icon-wrapper">
+                    <i class="fa-solid fa-building-columns"></i>
+                </div>
+                <span class="sidebar-text font-semibold">الكليات</span>
+            </a>
+
+            <!-- Departments / الأقسام -->
+            <a href="{{ route('accreditation_officer.departments') }}"
+                class="sidebar-link {{ request()->routeIs('accreditation_officer.departments') ? 'sidebar-link-active' : '' }} group">
+                <div class="sidebar-icon-wrapper">
+                    <i class="fa-solid fa-sitemap"></i>
+                </div>
+                <span class="sidebar-text font-semibold">الأقسام</span>
+            </a>
+
+            <!-- Programs / البرامج -->
+            <a href="{{ route('accreditation_officer.programs') }}"
+                class="sidebar-link {{ request()->routeIs('accreditation_officer.programs') ? 'sidebar-link-active' : '' }} group">
+                <div class="sidebar-icon-wrapper">
+                    <i class="fa-solid fa-book-open"></i>
+                </div>
+                <span class="sidebar-text font-semibold">البرامج</span>
+            </a>
         @endif
 
     </nav>
