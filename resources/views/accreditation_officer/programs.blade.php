@@ -112,6 +112,10 @@
                             </td>
                             <td class="px-6 py-5 whitespace-nowrap">
                                 <div class="flex justify-center gap-2">
+                                    <button @click="openRequests({{ $program->id }}, {{ json_encode($program->accreditationRequests) }})"
+                                        class="w-9 h-9 shrink-0 rounded-xl flex items-center justify-center transition-all shadow-sm hover:shadow cursor-pointer text-blue-700 bg-blue-100 border border-blue-200 hover:bg-blue-200 dark:text-blue-400 dark:bg-blue-500/10 dark:border-blue-500/20 dark:hover:bg-blue-500/20" title="طلبات الاعتماد">
+                                        <i class="fa-solid fa-list-check text-[14px]"></i>
+                                    </button>
                                     <button @click="openEdit({{ $program->id }}, {{ json_encode($program) }})"
                                         class="w-9 h-9 shrink-0 rounded-xl flex items-center justify-center transition-all shadow-sm hover:shadow cursor-pointer text-amber-700 bg-amber-100 border border-amber-200 hover:bg-amber-200 dark:text-amber-400 dark:bg-amber-500/10 dark:border-amber-500/20 dark:hover:bg-amber-500/20" title="تعديل">
                                         <i class="fa-solid fa-pen text-[14px]"></i>
@@ -315,6 +319,90 @@
             </div>
         </div>
     </template>
+
+    {{-- Requests Modal --}}
+    <template x-teleport="body">
+        <div x-show="showRequestsModal" style="display: none;" class="relative z-[100]" role="dialog" aria-modal="true">
+            <div x-show="showRequestsModal" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"></div>
+            <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+                <div class="flex min-h-full items-center justify-center p-4 sm:p-0">
+                    <div x-show="showRequestsModal" @click.away="showRequestsModal = false"
+                         x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                         x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:scale-95"
+                         class="relative transform overflow-hidden rounded-2xl bg-(--surface-card) border border-(--border-primary) text-right shadow-2xl transition-all sm:my-8 w-full max-w-4xl">
+                        
+                        <div class="p-6 border-b border-(--border-primary) flex justify-between items-center bg-(--bg-main)">
+                            <h3 class="text-xl font-bold text-(--text-primary)">
+                                طلبات الاعتماد الأكاديمي
+                            </h3>
+                            <button type="button" @click="showRequestsModal = false" class="w-8 h-8 flex items-center justify-center rounded-lg text-(--text-secondary) hover:text-(--text-primary) bg-(--bg-main) hover:scale-110 transition-transform shrink-0 cursor-pointer">
+                                <i class="fa-solid fa-xmark text-lg"></i>
+                            </button>
+                        </div>
+
+                        <div class="p-6">
+                            <template x-if="currentRequests.length === 0">
+                                <div class="text-center py-8">
+                                    <div class="w-16 h-16 mx-auto rounded-full bg-(--bg-main) flex items-center justify-center mb-4 border border-(--border-primary) shadow-inner">
+                                        <i class="fa-solid fa-file-circle-xmark text-2xl text-(--text-secondary)"></i>
+                                    </div>
+                                    <p class="text-lg font-bold text-(--text-primary) mb-2">لا توجد طلبات اعتماد لهذا البرنامج</p>
+                                    <p class="text-sm text-(--text-secondary) mb-6">يمكنك إنشاء مسودة طلب اعتماد جديد للبدء في الإجراءات.</p>
+                                    <form :action="'{{ url('/accreditation-officer/programs') }}/' + selectedProgramId + '/requests'" method="POST" class="inline-block">
+                                        @csrf
+                                        <button type="submit" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-brand-600 dark:bg-brand-500 text-white text-sm font-bold hover:bg-brand-700 dark:hover:bg-brand-600 transition-colors shadow-sm cursor-pointer">
+                                            <i class="fa-solid fa-plus"></i>
+                                            إنشاء مسودة طلب اعتماد
+                                        </button>
+                                    </form>
+                                </div>
+                            </template>
+
+                            <template x-if="currentRequests.length > 0">
+                                <div class="overflow-x-auto w-full border border-(--border-primary) rounded-xl shadow-sm">
+                                    <table class="w-full text-sm text-center text-(--text-secondary)">
+                                        <thead class="text-xs uppercase bg-(--bg-main) text-(--text-secondary)">
+                                            <tr>
+                                                <th scope="col" class="px-6 py-4 font-bold tracking-wider">رقم الطلب</th>
+                                                <th scope="col" class="px-6 py-4 font-bold tracking-wider text-center">المرحلة الحالية</th>
+                                                <th scope="col" class="px-6 py-4 font-bold tracking-wider text-center">الحالة</th>
+                                                <th scope="col" class="px-6 py-4 font-bold tracking-wider">العمليات</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-(--border-primary)">
+                                            <template x-for="req in currentRequests" :key="req.id">
+                                                <tr class="hover:bg-(--border-primary)/30 transition-colors">
+                                                    <td class="px-6 py-4 font-bold text-(--text-primary) whitespace-nowrap" x-text="'REQ-' + req.id"></td>
+                                                    <td class="px-6 py-4 text-center whitespace-nowrap">
+                                                        <span class="inline-flex items-center px-2.5 py-1.5 rounded-md text-xs font-bold border shadow-sm bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20" x-text="formatStage(req.current_stage)"></span>
+                                                    </td>
+                                                    <td class="px-6 py-4 text-center whitespace-nowrap">
+                                                        <span class="inline-flex items-center px-2.5 py-1.5 rounded-md text-xs font-bold border shadow-sm"
+                                                            :class="{
+                                                                'bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-500/10 dark:text-gray-400 dark:border-gray-500/20': req.request_status === 'draft',
+                                                                'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20': req.request_status === 'Active',
+                                                                'bg-green-50 text-green-700 border-green-200 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/20': req.request_status === 'completed',
+                                                                'bg-red-50 text-red-700 border-red-200 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20': req.request_status === 'canceled'
+                                                            }" x-text="formatStatus(req.request_status)"></span>
+                                                    </td>
+                                                    <td class="px-6 py-4 whitespace-nowrap">
+                                                        <a :href="'{{ url('/accreditation-officer/requests') }}/' + req.id" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-orange-100 text-orange-700 border border-orange-200 hover:bg-orange-200 dark:bg-orange-500/10 dark:text-orange-400 dark:border-orange-500/20 dark:hover:bg-orange-500/20 text-xs font-bold transition-colors shadow-sm cursor-pointer">
+                                                            <i class="fa-solid fa-layer-group"></i>
+                                                            لوحة الطلب
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            </template>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
 </div>
 
 @push('scripts')
@@ -323,11 +411,45 @@
         return {
             showFormModal: false,
             showDeleteModal: false,
+            showRequestsModal: false,
+            currentRequests: [],
+            selectedProgramId: null,
             isEdit: false,
             isLoadingDepts: false,
             formAction: '{{ route("accreditation_officer.programs.store") }}',
             deleteAction: '',
             deleteName: '',
+
+            openRequests(programId, requests) {
+                this.selectedProgramId = programId;
+                this.currentRequests = requests || [];
+                this.showRequestsModal = true;
+            },
+
+            formatStage(stage) {
+                const stages = {
+                    'stage_one': 'المرحلة الأولى',
+                    'stage_two': 'المرحلة الثانية',
+                    'stage_three': 'المرحلة الثالثة',
+                    'stage_four': 'المرحلة الرابعة',
+                    'stage_five': 'المرحلة الخامسة',
+                    'stage_six': 'المرحلة السادسة',
+                    'stage_seven': 'المرحلة السابعة',
+                    'stage_eight': 'المرحلة الثامنة',
+                    'completed': 'مكتمل'
+                };
+                return stages[stage] || stage;
+            },
+
+            formatStatus(status) {
+                const statuses = {
+                    'draft': 'مسودة',
+                    'Active': 'نشط',
+                    'completed': 'مكتمل',
+                    'canceled': 'ملغي'
+                };
+                return statuses[status] || status;
+            },
 
             selectedCollegeId: '',
             currentDepartments: [],

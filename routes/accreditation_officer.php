@@ -27,3 +27,4 @@ Route::post('/programs', [ProgramController::class, 'store'])->name('programs.st
 Route::put('/programs/{program}', [ProgramController::class, 'update'])->name('programs.update');
 Route::delete('/programs/{program}', [ProgramController::class, 'destroy'])->name('programs.destroy');
 Route::get('/programs/departments/{college}', [ProgramController::class, 'getDepartments'])->name('programs.departments');
+Route::post('/programs/{program}/requests', [ProgramController::class, 'storeRequest'])->name('programs.requests.store');

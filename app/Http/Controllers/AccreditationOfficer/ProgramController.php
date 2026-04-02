@@ -7,12 +7,13 @@ use App\Models\College;
 use App\Models\Department;
 use App\Models\Program;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class ProgramController extends Controller
 {
     public function index()
     {
-        $university = auth()->user()->university;
+        $university = request()->user()->university;
 
         $programs = Program::whereHas('department.college', function ($query) use ($university) {
             $query->where('university_id', $university->id);
@@ -34,7 +35,7 @@ class ProgramController extends Controller
      */
     public function getDepartments(College $college)
     {
-        $university = auth()->user()->university;
+        $university = request()->user()->university;
 
         if ($college->university_id !== $university->id) {
             abort(403);
@@ -47,7 +48,7 @@ class ProgramController extends Controller
 
     public function store(Request $request)
     {
-        $university = auth()->user()->university;
+        $university = request()->user()->university;
 
         $validated = $request->validate([
             'program_name' => 'required|string|max:255',
@@ -85,7 +86,7 @@ class ProgramController extends Controller
 
     public function update(Request $request, Program $program)
     {
-        $university = auth()->user()->university;
+        $university = request()->user()->university;
 
         if ($program->department->college->university_id !== $university->id) {
             abort(403);
@@ -127,7 +128,7 @@ class ProgramController extends Controller
 
     public function destroy(Program $program)
     {
-        $university = auth()->user()->university;
+        $university = request()->user()->university;
 
         if ($program->department->college->university_id !== $university->id) {
             abort(403);
@@ -136,5 +137,24 @@ class ProgramController extends Controller
         $program->delete();
 
         return back()->with('success', 'تم حذف البرنامج بنجاح.');
+    }
+
+    public function storeRequest(Request $request, Program $program)
+    {
+        $university = request()->user()->university;
+
+        if ($program->department->college->university_id !== $university->id) {
+            abort(403);
+        }
+
+        $accreditationRequest = $program->accreditationRequests()->create([
+            'current_stage' => 'stage_one',
+            'request_status' => 'draft',
+            'program_coord_id' => request()->user()->id,
+        ]);
+
+        Storage::makeDirectory("req_{$accreditationRequest->id}");
+
+        return back()->with('success', 'تم إنشاء مسودة طلب اعتماد بنجاح.');
     }
 }
