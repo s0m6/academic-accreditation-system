@@ -10,8 +10,6 @@
 @section('title', 'الجامعات')
 @section('title2', 'قائمة الجامعات المسجلة')
 @section('description', 'عرض الجامعات المسجله وحالة تسجيل مسؤول اعتماد لكل جامعة')
-@section('user_name', auth()->user()->name)
-@section('user_role', auth()->user()->role)
 @section('content')
 <div class="w-full text-start" x-data="{ showModal: false, selectedId: '', selectedName: '' }" @open-officer-modal.window="showModal = true; selectedId = $event.detail.id; selectedName = $event.detail.name">
     

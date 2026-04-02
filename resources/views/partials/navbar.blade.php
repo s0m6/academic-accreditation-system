@@ -29,8 +29,8 @@
             {{-- User Profile --}}
             <div class="flex items-center gap-3 ps-2 cursor-pointer group">
                 <div class="text-start hidden md:block">
-                    <p class="text-sm font-bold leading-none">@yield('user_name', 'اسم المستخدم')</p>
-                    <p class="text-[13px] text-(--text-secondary) mt-1">@yield('user_role', 'الوظيفة')</p>
+                    <p class="text-sm font-bold leading-none">{{ Auth::user()->name }}</p>
+                    <p class="text-[13px] text-(--text-secondary) mt-1">{{ Auth::user()->role }}</p>
                 </div>
                 <img alt="User Avatar"
                     class="w-9 h-9 rounded-full border border-(--border-primary) group-hover:ring-2 group-hover:ring-brand-500 transition-all"

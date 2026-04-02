@@ -10,8 +10,6 @@
 @section('title', 'الأقسام')
 @section('title2', 'إدارة الأقسام')
 @section('description', 'إضافة وتعديل وحذف أقسام الكليات')
-@section('user_name', auth()->user()->name)
-@section('user_role', auth()->user()->role)
 @section('content')
 <div class="w-full text-start" x-data="departmentsPage()">
 

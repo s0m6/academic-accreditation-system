@@ -138,7 +138,7 @@
 
     <div class="p-4 border-t border-(--border-sidebar) shrink-0 flex flex-col gap-2">
         <!-- Settings -->
-        <a href="#" class="sidebar-link group">
+        <a href="{{ route('profile.edit') }}" class="sidebar-link group">
             <div class="sidebar-icon-wrapper">
                 <i class="fa-solid fa-gear"></i>
             </div>

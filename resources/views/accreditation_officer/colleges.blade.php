@@ -10,8 +10,6 @@
 @section('title', 'الكليات')
 @section('title2', 'إدارة الكليات')
 @section('description', 'إضافة وتعديل وحذف كليات الجامعة')
-@section('user_name', auth()->user()->name)
-@section('user_role', auth()->user()->role)
 @section('content')
 <div class="w-full text-start" x-data="collegesPage()">
 

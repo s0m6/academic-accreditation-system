@@ -10,8 +10,6 @@
 @section('title', 'البرامج الدراسية')
 @section('title2', 'إدارة البرامج الأكاديمية')
 @section('description', 'إضافة وتعديل وحذف البرامج الدراسية في أقسام الجامعة')
-@section('user_name', auth()->user()->name)
-@section('user_role', auth()->user()->role)
 @section('content')
 <div class="w-full text-start" x-data="programsPage()">
 
