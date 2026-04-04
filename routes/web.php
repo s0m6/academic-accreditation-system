@@ -39,6 +39,7 @@ require __DIR__.'/auth.php';
 // ------------------------------------------------------------------
 use App\Http\Controllers\RequestDashboardController;
 use App\Http\Controllers\stages\StageOneController;
+use App\Http\Controllers\stages\StageTwoController;
 
 // Dashboard and stage navigation routes for accreditation requests
 Route::middleware('auth')->group(function () {
@@ -54,4 +55,18 @@ Route::middleware('auth')->group(function () {
         ->name('requests.stage_one.reject');
     Route::patch('/requests/{accreditationRequest}/stage-one/{formSubmission}/approve', [StageOneController::class, 'approve'])
         ->name('requests.stage_one.approve');
+
+    // Stage Two actions
+    Route::post('/requests/{accreditationRequest}/stage-two/draft', [StageTwoController::class, 'createDraft'])
+        ->name('requests.stage_two.draft');
+    Route::get('/requests/{accreditationRequest}/stage-two/{formSubmission}/edit', [StageTwoController::class, 'edit'])
+        ->name('requests.stage_two.edit');
+    Route::get('/requests/{accreditationRequest}/stage-two/{formSubmission}/show', [StageTwoController::class, 'show'])
+        ->name('requests.stage_two.show');
+    Route::post('/requests/{accreditationRequest}/stage-two/{formSubmission}/save', [StageTwoController::class, 'saveDraft'])
+        ->name('requests.stage_two.save');
+    Route::get('/requests/{accreditationRequest}/stage-two/{formSubmission}/download-file/{decisionIndex}', [StageTwoController::class, 'downloadFile'])
+        ->name('requests.stage_two.download_file');
+    Route::patch('/requests/{accreditationRequest}/stage-two/{formSubmission}/submit', [StageTwoController::class, 'submit'])
+        ->name('requests.stage_two.submit');
 });
