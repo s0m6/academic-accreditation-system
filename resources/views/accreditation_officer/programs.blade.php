@@ -68,7 +68,7 @@
                         <th scope="col" class="px-6 py-4 font-bold tracking-wider">اسم البرنامج</th>
                         <th scope="col" class="px-6 py-4 font-bold tracking-wider">القسم / الكلية</th>
                         <th scope="col" class="px-6 py-4 font-bold tracking-wider text-center">المستوى الدراسي</th>
-                        <th scope="col" class="px-6 py-4 font-bold tracking-wider text-center">اللغة</th>
+                        <th scope="col" class="px-6 py-4 font-bold tracking-wider text-center">حالة الاعتماد</th>
                         <th scope="col" class="px-6 py-4 font-bold tracking-wider text-center">عدد الساعات</th>
                         <th scope="col" class="px-6 py-4 font-bold tracking-wider">العمليات</th>
                     </tr>
@@ -104,8 +104,107 @@
                                     {{ $level['label'] }}
                                 </span>
                             </td>
-                            <td class="px-6 py-5 text-center whitespace-nowrap cursor-default">
-                                <span class="text-xs font-bold">{{ $program->program_details['language'] == 'arabic' ? 'العربية' : 'الإنجليزية' }}</span>
+                            <td class="px-6 py-5 text-center whitespace-nowrap" x-data>
+                                @php
+                                    $latestReq = $program->latestAccreditationRequest;
+                                    $accStatus = match(true) {
+                                        is_null($latestReq) => 'none',
+                                        $latestReq->request_status === 'draft' => 'draft',
+                                        $latestReq->request_status === 'Active' => 'active',
+                                        $latestReq->request_status === 'canceled' => 'canceled',
+                                        $latestReq->request_status === 'completed' => 'completed',
+                                        default => 'none',
+                                    };
+                                    $statusConfig = [
+                                        'none' => [
+                                            'label' => 'لا يوجد',
+                                            'icon' => 'fa-circle-minus',
+                                            'badge' => 'bg-gray-100 text-gray-600 border-gray-200 dark:bg-gray-500/10 dark:text-gray-400 dark:border-gray-500/20',
+                                            'dot' => 'bg-gray-400',
+                                            'icon_color' => 'text-gray-400',
+                                            'desc' => 'لم يتم طلب أي اعتماد حتى الآن، والبرنامج غير مرتبط بأي طلب اعتماد.',
+                                        ],
+                                        'draft' => [
+                                            'label' => 'مسودة',
+                                            'icon' => 'fa-file-pen',
+                                            'badge' => 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-500/10 dark:text-slate-300 dark:border-slate-500/20',
+                                            'dot' => 'bg-slate-400',
+                                            'icon_color' => 'text-slate-300',
+                                            'desc' => 'يوجد طلب اعتماد تم إنشاؤه لكن لم يقم مسؤول الاعتماد بعد بتقديم الطلب الأولي.',
+                                        ],
+                                        'active' => [
+                                            'label' => 'نشط',
+                                            'icon' => 'fa-circle-play',
+                                            'badge' => 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20',
+                                            'dot' => 'bg-amber-400',
+                                            'icon_color' => 'text-amber-400',
+                                            'desc' => 'بدأت عملية الاعتماد وقام مسؤول الاعتماد بتقديم الطلب الأولي (المرحلة الأولى).',
+                                        ],
+                                        'canceled' => [
+                                            'label' => 'ملغي',
+                                            'icon' => 'fa-circle-xmark',
+                                            'badge' => 'bg-red-50 text-red-700 border-red-200 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20',
+                                            'dot' => 'bg-red-400',
+                                            'icon_color' => 'text-red-400',
+                                            'desc' => 'تم إلغاء طلب الاعتماد الخاص بهذا البرنامج.',
+                                        ],
+                                        'completed' => [
+                                            'label' => 'مكتمل',
+                                            'icon' => 'fa-circle-check',
+                                            'badge' => 'bg-green-50 text-green-700 border-green-200 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/20',
+                                            'dot' => 'bg-green-400',
+                                            'icon_color' => 'text-green-400',
+                                            'desc' => 'اكتملت عملية الاعتماد وأصدر المجلس قرارًا نهائيًا بمنح الاعتماد للبرنامج.',
+                                        ],
+                                    ];
+                                    $cfg = $statusConfig[$accStatus];
+                                @endphp
+                                <div class="inline-block"
+                                     x-data="{
+                                        open: false,
+                                        tx: 0,
+                                        ty: 0,
+                                        showTooltip(el) {
+                                            const r = el.getBoundingClientRect();
+                                            this.tx = r.left + r.width / 2;
+                                            this.ty = r.top;
+                                            this.open = true;
+                                        }
+                                     }"
+                                     @mouseenter="showTooltip($el.querySelector('span'))"
+                                     @mouseleave="open = false">
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold border shadow-sm cursor-default {{ $cfg['badge'] }}">
+                                        <span class="w-1.5 h-1.5 rounded-full {{ $cfg['dot'] }} shrink-0"></span>
+                                        <i class="fa-solid {{ $cfg['icon'] }} text-[11px]"></i>
+                                        {{ $cfg['label'] }}
+                                    </span>
+
+                                    {{-- Teleported tooltip - renders on body, always on top --}}
+                                    <template x-teleport="body">
+                                        <div x-show="open"
+                                             x-transition:enter="transition ease-out duration-150"
+                                             x-transition:enter-start="opacity-0 -translate-y-1 scale-95"
+                                             x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                                             x-transition:leave="transition ease-in duration-100"
+                                             x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                                             x-transition:leave-end="opacity-0 -translate-y-1 scale-95"
+                                             :style="`position: fixed; left: ${tx}px; top: ${ty}px; transform: translate(-50%, calc(-100% - 10px)); z-index: 9999; width: 240px; pointer-events: none;`"
+                                             style="display:none;">
+                                            <div class="bg-gray-900 border border-white/10 rounded-xl shadow-2xl overflow-hidden">
+                                                <div class="px-4 py-2 border-b border-white/10 flex items-center justify-center gap-2 bg-white/5">
+                                                    <i class="fa-solid {{ $cfg['icon'] }} {{ $cfg['icon_color'] }} text-sm"></i>
+                                                    <span class="font-bold text-white text-[13px]">{{ $cfg['label'] }}</span>
+                                                </div>
+                                                <div class="px-4 py-2.5 text-gray-300 text-xs leading-relaxed text-center whitespace-normal">
+                                                    {{ $cfg['desc'] }}
+                                                </div>
+                                            </div>
+                                            <div class="flex justify-center -mt-px">
+                                                <div class="w-2.5 h-2.5 bg-gray-900 rotate-45 border-b border-r border-white/10"></div>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </div>
                             </td>
                             <td class="px-6 py-5 text-center font-bold text-(--text-primary) whitespace-nowrap">
                                 {{ $program->program_details['credit_hours'] }} ساعة
@@ -113,16 +212,19 @@
                             <td class="px-6 py-5 whitespace-nowrap">
                                 <div class="flex justify-center gap-2">
                                     <button @click="openRequests({{ $program->id }}, {{ json_encode($program->accreditationRequests) }})"
-                                        class="w-9 h-9 shrink-0 rounded-xl flex items-center justify-center transition-all shadow-sm hover:shadow cursor-pointer text-blue-700 bg-blue-100 border border-blue-200 hover:bg-blue-200 dark:text-blue-400 dark:bg-blue-500/10 dark:border-blue-500/20 dark:hover:bg-blue-500/20" title="طلبات الاعتماد">
-                                        <i class="fa-solid fa-list-check text-[14px]"></i>
+                                        class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl transition-all shadow-sm hover:shadow cursor-pointer text-blue-700 bg-blue-100 border border-blue-200 hover:bg-blue-200 dark:text-blue-400 dark:bg-blue-500/10 dark:border-blue-500/20 dark:hover:bg-blue-500/20" title="طلبات الاعتماد">
+                                        <i class="fa-solid fa-list-check text-xs"></i>
+                                        <span class="text-xs font-bold">طلبات الإعتماد</span>
                                     </button>
                                     <button @click="openEdit({{ $program->id }}, {{ json_encode($program) }})"
-                                        class="w-9 h-9 shrink-0 rounded-xl flex items-center justify-center transition-all shadow-sm hover:shadow cursor-pointer text-amber-700 bg-amber-100 border border-amber-200 hover:bg-amber-200 dark:text-amber-400 dark:bg-amber-500/10 dark:border-amber-500/20 dark:hover:bg-amber-500/20" title="تعديل">
-                                        <i class="fa-solid fa-pen text-[14px]"></i>
+                                        class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl transition-all shadow-sm hover:shadow cursor-pointer text-amber-700 bg-amber-100 border border-amber-200 hover:bg-amber-200 dark:text-amber-400 dark:bg-amber-500/10 dark:border-amber-500/20 dark:hover:bg-amber-500/20" title="تعديل">
+                                        <i class="fa-solid fa-pen text-xs"></i>
+                                        <span class="text-xs font-bold">تعديل</span>
                                     </button>
                                     <button @click="openDelete({{ $program->id }}, '{{ addslashes($program->program_name) }}')"
-                                        class="w-9 h-9 shrink-0 rounded-xl flex items-center justify-center transition-all shadow-sm hover:shadow cursor-pointer text-red-700 bg-red-100 border border-red-200 hover:bg-red-200 dark:text-red-400 dark:bg-red-500/10 dark:border-red-500/20 dark:hover:bg-red-500/20" title="حذف">
-                                        <i class="fa-solid fa-trash-can text-[14px]"></i>
+                                        class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl transition-all shadow-sm hover:shadow cursor-pointer text-red-700 bg-red-100 border border-red-200 hover:bg-red-200 dark:text-red-400 dark:bg-red-500/10 dark:border-red-500/20 dark:hover:bg-red-500/20" title="حذف">
+                                        <i class="fa-solid fa-trash-can text-xs"></i>
+                                        <span class="text-xs font-bold">حذف</span>
                                     </button>
                                 </div>
                             </td>
@@ -365,7 +467,6 @@
                                             <tr>
                                                 <th scope="col" class="px-6 py-4 font-bold tracking-wider">رقم الطلب</th>
                                                 <th scope="col" class="px-6 py-4 font-bold tracking-wider text-center">المرحلة الحالية</th>
-                                                <th scope="col" class="px-6 py-4 font-bold tracking-wider text-center">الحالة</th>
                                                 <th scope="col" class="px-6 py-4 font-bold tracking-wider">العمليات</th>
                                             </tr>
                                         </thead>
@@ -376,21 +477,29 @@
                                                     <td class="px-6 py-4 text-center whitespace-nowrap">
                                                         <span class="inline-flex items-center px-2.5 py-1.5 rounded-md text-xs font-bold border shadow-sm bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20" x-text="formatStage(req.current_stage)"></span>
                                                     </td>
-                                                    <td class="px-6 py-4 text-center whitespace-nowrap">
-                                                        <span class="inline-flex items-center px-2.5 py-1.5 rounded-md text-xs font-bold border shadow-sm"
-                                                            :class="{
-                                                                'bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-500/10 dark:text-gray-400 dark:border-gray-500/20': req.request_status === 'draft',
-                                                                'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20': req.request_status === 'Active',
-                                                                'bg-green-50 text-green-700 border-green-200 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/20': req.request_status === 'completed',
-                                                                'bg-red-50 text-red-700 border-red-200 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20': req.request_status === 'canceled'
-                                                            }" x-text="formatStatus(req.request_status)"></span>
-                                                    </td>
+
                                                     <td class="px-6 py-4 whitespace-nowrap">
-                                                        <a :href="'{{ url('/accreditation-officer/requests') }}/' + req.id" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-orange-100 text-orange-700 border border-orange-200 hover:bg-orange-200 dark:bg-orange-500/10 dark:text-orange-400 dark:border-orange-500/20 dark:hover:bg-orange-500/20 text-xs font-bold transition-colors shadow-sm cursor-pointer">
-                                                            <i class="fa-solid fa-layer-group"></i>
-                                                            لوحة الطلب
-                                                        </a>
+                                                        <div class="flex justify-center gap-2">
+                                                            <a :href="'{{ url('/requests') }}/' + req.id" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-orange-100 text-orange-700 border border-orange-200 hover:bg-orange-200 dark:bg-orange-500/10 dark:text-orange-400 dark:border-orange-500/20 dark:hover:bg-orange-500/20 text-xs font-bold transition-colors shadow-sm cursor-pointer">
+                                                                <i class="fa-solid fa-layer-group"></i>
+                                                                لوحة الطلب
+                                                            </a>
+                                                            <template x-if="(req.program_coordinator || req.programCoordinator) && (req.program_coordinator || req.programCoordinator).role === 'program_coordinator'">
+                                                                <button @click="showCoordModal = true; selectedCoord = req.program_coordinator || req.programCoordinator"
+                                                                    class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-100 text-blue-700 border border-blue-200 hover:bg-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20 dark:hover:bg-blue-500/20 text-xs font-bold transition-colors shadow-sm cursor-pointer">
+                                                                    <i class="fa-solid fa-user-tie"></i>
+                                                                    معلومات المنسق
+                                                                </button>
+                                                            </template>
+                                                            <template x-if="!(req.program_coordinator || req.programCoordinator) || (req.program_coordinator || req.programCoordinator).role !== 'program_coordinator'">
+                                                                <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gray-100 text-gray-400 border border-gray-200 dark:bg-gray-500/5 dark:text-gray-500 dark:border-gray-500/10 text-[11px] font-bold shadow-inner">
+                                                                    <i class="fa-solid fa-user-slash text-[10px]"></i>
+                                                                    لا يوجد منسق
+                                                                </span>
+                                                            </template>
+                                                        </div>
                                                     </td>
+
                                                 </tr>
                                             </template>
                                         </tbody>
@@ -403,6 +512,90 @@
             </div>
         </div>
     </template>
+
+    {{-- Coordinator Info Modal --}}
+    <template x-teleport="body">
+<div x-show="showCoordModal" style="display: none;" class="relative z-[150]" role="dialog" aria-modal="true">
+    <div x-show="showCoordModal" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"></div>
+    <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+        <div class="flex min-h-full items-center justify-center p-4 sm:p-0">
+            <div x-show="showCoordModal" @click.away="showCoordModal = false"
+                 x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                 x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                 class="relative transform overflow-hidden rounded-2xl bg-(--surface-card) border border-(--border-primary) text-right shadow-2xl transition-all sm:my-8 w-full max-w-md px-0">
+
+                <div class="p-6 border-b border-(--border-primary) bg-(--bg-main)">
+                    <div class="flex justify-between items-center mb-0">
+                        <h3 class="text-xl font-bold text-(--text-primary) flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center border border-blue-100 dark:border-blue-500/20 shadow-inner shrink-0">
+                                <i class="fa-solid fa-user-tie"></i>
+                            </div>
+                            بيانات منسق البرنامج
+                        </h3>
+                        <button type="button" @click="showCoordModal = false" class="w-8 h-8 flex items-center justify-center rounded-lg text-(--text-secondary) hover:text-(--text-primary) bg-(--bg-main) hover:scale-110 transition-transform shrink-0 cursor-pointer">
+                            <i class="fa-solid fa-xmark text-lg"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="p-6 space-y-5">
+                    <template x-if="selectedCoord">
+                        <div class="space-y-4">
+                            <div class="flex items-center gap-4 p-3 rounded-xl bg-(--bg-main) border border-(--border-primary)">
+                                <div class="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-(--text-secondary)">
+                                    <i class="fa-solid fa-signature"></i>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-(--text-secondary) mb-0.5">الاسم الكامل</p>
+                                    <p class="text-sm font-bold text-(--text-primary)" x-text="selectedCoord.name"></p>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-4 p-3 rounded-xl bg-(--bg-main) border border-(--border-primary)">
+                                <div class="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-(--text-secondary)">
+                                    <i class="fa-solid fa-envelope"></i>
+                                </div>
+                                <div class="w-full">
+                                    <p class="text-xs text-(--text-secondary) mb-0.5">البريد الإلكتروني</p>
+                                    <p class="text-sm font-bold text-(--text-primary)" x-text="selectedCoord.email"></p>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="flex items-center gap-4 p-3 rounded-xl bg-(--bg-main) border border-(--border-primary)">
+                                    <div class="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-(--text-secondary)">
+                                        <i class="fa-solid fa-phone"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-(--text-secondary) mb-0.5">الهاتف</p>
+                                        <p class="text-sm font-bold text-(--text-primary)" x-text="selectedCoord.phone || 'غير متوفر'"></p>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center gap-4 p-3 rounded-xl bg-(--bg-main) border border-(--border-primary)">
+                                    <div class="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-(--text-secondary)">
+                                        <i class="fa-solid fa-mobile-screen-button"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-(--text-secondary) mb-0.5">الجوال</p>
+                                        <p class="text-sm font-bold text-(--text-primary)" x-text="selectedCoord.mobile || 'غير متوفر'"></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <div class="p-4 bg-(--bg-main) border-t border-(--border-primary) flex justify-end">
+                    <button @click="showCoordModal = false" class="px-5 py-2 rounded-xl border border-(--border-primary) text-(--text-secondary) hover:text-(--text-primary) hover:bg-(--border-primary)/30 text-sm font-bold transition-colors cursor-pointer">
+                        إغلاق
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    </template>
 </div>
 
 @push('scripts')
@@ -412,8 +605,10 @@
             showFormModal: false,
             showDeleteModal: false,
             showRequestsModal: false,
+            showCoordModal: false,
             currentRequests: [],
             selectedProgramId: null,
+            selectedCoord: null,
             isEdit: false,
             isLoadingDepts: false,
             formAction: '{{ route("accreditation_officer.programs.store") }}',
@@ -436,7 +631,7 @@
                     'stage_six': 'المرحلة السادسة',
                     'stage_seven': 'المرحلة السابعة',
                     'stage_eight': 'المرحلة الثامنة',
-                    'completed': 'مكتمل'
+                    'stage_nine': 'المرحلة التاسعة'
                 };
                 return stages[stage] || stage;
             },

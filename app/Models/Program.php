@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 #[Fillable([
     'program_name',
@@ -35,8 +37,16 @@ class Program extends Model
     /**
      * Program has many AccreditationRequests.
      */
-    public function accreditationRequests()
+    public function accreditationRequests(): HasMany
     {
         return $this->hasMany(AccreditationRequest::class);
+    }
+
+    /**
+     * Get the latest accreditation request for this program.
+     */
+    public function latestAccreditationRequest(): HasOne
+    {
+        return $this->hasOne(AccreditationRequest::class)->latestOfMany();
     }
 }

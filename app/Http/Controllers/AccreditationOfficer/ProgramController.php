@@ -11,6 +11,9 @@ use Illuminate\Support\Facades\Storage;
 
 class ProgramController extends Controller
 {
+    /**
+     * Display a listing of the programs for the officer's university.
+     */
     public function index()
     {
         $university = request()->user()->university;
@@ -18,7 +21,11 @@ class ProgramController extends Controller
         $programs = Program::whereHas('department.college', function ($query) use ($university) {
             $query->where('university_id', $university->id);
         })
-            ->with('department.college')
+            ->with([
+                'department.college',
+                'accreditationRequests.programCoordinator',
+                'latestAccreditationRequest',
+            ])
             ->orderByDesc('id')
             ->get();
 
@@ -31,7 +38,7 @@ class ProgramController extends Controller
     }
 
     /**
-     * Get departments for a given college (AJAX endpoint).
+     * Retrieve departments for a specific college via AJAX.
      */
     public function getDepartments(College $college)
     {
@@ -46,6 +53,9 @@ class ProgramController extends Controller
         );
     }
 
+    /**
+     * Store a new program record in the database.
+     */
     public function store(Request $request)
     {
         $university = request()->user()->university;
@@ -84,6 +94,9 @@ class ProgramController extends Controller
         return back()->with('success', 'تم إنشاء البرنامج بنجاح.');
     }
 
+    /**
+     * Update an existing program's data.
+     */
     public function update(Request $request, Program $program)
     {
         $university = request()->user()->university;
@@ -126,6 +139,9 @@ class ProgramController extends Controller
         return back()->with('success', 'تم تحديث بيانات البرنامج بنجاح.');
     }
 
+    /**
+     * Remove a program from the system.
+     */
     public function destroy(Program $program)
     {
         $university = request()->user()->university;
@@ -139,22 +155,25 @@ class ProgramController extends Controller
         return back()->with('success', 'تم حذف البرنامج بنجاح.');
     }
 
+    /**
+     * Create a new draft accreditation request for a specific program and redirect to its dashboard.
+     */
     public function storeRequest(Request $request, Program $program)
-    {
-        $university = request()->user()->university;
-
-        if ($program->department->college->university_id !== $university->id) {
-            abort(403);
-        }
-
-        $accreditationRequest = $program->accreditationRequests()->create([
-            'current_stage' => 'stage_one',
-            'request_status' => 'draft',
-            'program_coord_id' => request()->user()->id,
-        ]);
-
-        Storage::makeDirectory("req_{$accreditationRequest->id}");
-
-        return back()->with('success', 'تم إنشاء مسودة طلب اعتماد بنجاح.');
+{
+    $university = request()->user()->university;
+    
+    if ($program->department->college->university_id !== $university->id) { 
+        abort(403);
     }
+    
+    $accreditationRequest = $program->accreditationRequests()->create([
+        'current_stage' => 'stage_one',
+        'request_status' => 'draft',
+        'program_coord_id' => request()->user()->id,
+    ]);
+    
+    Storage::makeDirectory("req_{$accreditationRequest->id}");
+    
+    return redirect()->route('requests.show', $accreditationRequest);
+}
 }

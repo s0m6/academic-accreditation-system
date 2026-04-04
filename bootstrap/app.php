@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\RoleMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -20,11 +21,16 @@ return Application::configure(basePath: dirname(__DIR__))
                 ->prefix('accreditation-officer')
                 ->name('accreditation_officer.')
                 ->group(base_path('routes/accreditation_officer.php'));
+
+            Route::middleware(['web', 'auth', 'verified', 'role:program_coordinator'])
+                ->prefix('program-coordinator')
+                ->name('program_coordinator.')
+                ->group(base_path('routes/program_coordinator.php'));
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
-            'role' => \App\Http\Middleware\RoleMiddleware::class,
+            'role' => RoleMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

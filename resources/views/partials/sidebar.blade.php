@@ -51,35 +51,49 @@
                 <span class="sidebar-text font-semibold">الجامعات</span>
             </a>
 
-            <!-- Category: Management -->
+            <!-- Category: Accreditation / الاعتماد -->
             <div class="sidebar-category mt-8 mb-1 px-3">
                 <span class="sidebar-text text-[14px] font-bold uppercase"
-                    style="color: var(--text-primary);">الإدارة</span>
+                    style="color: var(--text-primary);">الاعتماد الأكاديمي</span>
             </div>
 
-            <!-- Users / المستخدمين -->
-            <a href="#" class="sidebar-link group">
-                <div class="sidebar-icon-wrapper">
-                    <i class="fa-solid fa-users"></i>
-                </div>
-                <span class="sidebar-text font-semibold">المستخدمين</span>
-            </a>
+            <!-- Accreditation Requests / طلبات الاعتماد -->
+            <div x-data="{ open: {{ request()->routeIs('council_secretariat.requests.*') ? 'true' : 'false' }} }" class="space-y-1">
+                <button @click="open = !open" 
+                    class="sidebar-link w-full text-start group cursor-pointer transition-all">
+                    <div class="sidebar-icon-wrapper">
+                        <i class="fa-solid fa-file-signature"></i>
+                    </div>
+                    <div class="flex-1 flex items-center justify-between">
+                        <span class="sidebar-text font-semibold">طلبات الاعتماد</span>
+                        <i class="fa-solid fa-chevron-down text-[10px] transition-transform duration-200 sidebar-text" :class="open ? 'rotate-180' : ''"></i>
+                    </div>
+                </button>
+                
+                <div x-show="open" 
+                     x-transition:enter="transition ease-out duration-100"
+                     x-transition:enter-start="opacity-0 transform -translate-y-2"
+                     x-transition:enter-end="opacity-100 transform translate-y-0"
+                     class="ps-10 space-y-1">
+                    <a href="{{ route('council_secretariat.requests.stage_one') }}" 
+                        class="flex items-center gap-2 py-2 text-sm font-medium transition-all hover:text-orange-600 dark:hover:text-orange-400 {{ request()->routeIs('council_secretariat.requests.stage_one') ? 'text-orange-600 dark:text-orange-400 font-bold translate-x-1' : 'text-(--text-secondary)' }}">
+                        <span class="w-6 h-6 flex items-center justify-center rounded-full bg-orange-100 text-orange-700 text-[12px] font-black dark:bg-orange-500/20 dark:text-orange-400 border border-orange-200 dark:border-orange-500/30">1</span>
+                        الطلب الأولي
+                    </a>
 
-            <!-- Orders / الطلبات -->
-            <a href="#" class="sidebar-link group">
-                <div class="sidebar-icon-wrapper">
-                    <i class="fa-solid fa-cart-shopping"></i>
-                </div>
-                <span class="sidebar-text font-semibold">الطلبات</span>
-            </a>
+                    <a href="{{ route('council_secretariat.requests.stage_two') }}" 
+                        class="flex items-center gap-2 py-2 text-sm font-medium transition-all hover:text-orange-600 dark:hover:text-orange-400 {{ request()->routeIs('council_secretariat.requests.stage_two') ? 'text-orange-600 dark:text-orange-400 font-bold translate-x-1' : 'text-(--text-secondary)' }}">
+                        <span class="w-6 h-6 flex items-center justify-center rounded-full bg-orange-100 text-orange-700 text-[12px] font-black dark:bg-orange-500/20 dark:text-orange-400 border border-orange-200 dark:border-orange-500/30">2</span>
+                        البيانات الأساسية
+                    </a>
 
-            <!-- Invoices / الفواتير -->
-            <a href="#" class="sidebar-link group">
-                <div class="sidebar-icon-wrapper">
-                    <i class="fa-solid fa-file-invoice-dollar"></i>
+                    <a href="{{ route('council_secretariat.requests.stage_three') }}" 
+                        class="flex items-center gap-2 py-2 text-sm font-medium transition-all hover:text-orange-600 dark:hover:text-orange-400 {{ request()->routeIs('council_secretariat.requests.stage_three') ? 'text-orange-600 dark:text-orange-400 font-bold translate-x-1' : 'text-(--text-secondary)' }}">
+                        <span class="w-6 h-6 flex items-center justify-center rounded-full bg-orange-100 text-orange-700 text-[12px] font-black dark:bg-orange-500/20 dark:text-orange-400 border border-orange-200 dark:border-orange-500/30">3</span>
+                        تقرير الدراسة الذاتيه
+                    </a>
                 </div>
-                <span class="sidebar-text font-semibold">الفواتير</span>
-            </a>
+            </div>
         @endif
         {{-- !! sidebar council-secretariat --}}
         @if (auth()->user()->role == 'accreditation_officer')
@@ -129,6 +143,32 @@
                     <i class="fa-solid fa-book-open"></i>
                 </div>
                 <span class="sidebar-text font-semibold">البرامج</span>
+            </a>
+        @endif
+
+        @if (auth()->user()->role == 'program_coordinator')
+            <!-- Category: General -->
+            <div class="sidebar-category mt-2 mb-1 px-3">
+                <span class="sidebar-text text-[14px] font-bold uppercase"
+                    style="color: var(--text-primary);">الرئيسية</span>
+            </div>
+
+            <!-- Dashboard / الرئيسية -->
+            <a href="{{ route('program_coordinator.dashboard') }}"
+                class="sidebar-link {{ request()->routeIs('program_coordinator.dashboard') ? 'sidebar-link-active' : '' }} group">
+                <div class="sidebar-icon-wrapper">
+                    <i class="fa-solid fa-gauge-high"></i>
+                </div>
+                <span class="sidebar-text font-semibold">الرئيسية</span>
+            </a>
+
+            <!-- Accreditation Requests / طلبات الاعتماد -->
+            <a href="{{ route('program_coordinator.requests') }}"
+                class="sidebar-link {{ request()->routeIs('program_coordinator.requests') ? 'sidebar-link-active' : '' }} group">
+                <div class="sidebar-icon-wrapper">
+                    <i class="fa-solid fa-file-invoice"></i>
+                </div>
+                <span class="sidebar-text font-semibold">طلبات الاعتماد</span>
             </a>
         @endif
 
