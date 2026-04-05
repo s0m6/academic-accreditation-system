@@ -122,24 +122,28 @@
                                 </td>
                                 <td class="px-6 py-5">
                                     <div class="flex items-center justify-center gap-2 flex-wrap">
-                                        {{-- Edit Action (Only for Draft/Rejected and Program Coordinator) --}}
-                                        @if(in_array($sub->status, ['draft', 'rejected']) && $userRole === 'program_coordinator')
+                                        {{-- Edit Action (Only for Draft and Program Coordinator) --}}
+                                        @if($sub->status === 'draft' && $userRole === 'program_coordinator')
                                             <a href="{{ route('requests.stage_two.edit', [$accreditationRequest, $sub]) }}" 
-                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 text-xs font-bold transition-colors cursor-pointer">
+                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20 text-xs font-bold transition-colors cursor-pointer">
                                                 <i class="fa-solid fa-edit"></i> تعديل
                                             </a>
                                             
-                                            {{-- Submit Action --}}
-                                            @if($sub->status === 'draft')
-                                                <button type="button" @click="submitActionUrl = '{{ route('requests.stage_two.submit', [$accreditationRequest, $sub]) }}'; showSubmitModal = true"
-                                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/20 text-xs font-bold transition-colors cursor-pointer">
-                                                    <i class="fa-solid fa-paper-plane"></i> رفع للمجلس
-                                                </button>
-                                            @endif
-                                        @else
-                                            {{-- View Action --}}
+                                            {{-- View Action (For Coordinator in Draft) --}}
                                             <a href="{{ route('requests.stage_two.show', [$accreditationRequest, $sub]) }}" target="_blank"
-                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 text-xs font-bold transition-colors cursor-pointer">
+                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-50 text-slate-700 border border-slate-200 hover:bg-slate-100 dark:bg-slate-500/10 dark:text-slate-400 dark:border-slate-500/20 text-xs font-bold transition-colors cursor-pointer">
+                                                <i class="fa-solid fa-eye"></i> عرض
+                                            </a>
+                                            
+                                            {{-- Submit Action --}}
+                                            <button type="button" @click="submitActionUrl = '{{ route('requests.stage_two.submit', [$accreditationRequest, $sub]) }}'; showSubmitModal = true"
+                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/20 text-xs font-bold transition-colors cursor-pointer">
+                                                <i class="fa-solid fa-paper-plane"></i> رفع للمجلس
+                                            </button>
+                                        @else
+                                            {{-- View Action (For everyone else or other statuses) --}}
+                                            <a href="{{ route('requests.stage_two.show', [$accreditationRequest, $sub]) }}" target="_blank"
+                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-50 text-slate-700 border border-slate-200 hover:bg-slate-100 dark:bg-slate-500/10 dark:text-slate-400 dark:border-slate-500/20 text-xs font-bold transition-colors cursor-pointer">
                                                 <i class="fa-solid fa-eye"></i> عرض
                                             </a>
                                         @endif

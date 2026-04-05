@@ -45,11 +45,18 @@ class StageTwoController extends Controller
             return back()->with('error', 'يوجد مسودة بالفعل يمكنك تعديلها.');
         }
 
+        // Check if there's a previously rejected submission to copy its data
+        $lastRejected = $accreditationRequest->formSubmissions()
+            ->where('stage', 'stage_two')
+            ->where('status', 'rejected')
+            ->latest('id')
+            ->first();
+
         $formSubmission = FormSubmission::create([
             'accreditation_request_id' => $accreditationRequest->id,
             'stage' => 'stage_two',
             'status' => 'draft',
-            'form_data' => null,
+            'form_data' => $lastRejected ? $lastRejected->form_data : null,
             'submitted_by' => $user->id,
             'submitted_at' => null,
             'decided_by' => null,
@@ -74,7 +81,7 @@ class StageTwoController extends Controller
         if ($formSubmission->status !== 'draft' || $request->user()->role !== 'program_coordinator') {
             $readonly = true;
         }
-        return $formSubmission;
+
         return view('requests.stageTwoForm', compact('accreditationRequest', 'formSubmission', 'readonly'));
     }
 
@@ -110,6 +117,18 @@ class StageTwoController extends Controller
         // Extract JSON data
         $jsonData = json_decode($request->input('json_data', '{}'), true);
 
+        // Helper to check if a file path is safe to delete
+        $isSafeToDelete = function ($path) use ($formSubmission) {
+            if (! $path || ! Storage::exists($path)) {
+                return false;
+            }
+
+            // Count how many FORM submissions (EXCLUDING current one) use this exact file path
+            return ! FormSubmission::where('id', '!=', $formSubmission->id)
+                ->where('form_data', 'LIKE', '%'.$path.'%')
+                ->exists();
+        };
+
         $existingPaths = $jsonData['decision_files_paths'] ?? [];
 
         // Handle files handling up to 8 decision files.
@@ -125,8 +144,8 @@ class StageTwoController extends Controller
                     'local'
                 );
 
-                // If there was an old file, delete it from storage
-                if ($oldPath && Storage::exists($oldPath)) {
+                // If there was an old file, delete it from storage ONLY if no one else uses it
+                if ($oldPath && $isSafeToDelete($oldPath)) {
                     Storage::delete($oldPath);
                 }
 
@@ -137,13 +156,28 @@ class StageTwoController extends Controller
                 $jsonData['decision_files'][$i] = $path;
             } elseif (! empty($existingPaths[$i])) {
                 // keep the old file mapping if it was not deleted
+                $currentPath = $existingPaths[$i];
+                if (str_starts_with($currentPath, 'temp_files/')) {
+                    $filename = basename($currentPath);
+                    $newPath = "req_{$accreditationRequest->id}/stage_two_decisions/".$filename;
+                    if (Storage::exists($currentPath)) {
+                        Storage::move($currentPath, $newPath);
+                        $currentPath = $newPath;
+                    }
+                }
+
+                // If there was an old file that is DIFFERENT from this one, try to delete it
+                if ($oldPath && $oldPath !== $currentPath && $isSafeToDelete($oldPath)) {
+                    Storage::delete($oldPath);
+                }
+
                 if (! isset($jsonData['decision_files'])) {
                     $jsonData['decision_files'] = [];
                 }
-                $jsonData['decision_files'][$i] = $existingPaths[$i];
+                $jsonData['decision_files'][$i] = $currentPath;
             } else {
-                // User may have deleted the file, so unset it and delete it physically if exists
-                if ($oldPath && Storage::exists($oldPath)) {
+                // User may have deleted the file, try to delete physically if safe
+                if ($oldPath && $isSafeToDelete($oldPath)) {
                     Storage::delete($oldPath);
                 }
                 if (isset($jsonData['decision_files'][$i])) {
@@ -186,9 +220,9 @@ class StageTwoController extends Controller
     }
 
     /**
-     * Download securely a protected file.
+     * View securely a protected file.
      */
-    public function downloadFile(Request $request, AccreditationRequest $accreditationRequest, FormSubmission $formSubmission, $decisionIndex)
+    public function viewFile(Request $request, AccreditationRequest $accreditationRequest, FormSubmission $formSubmission, $decisionIndex)
     {
         $this->ensureAuthorized($request, $accreditationRequest, $formSubmission);
 
@@ -214,6 +248,35 @@ class StageTwoController extends Controller
         return response()->file($fullPath, [
             'Content-Type' => 'application/pdf',
             'Content-Disposition' => 'inline; filename="attachment.pdf"',
+        ]);
+    }
+
+    /**
+     * Upload an individual decision file asynchronously to a temporary location.
+     */
+    public function uploadFile(Request $request, AccreditationRequest $accreditationRequest, FormSubmission $formSubmission, $decisionIndex)
+    {
+        $user = $request->user();
+        if ($user->role !== 'program_coordinator' || $formSubmission->status !== 'draft') {
+            return response()->json(['success' => false, 'message' => 'Unauthorized or non-draft state'], 403);
+        }
+        $this->ensureAuthorized($request, $accreditationRequest, $formSubmission);
+
+        $request->validate([
+            'file' => 'required|file|mimes:pdf|max:10240',
+        ]);
+
+        $file = $request->file('file');
+        // Store in temporary folder immediately so if user leaves without saving, the actual DB isn't updated
+        $path = $file->storeAs(
+            'temp_files',
+            'temp_'.uniqid().'_'.time().'.'.$file->getClientOriginalExtension(),
+            'local'
+        );
+
+        return response()->json([
+            'success' => true,
+            'path' => $path,
         ]);
     }
 

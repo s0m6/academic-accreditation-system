@@ -40,9 +40,22 @@ require __DIR__.'/auth.php';
 use App\Http\Controllers\RequestDashboardController;
 use App\Http\Controllers\stages\StageOneController;
 use App\Http\Controllers\stages\StageTwoController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 // Dashboard and stage navigation routes for accreditation requests
 Route::middleware('auth')->group(function () {
+    // Generic Temp Files Cleanup
+    Route::post('/temp-files/cleanup', function (Request $request) {
+        $paths = $request->input('paths', []);
+        foreach ($paths as $path) {
+            if (str_starts_with($path, 'temp_files/') && Storage::exists($path)) {
+                Storage::delete($path);
+            }
+        }
+
+        return response()->json(['success' => true]);
+    })->name('temp_files.cleanup');
     Route::get('/requests/{accreditationRequest}', [RequestDashboardController::class, 'show'])
         ->name('requests.show');
     Route::get('/requests/{accreditationRequest}/stage/{stage}', [RequestDashboardController::class, 'stage'])
@@ -65,8 +78,10 @@ Route::middleware('auth')->group(function () {
         ->name('requests.stage_two.show');
     Route::post('/requests/{accreditationRequest}/stage-two/{formSubmission}/save', [StageTwoController::class, 'saveDraft'])
         ->name('requests.stage_two.save');
-    Route::get('/requests/{accreditationRequest}/stage-two/{formSubmission}/download-file/{decisionIndex}', [StageTwoController::class, 'downloadFile'])
-        ->name('requests.stage_two.download_file');
+    Route::get('/requests/{accreditationRequest}/stage-two/{formSubmission}/view-file/{decisionIndex}', [StageTwoController::class, 'viewFile'])
+        ->name('requests.stage_two.view_file');
+    Route::post('/requests/{accreditationRequest}/stage-two/{formSubmission}/upload-file/{decisionIndex}', [StageTwoController::class, 'uploadFile'])
+        ->name('requests.stage_two.upload_file');
     Route::patch('/requests/{accreditationRequest}/stage-two/{formSubmission}/submit', [StageTwoController::class, 'submit'])
         ->name('requests.stage_two.submit');
     Route::patch('/requests/{accreditationRequest}/stage-two/{formSubmission}/reject', [StageTwoController::class, 'reject'])

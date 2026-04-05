@@ -1,1298 +1,1077 @@
 <!doctype html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" x-data="stageTwoApp()" x-cloak>
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>نظام إدارة بيانات البرنامج الأكاديمي</title>
-    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+
+    {{-- Google Fonts: Cairo --}}
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet" />
+
+    {{-- Font Awesome 6.4.0 --}}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+    {{-- Vite-compiled assets (Tailwind v4 + FlyonUI) --}}
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+
     <style>
-* {
-    box-sizing: border-box;
-}
-
-body {
-    font-family: "Segoe UI", Arial, sans-serif;
-    background: #F9FAFC;
-    min-height: 100vh;
-    padding: 20px;
-    color: #212529;
-}
-
-/* ====== الحاوية الرئيسية ====== */
-.app-wrapper {
-    background: #FFFFFF;
-    border-radius: 8px;
-    border: 1px solid #DEE2E6;
-    max-width: 1100px;
-    margin: 0 auto;
-    overflow: hidden;
-}
-
-/* ====== الهيدر ====== */
-.header {
-    background: #FFFFFF;
-    border-bottom: 2px solid #DEE2E6;
-    padding: 25px;
-    text-align: center;
-}
-
-.header h1 {
-    margin: 0;
-    font-size: 24px;
-    font-weight: 700;
-    color: #0D6EFD;
-}
-
-/* ====== شريط التقدم ====== */
-.progress-container {
-    background: #F8F9FA;
-    padding: 20px 30px;
-    border-bottom: 1px solid #DEE2E6;
-}
-
-.progress-bar {
-    height: 8px;
-    background: #E9ECEF;
-    border-radius: 6px;
-    overflow: hidden;
-    margin-bottom: 8px;
-}
-
-.progress-fill {
-    height: 100%;
-    background: #0D6EFD;
-    transition: width 0.3s ease;
-}
-
-.progress-text {
-    text-align: center;
-    font-size: 14px;
-    color: #0D6EFD;
-    font-weight: 600;
-}
-
-/* ====== التبويبات ====== */
-.tabs-container {
-    display: flex;
-    border-bottom: 1px solid #DEE2E6;
-    background: #FFFFFF;
-    overflow-x: auto;
-}
-
-.tab-button {
-    flex: 1;
-    padding: 16px;
-    border: none;
-    background: transparent;
-    color: #495057;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    border-bottom: 3px solid transparent;
-    transition: 0.2s;
-}
-
-.tab-button.active {
-    color: #0D6EFD;
-    border-bottom-color: #0D6EFD;
-    background: #F8F9FA;
-}
-
-.tab-button:hover {
-    background: #F1F3F5;
-}
-
-/* ====== محتوى التبويب ====== */
-.tab-content {
-    display: none;
-    padding: 30px;
-}
-
-.tab-content.active {
-    display: block;
-}
-
-/* ====== عناوين الأقسام ====== */
-.section-title {
-    color: #0D6EFD;
-    font-size: 20px;
-    font-weight: 700;
-    margin-bottom: 20px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid #DEE2E6;
-}
-
-/* ====== الجداول ====== */
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 30px;
-    font-size: 14px;
-}
-
-th {
-    background: #F8F9FA;
-    color: #212529;
-    padding: 12px;
-    text-align: right;
-    font-weight: 600;
-    border-bottom: 1px solid #DEE2E6;
-}
-
-td {
-    padding: 10px;
-    border-bottom: 1px solid #E9ECEF;
-}
-
-tr:hover {
-    background: #F8F9FA;
-}
-
-/* ====== الحقول ====== */
-input[type="text"],
-input[type="number"],
-input[type="date"],
-input[type="file"],
-select,
-textarea {
-    width: 100%;
-    padding: 8px 12px;
-    border: 1px solid #CED4DA;
-    border-radius: 4px;
-    font-size: 14px;
-    font-family: inherit;
-    transition: 0.2s;
-    background: #FFFFFF;
-}
-
-input[type="text"],
-input[type="number"],
-input[type="date"],
-select {
-    height: 40px;
-}
-
-textarea {
-    min-height: 100px;
-    resize: vertical;
-}
-
-input:focus,
-select:focus,
-textarea:focus {
-    outline: none;
-    border-color: #0D6EFD;
-    box-shadow: 0 0 0 2px rgba(13,110,253,0.15);
-}
-
-input.required-field {
-    background-color: #ffffff;
-}
-
-/* ====== الملاحظات ====== */
-.notes-section {
-    background: #FFFFFF;
-    border: 1px solid #DEE2E6;
-    padding: 20px;
-    border-radius: 6px;
-    margin-bottom: 20px;
-}
-
-.notes-section label {
-    margin-bottom: 10px;
-    font-weight: 600;
-    color: #212529;
-}
-
-/* ====== الأزرار ====== */
-.button-group {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    justify-content: center;
-    padding: 20px 0;
-}
-
-.btn {
-    padding: 10px 18px;
-    border-radius: 4px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: 0.2s;
-}
-
-.btn-primary {
-    background: #0D6EFD;
-    color: #FFFFFF;
-    border: none;
-}
-
-.btn-primary:hover {
-    background: #0B5ED7;
-}
-
-.btn-secondary {
-    background: #FFFFFF;
-    color: #0D6EFD;
-    border: 1px solid #0D6EFD;
-}
-
-.btn-secondary:hover {
-    background: #E7F1FF;
-}
-
-.btn-danger {
-    background: #FFF5F5;
-    color: #DC3545;
-    border: 1px solid #DC3545;
-    font-size: 12px;
-    padding: 6px 10px;
-}
-
-/* ====== الإشعارات ====== */
-.notification {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    padding: 12px 18px;
-    border-radius: 4px;
-    color: #FFFFFF;
-    font-weight: 600;
-    z-index: 1000;
-}
-
-.notification.success { background: #198754; }
-.notification.error { background: #DC3545; }
-.notification.info { background: #0D6EFD; }
-
-/* ====== شريط الخطأ ====== */
-.error-banner {
-    background: #FFF5F5;
-    border: 1px solid #DC3545;
-    color: #DC3545;
-    padding: 15px;
-    border-radius: 6px;
-    margin: 20px;
-    display: none;
-}
-
-.error-banner.show {
-    display: block;
-}
-
-/* ====== استجابة الشاشات ====== */
-@media (max-width: 768px) {
-
-    .tab-content {
-        padding: 20px;
-    }
-
-    table {
-        font-size: 12px;
-    }
-
-    th, td {
-        padding: 8px;
-    }
-
-    input, select, textarea {
-        font-size: 12px;
-    }
-
-    .btn {
-        font-size: 12px;
-    }
-}
-</style>
+        [x-cloak] { display: none !important; }
+    </style>
 </head>
 
-<body>
-    <div class="app-wrapper"><!-- Header -->
-        <div class="header" style="position: relative;">
-            <a href="{{ route('requests.show', $accreditationRequest) }}" class="btn btn-secondary" style="position: absolute; right: 25px; top: 25px; display: flex; align-items: center; gap: 8px; text-decoration: none;">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                    <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
-                </svg>
-                العودة للوحة الطلب
-            </a>
-            <h1>📋 نظام إدارة بيانات البرنامج الأكاديمي</h1>
-        </div><!-- Progress Bar -->
-        <div class="progress-container">
-            <div class="progress-bar">
-                <div class="progress-fill" id="progressFill"></div>
-            </div>
-            <div class="progress-text" id="progressText">
-                0% مكتمل
-            </div>
-        </div><!-- Error Banner -->
-        <div class="error-banner" id="errorBanner"></div><!-- Tabs Navigation -->
-        <div class="tabs-container"><button class="tab-button active" onclick="switchTab(0, event)">📄 القرارات</button>
-            <button class="tab-button" onclick="switchTab(1, event)">📊 إحصائيات الطلاب</button> <button
-                class="tab-button" onclick="switchTab(2, event)">👨‍🏫 إحصائيات الهيئة</button> <button
-                class="tab-button" onclick="switchTab(3, event)">👥 بيانات الهيئة</button>
-        </div><!-- Tab 1: القرارات -->
-        <div class="tab-content active" id="tab-0">
-            <h2 class="section-title">📄 القرارات المتعلقة بالبرنامج</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>القرار</th>
-                        <th>رقم القرار</th>
-                        <th>الجهة</th>
-                        <th>تاريخ القرار</th>
-                        <th>المرفق (PDF)</th>
-                    </tr>
-                </thead>
-                <tbody>
-@php
-    $decisionsList = [
-        1 => 'قرار إنشاء البرنامج',
-        2 => 'قرار الطاقة الاستيعابية',
-        3 => 'قرار قبول أول دفعة',
-        4 => 'قرار قبول دفعة العام الماضي',
-        5 => 'قرار قبول دفعة العام قبل الماضي',
-        6 => 'قرار اعتماد أحدث خطة دراسية',
-        7 => 'محضر قرار تخرج دفعة العام الحالي',
-        8 => 'قرار تقديم طلب الاعتماد الأكاديمي',
-    ];
-    $files = isset($formSubmission->form_data['decision_files']) ? $formSubmission->form_data['decision_files'] : [];
-@endphp
+<body class="bg-(--bg-main) text-(--text-primary) min-h-screen font-sans">
 
-@foreach($decisionsList as $i => $label)
-<tr>
-    <td>{{ $label }}</td>
-    <td><input type="text" id="decision_number_{{ $i }}" class="decision-input" oninput="hasChanges=true; updateProgress();"></td>
-    <td><input type="text" id="decision_authority_{{ $i }}" class="decision-input" oninput="hasChanges=true; updateProgress();"></td>
-    <td><input type="date" id="decision_date_{{ $i }}" class="decision-input" oninput="hasChanges=true; updateProgress();"></td>
-    <td>
-        <div id="file_container_{{ $i }}">
-            @if(!empty($files[$i]))
-                <div class="existing-file" id="existing_file_div_{{ $i }}" style="display: flex; gap: 5px; align-items: center; margin-bottom: 5px;">
-                    <a href="{{ route('requests.stage_two.download_file', ['accreditationRequest' => $accreditationRequest->id, 'formSubmission' => $formSubmission->id, 'decisionIndex' => $i]) }}" target="_blank" class="btn btn-secondary" style="padding: 4px 8px; font-size: 11px; text-decoration: none;">📄 عرض الملف</a>
-                    <button type="button" class="btn btn-danger" onclick="removeFile({{ $i }})" style="padding: 4px 8px; font-size: 11px;">🗑️ حذف</button>
-                    <input type="hidden" id="existing_file_path_{{ $i }}" value="{{ $files[$i] }}">
+{{-- Dark mode toggle (floating) --}}
+<button onclick="document.documentElement.classList.toggle('dark')" type="button" data-keep
+    class="fixed bottom-6 left-6 z-50 w-11 h-11 rounded-full bg-(--surface-card) border border-(--border-primary) shadow-lg flex items-center justify-center hover:scale-110 transition-all cursor-pointer">
+    <i class="fa-solid fa-circle-half-stroke text-(--text-secondary)"></i>
+</button>
+
+<div class="max-w-6xl mx-auto p-4 md:p-8 space-y-6">
+
+    {{-- ═══════ HEADER ═══════ --}}
+    <div class="rounded-2xl border border-(--border-primary) bg-(--surface-card) shadow-sm overflow-hidden">
+        <div class="px-6 py-5 flex items-center justify-between flex-wrap gap-4">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-2xl bg-brand-50 dark:bg-brand-500/10 text-brand-600 dark:text-brand-400 flex items-center justify-center border border-brand-100 dark:border-brand-500/20 shadow-inner shrink-0">
+                    <i class="fa-solid fa-file-lines text-xl"></i>
                 </div>
-                <input type="file" id="decision_file_{{ $i }}" accept="application/pdf" class="decision-input" style="display:none;" onchange="hasChanges=true; updateProgress();">
-            @else
-                <input type="file" id="decision_file_{{ $i }}" accept="application/pdf" class="decision-input" onchange="hasChanges=true; updateProgress();">
-            @endif
+                <div>
+                    <h1 class="text-lg md:text-xl font-bold text-(--text-primary)">نظام إدارة بيانات البرنامج الأكاديمي</h1>
+                    <p class="text-xs text-(--text-secondary) mt-0.5">تعبئة البيانات الأساسية للمرحلة الثانية من طلب الاعتماد</p>
+                </div>
+            </div>
+            <button type="button" @click="handleReturnToDashboard()" data-keep
+                class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-(--surface-card) border border-(--border-primary) text-(--text-primary) text-sm font-bold hover:bg-(--bg-main) transition-all no-underline cursor-pointer">
+                <i class="fa-solid fa-arrow-right"></i>
+                العودة للوحة الطلب
+            </button>
         </div>
-    </td>
-</tr>
-@endforeach
-                </tbody>
-            </table>
-          <div class="notes-section">
 
-<label><strong>📝 ملاحظات حول القرارات</strong></label>
-
-<table id="decisionsNotesTable">
-<thead>
-<tr>
-<th width="60">#</th>
-<th>الملاحظة</th>
-<th width="100">إجراء</th>
-</tr>
-</thead>
-
-<tbody>
-<tr>
-<td class="row-number">1</td>
-<td>
-<input type="text" id="decision_note_1" placeholder="أدخل الملاحظة">
-</td>
-<td>
-<button class="btn btn-danger" onclick="deleteNoteRow(this,'decisionsNotesTable')">حذف</button>
-</td>
-</tr>
-</tbody>
-
-</table>
-
-<div class="button-group">
-<button class="btn btn-secondary" onclick="addNoteRow('decisionsNotesTable','decision_note')">
-➕ إضافة ملاحظة
-</button>
-</div>
-
-</div>
-        </div><!-- Tab 2: إحصائيات الطلاب -->
-        <div class="tab-content" id="tab-1">
-            <h2 class="section-title">📊 البيانات الإحصائية للطلاب</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th colspan="2">الفئة</th>
-                        <th>العام الماضي</th>
-                        <th>العام الحالي</th>
-                        <th>المتوقع للعام القادم</th>
-                    </tr>
-                </thead>
-                <tbody><!-- عدد الطلبة المخطط -->
-                  <!-- عدد الطلبة المخطط التحاقهم -->
-<tr>
-    <td rowspan="3"><strong>عدد الطلبة المخطط التحاقهم بالبرنامج</strong></td>
-    <td>قبول عام</td>
-    <td><input type="number" id="planned-general-past" min="0" class="calc-1-past"
-            oninput="calculateStudentStats(1); updateProgress();"></td>
-    <td><input type="number" id="planned-general-current" min="0" class="calc-1-current"
-            oninput="calculateStudentStats(1); updateProgress();"></td>
-    <td><input type="number" id="planned-general-next" min="0" class="calc-1-next student-input"
-            oninput="calculateStudentStats(1); updateProgress();"></td>
-</tr>
-<tr>
-    <td>قبول خاص</td>
-    <td><input type="number" id="planned-special-past" min="0" class="calc-1-past student-input"
-            oninput="calculateStudentStats(1); updateProgress();"></td>
-    <td><input type="number" id="planned-special-current" min="0" class="calc-1-current student-input"
-            oninput="calculateStudentStats(1); updateProgress();"></td>
-    <td><input type="number" id="planned-special-next" min="0" class="calc-1-next student-input"
-            oninput="calculateStudentStats(1); updateProgress();"></td>
-</tr>
-<tr>
-    <td>قبول دولي</td>
-    <td><input type="number" id="planned-international-past" min="0" class="calc-1-past student-input"
-            oninput="calculateStudentStats(1); updateProgress();"></td>
-    <td><input type="number" id="planned-international-current" min="0" class="calc-1-current student-input"
-            oninput="calculateStudentStats(1); updateProgress();"></td>
-    <td><input type="number" id="planned-international-next" min="0" class="calc-1-next student-input"
-            oninput="calculateStudentStats(1); updateProgress();"></td>
-</tr>
-
-<!-- العدد الكلي للطلاب -->
-<tr>
-    <td rowspan="3"><strong>العدد الكلي للطلاب الملتحقين بالبرنامج</strong></td>
-    <td>قبول عام</td>
-    <td><input type="number" id="total-general-past" min="0" class="calc-2-past student-input"
-            oninput="calculateStudentStats(2); updateProgress();"></td>
-    <td><input type="number" id="total-general-current" min="0" class="calc-2-current student-input"
-            oninput="calculateStudentStats(2); updateProgress();"></td>
-    <td><input type="number" id="total-general-next" min="0" class="calc-2-next student-input"
-            oninput="calculateStudentStats(2); updateProgress();"></td>
-</tr>
-<tr>
-    <td>قبول خاص</td>
-    <td><input type="number" id="total-special-past" min="0" class="calc-2-past student-input"
-            oninput="calculateStudentStats(2); updateProgress();"></td>
-    <td><input type="number" id="total-special-current" min="0" class="calc-2-current student-input"
-            oninput="calculateStudentStats(2); updateProgress();"></td>
-    <td><input type="number" id="total-special-next" min="0" class="calc-2-next student-input"
-            oninput="calculateStudentStats(2); updateProgress();"></td>
-</tr>
-<tr>
-    <td>قبول دولي</td>
-    <td><input type="number" id="total-international-past" min="0" class="calc-2-past student-input"
-            oninput="calculateStudentStats(2); updateProgress();"></td>
-    <td><input type="number" id="total-international-current" min="0" class="calc-2-current student-input"
-            oninput="calculateStudentStats(2); updateProgress();"></td>
-    <td><input type="number" id="total-international-next" min="0" class="calc-2-next student-input"
-            oninput="calculateStudentStats(2); updateProgress();"></td>
-</tr>
-
-<!-- متوسط الطلبة بالشعبة -->
-<tr>
-    <td rowspan="3"><strong>متوسط عدد الطلبة في الشعبة الدراسية</strong></td>
-    <td>ذكور</td>
-    <td><input type="number" id="average-male-past" min="0" class="calc-3-past student-input"
-            oninput="calculateStudentStats(3); updateProgress();"></td>
-    <td><input type="number" id="average-male-current" min="0" class="calc-3-current student-input"
-            oninput="calculateStudentStats(3); updateProgress();"></td>
-    <td><input type="number" id="average-male-next" min="0" class="calc-3-next student-input"
-            oninput="calculateStudentStats(3); updateProgress();"></td>
-</tr>
-<tr>
-    <td>إناث</td>
-    <td><input type="number" id="average-female-past" min="0" class="calc-3-past student-input"
-            oninput="calculateStudentStats(3); updateProgress();"></td>
-    <td><input type="number" id="average-female-current" min="0" class="calc-3-current student-input"
-            oninput="calculateStudentStats(3); updateProgress();"></td>
-    <td><input type="number" id="average-female-next" min="0" class="calc-3-next student-input"
-            oninput="calculateStudentStats(3); updateProgress();"></td>
-</tr>
-<tr class="auto-calc">
-    <td><strong>الإجمالي</strong></td>
-    <td><input type="text" id="total-3-past" value="0" readonly></td>
-    <td><input type="text" id="total-3-current" value="0" readonly></td>
-    <td><input type="text" id="total-3-next" value="0" readonly></td>
-</tr>
-
-<!-- الخريجون في الدراسات العليا -->
-<tr>
-    <td rowspan="3"><strong>عدد الخريجين الذين يواصلون تعليمهم في الدراسات العليا</strong></td>
-    <td>ذكور</td>
-    <td><input type="number" id="graduates-male-past" min="0" class="calc-4-past student-input"
-            oninput="calculateStudentStats(4); updateProgress();"></td>
-    <td><input type="number" id="graduates-male-current" min="0" class="calc-4-current student-input"
-            oninput="calculateStudentStats(4); updateProgress();"></td>
-    <td><input type="number" id="graduates-male-next" min="0" class="calc-4-next student-input"
-            oninput="calculateStudentStats(4); updateProgress();"></td>
-</tr>
-<tr>
-    <td>إناث</td>
-    <td><input type="number" id="graduates-female-past" min="0" class="calc-4-past student-input"
-            oninput="calculateStudentStats(4); updateProgress();"></td>
-    <td><input type="number" id="graduates-female-current" min="0" class="calc-4-current student-input"
-            oninput="calculateStudentStats(4); updateProgress();"></td>
-    <td><input type="number" id="graduates-female-next" min="0" class="calc-4-next student-input"
-            oninput="calculateStudentStats(4); updateProgress();"></td>
-</tr>
-<tr class="auto-calc">
-    <td><strong>الإجمالي</strong></td>
-    <td><input type="text" id="total-4-past" value="0" readonly></td>
-    <td><input type="text" id="total-4-current" value="0" readonly></td>
-    <td><input type="text" id="total-4-next" value="0" readonly></td>
-</tr>
-
-<!-- الخريجون في الوظائف -->
-<tr>
-    <td rowspan="3"><strong>عدد الخريجين الذين التحقوا بوظائف</strong></td>
-    <td>ذكور</td>
-    <td><input type="number" id="employed-male-past" min="0" class="calc-5-past student-input"
-            oninput="calculateStudentStats(5); updateProgress();"></td>
-    <td><input type="number" id="employed-male-current" min="0" class="calc-5-current student-input"
-            oninput="calculateStudentStats(5); updateProgress();"></td>
-    <td><input type="number" id="employed-male-next" min="0" class="calc-5-next student-input"
-            oninput="calculateStudentStats(5); updateProgress();"></td>
-</tr>
-<tr>
-
-    <td>إناث</td>
-    <td><input type="number" id="employed-female-past" min="0" class="calc-5-past student-input"
-            oninput="calculateStudentStats(5); updateProgress();"></td>
-    <td><input type="number" id="employed-female-current" min="0" class="calc-5-current student-input"
-            oninput="calculateStudentStats(5); updateProgress();"></td>
-    <td><input type="number" id="employed-female-next" min="0" class="calc-5-next student-input"
-            oninput="calculateStudentStats(5); updateProgress();"></td>
-</tr>
-<tr class="auto-calc">
-    <td><strong>الإجمالي</strong></td>
-    <td><input type="text" id="total-5-past" value="0" readonly></td>
-    <td><input type="text" id="total-5-current" value="0" readonly></td>
-    <td><input type="text" id="total-5-next" value="0" readonly></td>
-</tr>
-
-                </tbody>
-            </table>
-            <div class="notes-section">
-
-<label><strong>📝 ملاحظات حول الطلاب</strong></label>
-
-<table id="studentsNotesTable">
-<thead>
-<tr>
-<th width="60">#</th>
-<th>الملاحظة</th>
-<th width="100">إجراء</th>
-</tr>
-</thead>
-
-<tbody>
-<tr>
-<td class="row-number">1</td>
-<td>
-<input type="text" id="student_note_1" placeholder="أدخل الملاحظة">
-</td>
-<td>
-<button class="btn btn-danger" onclick="deleteNoteRow(this,'studentsNotesTable')">حذف</button>
-</td>
-</tr>
-</tbody>
-
-</table>
-
-<div class="button-group">
-<button class="btn btn-secondary" onclick="addNoteRow('studentsNotesTable','student_note')">
-➕ إضافة ملاحظة
-</button>
-</div>
-
-</div>
-        </div><!-- Tab 3: إحصائيات الهيئة التدريسية -->
-        <div class="tab-content" id="tab-2">
-            <h2 class="section-title">👨‍🏫 البيانات الإحصائية لأعضاء هيئة التدريس</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>الدرجة العلمية</th>
-                        <th>ذكور</th>
-                        <th>إناث</th>
-                        <th>متوسط العبء التدريسي</th>
-                        <th>عدد غير المتفرغين</th>
-                    </tr>
-                </thead>
-                <tbody>
-                   <tr>
-    <td>أستاذ</td>
-    <td><input type="number" id="professor-male" min="0" class="col-male"
-            oninput="calculateFacultyStats(); updateProgress();"></td>
-    <td><input type="number" id="professor-female" min="0" class="col-female"
-            oninput="calculateFacultyStats(); updateProgress();"></td>
-    <td><input type="number" id="professor-load" min="0" step="0.1" class="col-load"
-            oninput="calculateFacultyStats(); updateProgress();"></td>
-    <td><input type="number" id="professor-parttime" min="0" class="col-parttime"
-            oninput="calculateFacultyStats(); updateProgress();"></td>
-</tr>
-<tr>
-    <td>أستاذ مشارك</td>
-    <td><input type="number" id="associate-male" min="0" class="col-male"
-            oninput="calculateFacultyStats(); updateProgress();"></td>
-    <td><input type="number" id="associate-female" min="0" class="col-female"
-            oninput="calculateFacultyStats(); updateProgress();"></td>
-    <td><input type="number" id="associate-load" min="0" step="0.1" class="col-load"
-            oninput="calculateFacultyStats(); updateProgress();"></td>
-    <td><input type="number" id="associate-parttime" min="0" class="col-parttime"
-            oninput="calculateFacultyStats(); updateProgress();"></td>
-</tr>
-<tr>
-    <td>أستاذ مساعد</td>
-    <td><input type="number" id="assistant-male" min="0" class="col-male"
-            oninput="calculateFacultyStats(); updateProgress();"></td>
-    <td><input type="number" id="assistant-female" min="0" class="col-female"
-            oninput="calculateFacultyStats(); updateProgress();"></td>
-    <td><input type="number" id="assistant-load" min="0" step="0.1" class="col-load"
-            oninput="calculateFacultyStats(); updateProgress();"></td>
-    <td><input type="number" id="assistant-parttime" min="0" class="col-parttime"
-            oninput="calculateFacultyStats(); updateProgress();"></td>
-</tr>
-<tr>
-    <td>مدرس</td>
-    <td><input type="number" id="lecturer-male" min="0" class="col-male"
-            oninput="calculateFacultyStats(); updateProgress();"></td>
-    <td><input type="number" id="lecturer-female" min="0" class="col-female"
-            oninput="calculateFacultyStats(); updateProgress();"></td>
-    <td><input type="number" id="lecturer-load" min="0" step="0.1" class="col-load"
-            oninput="calculateFacultyStats(); updateProgress();"></td>
-    <td><input type="number" id="lecturer-parttime" min="0" class="col-parttime"
-            oninput="calculateFacultyStats(); updateProgress();"></td>
-</tr>
-<tr>
-    <td>معيد</td>
-    <td><input type="number" id="teachingassistant-male" min="0" class="col-male"
-            oninput="calculateFacultyStats(); updateProgress();"></td>
-    <td><input type="number" id="teachingassistant-female" min="0" class="col-female"
-            oninput="calculateFacultyStats(); updateProgress();"></td>
-    <td><input type="number" id="teachingassistant-load" min="0" step="0.1" class="col-load"
-            oninput="calculateFacultyStats(); updateProgress();"></td>
-    <td><input type="number" id="teachingassistant-parttime" min="0" class="col-parttime"
-            oninput="calculateFacultyStats(); updateProgress();"></td>
-</tr>
-</tbody>
-<tfoot>
-<tr class="auto-calc">
-    <th>الإجمالي</th>
-    <td><input type="text" id="total-male" value="0" readonly></td>
-    <td><input type="text" id="total-female" value="0" readonly></td>
-    <td><input type="text" id="total-load" value="0" readonly></td>
-    <td><input type="text" id="total-parttime" value="0" readonly></td>
-</tr>
-</tfoot>
-
-            </table>
-            <div class="notes-section">
-
-<label><strong>📝 ملاحظات حول الهيئة التدريسية</strong></label>
-
-<table id="facultyNotesTable">
-<thead>
-<tr>
-<th width="60">#</th>
-<th>الملاحظة</th>
-<th width="100">إجراء</th>
-</tr>
-</thead>
-
-<tbody>
-<tr>
-<td class="row-number">1</td>
-<td>
-<input type="text" id="faculty_note_1" placeholder="أدخل الملاحظة">
-</td>
-<td>
-<button class="btn btn-danger" onclick="deleteNoteRow(this,'facultyNotesTable')">حذف</button>
-</td>
-</tr>
-</tbody>
-
-</table>
-
-<div class="button-group">
-<button class="btn btn-secondary" onclick="addNoteRow('facultyNotesTable','faculty_note')">
-➕ إضافة ملاحظة
-</button>
-</div>
-
-</div>
-        </div><!-- Tab 4: بيانات الهيئة التدريسية -->
-        <div class="tab-content" id="tab-3">
-            <h2 class="section-title">👥 بيانات أعضاء هيئة التدريس التفصيلية</h2>
-            <table id="staffTable">
-                <thead>
-                    <tr>
-                        <th>الاسم</th>
-                        <th>الدرجة العلمية</th>
-                        <th>التخصص العام</th>
-                        <th>التخصص الدقيق</th>
-                        <th>بلد التخرج</th>
-                        <th>عام التعيين</th>
-                        <th>الإجراءات</th>
-                    </tr>
-                </thead>
-                <tbody>
-                   <tr data-staff-id="1">
-    <td>
-        <input type="text" id="staff-name-1" placeholder="أدخل الاسم" class="staff-name"
-               oninput="updateProgress();">
-    </td>
-    <td>
-        <select id="staff-degree-1" class="staff-degree" oninput="updateProgress();">
-            <option value="">اختر الدرجة...</option>
-            <option value="prof">أستاذ</option>
-            <option value="assoc">أستاذ مشارك</option>
-            <option value="assist">أستاذ مساعد</option>
-            <option value="lecturer">مدرس</option>
-            <option value="ta">معيد</option>
-        </select>
-    </td>
-    <td>
-        <input type="text" id="staff-major-1" placeholder="التخصص العام" class="staff-major"
-               oninput="updateProgress();">
-    </td>
-    <td>
-        <input type="text" id="staff-minor-1" placeholder="التخصص الدقيق" class="staff-minor"
-               oninput="updateProgress();">
-    </td>
-    <td>
-        <input type="text" id="staff-country-1" placeholder="بلد التخرج" class="staff-country"
-               oninput="updateProgress();">
-    </td>
-    <td>
-        <input type="number" id="staff-year-1" min="1900" max="2100" placeholder="سنة" class="staff-year"
-               oninput="updateProgress();">
-    </td>
-    <td>
-        <button class="btn btn-danger" onclick="deleteStaffRow(this)">حذف</button>
-    </td>
-</tr>
-                </tbody>
-            </table>
-            <div class="button-group"><button class="btn btn-secondary" onclick="addStaffRow()">➕ إضافة عضو
-                    جديد</button>
+        {{-- Progress Bar --}}
+        <div class="px-6 py-3 bg-(--bg-main) border-t border-(--border-primary)">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-bold text-(--text-secondary)">نسبة الإكمال</span>
+                <span class="text-xs font-bold text-brand-600 dark:text-brand-400" x-text="progress + '% مكتمل'"></span>
             </div>
-           
-        </div><!-- Submit Section -->
-        <div style="padding: 30px; background: #f9fafb; border-top: 2px solid #e0e7ff; text-align: center;">
-            <div class="button-group"><button class="btn btn-primary" onclick="submitFormData()">💾 حفظ التغييرات</button>
-                <button class="btn btn-secondary" onclick="resetForm()">↻ تفريغ النموذج</button>
+            <div class="w-full h-2 bg-(--border-primary) rounded-full overflow-hidden">
+                <div class="h-full bg-brand-600 rounded-full transition-all duration-500 ease-out" :style="'width:' + progress + '%'"></div>
             </div>
-            <p style="color: #6b7280; font-size: 12px; margin-top: 15px;">🔒 بيانات آمنة | 💾 حفظ تلقائي كل 30 ثانية</p>
         </div>
     </div>
-    <script>
-        // ==================== البيانات الأساسية ====================
-        let currentTab = 0;
-        let autoSaveTimer;
-        let hasChanges = false;
 
-        // مراقبة التغييرات في جميع المدخلات
-        document.addEventListener('input', (e) => {
-            if (e.target.matches('input, select, textarea')) {
-                hasChanges = true;
+    {{-- Error Banner --}}
+    <div x-show="errors.length > 0" x-transition
+        class="p-4 rounded-xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 text-red-700 dark:text-red-400">
+        <div class="flex items-start gap-3">
+            <i class="fa-solid fa-triangle-exclamation text-lg mt-0.5 shrink-0"></i>
+            <div>
+                <p class="font-bold mb-1">توجد أخطاء في النموذج:</p>
+                <ul class="text-sm space-y-1 list-disc list-inside">
+                    <template x-for="err in errors" :key="err">
+                        <li x-text="err"></li>
+                    </template>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    {{-- ═══════ TAB NAVIGATION ═══════ --}}
+    <div class="rounded-2xl border border-(--border-primary) bg-(--surface-card) shadow-sm overflow-hidden">
+        <div class="flex border-b border-(--border-primary) bg-(--bg-main) overflow-x-auto no-scrollbar">
+            <template x-for="(tab, idx) in tabs" :key="idx">
+                <button @click="currentTab = idx" type="button" data-keep="true"
+                    :class="currentTab === idx
+                        ? tab.activeClasses + ' bg-(--surface-card)'
+                        : 'border-transparent text-(--text-secondary) hover:text-(--text-primary) hover:bg-(--surface-card)/50'"
+                    class="flex-1 flex items-center justify-center gap-2 px-4 py-4 text-sm font-bold border-b-2 transition-all whitespace-nowrap cursor-pointer">
+                    <i :class="tab.icon"></i>
+                    <span x-text="tab.label"></span>
+                </button>
+            </template>
+        </div>
+
+        {{-- ═══════ TAB 1: القرارات ═══════ --}}
+        <div x-show="currentTab === 0" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" class="p-6 space-y-6">
+            <div class="flex items-center gap-3 mb-2">
+                <div class="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center border border-blue-100 dark:border-blue-500/20 shrink-0">
+                    <i class="fa-solid fa-file-signature"></i>
+                </div>
+                <h2 class="text-lg font-bold text-(--text-primary)">القرارات المتعلقة بالبرنامج</h2>
+            </div>
+
+            <div class="overflow-x-auto rounded-xl border border-(--border-primary)">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="bg-(--bg-main) text-(--text-secondary)">
+                            <th class="px-4 py-3 text-start font-bold">القرار</th>
+                            <th class="px-4 py-3 text-start font-bold">رقم القرار</th>
+                            <th class="px-4 py-3 text-start font-bold">الجهة</th>
+                            <th class="px-4 py-3 text-start font-bold">تاريخ القرار</th>
+                            <th class="px-4 py-3 text-start font-bold">المرفق (PDF)</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-(--border-primary)">
+                        @php
+                            $decisionsList = [
+                                1 => 'قرار إنشاء البرنامج',
+                                2 => 'قرار الطاقة الاستيعابية',
+                                3 => 'قرار قبول أول دفعة',
+                                4 => 'قرار قبول دفعة العام الماضي',
+                                5 => 'قرار قبول دفعة العام قبل الماضي',
+                                6 => 'قرار اعتماد أحدث خطة دراسية',
+                                7 => 'محضر قرار تخرج دفعة العام الحالي',
+                                8 => 'قرار تقديم طلب الاعتماد الأكاديمي',
+                            ];
+                            $files = $formSubmission->form_data['decision_files'] ?? [];
+                        @endphp
+
+                        @foreach($decisionsList as $i => $label)
+                        <tr class="hover:bg-(--bg-main)/50 transition-colors">
+                            <td class="px-4 py-3 font-medium text-(--text-primary) whitespace-nowrap">{{ $label }}</td>
+                            <td class="px-4 py-3">
+                                <input type="text" data-decision="{{ $i }}" data-field="number"
+                                    class="w-full bg-(--bg-main) border border-(--border-primary) text-(--text-primary) text-sm rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500 transition-all placeholder:text-(--text-secondary)/50"
+                                    placeholder="رقم القرار" @input="markChanged()">
+                            </td>
+                            <td class="px-4 py-3">
+                                <input type="text" data-decision="{{ $i }}" data-field="authority"
+                                    class="w-full bg-(--bg-main) border border-(--border-primary) text-(--text-primary) text-sm rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500 transition-all placeholder:text-(--text-secondary)/50"
+                                    placeholder="الجهة المصدرة" @input="markChanged()">
+                            </td>
+                            <td class="px-4 py-3">
+                                <input type="date" data-decision="{{ $i }}" data-field="date"
+                                    class="w-full bg-(--bg-main) border border-(--border-primary) text-(--text-primary) text-sm rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500 transition-all"
+                                    @input="markChanged()">
+                            </td>
+                            <td class="px-4 py-3">
+                                <div id="file_container_{{ $i }}">
+                                    {{-- Preview Buttons Container --}}
+                                    <div id="file_preview_{{ $i }}" class="{{ !empty($files[$i]) ? 'flex' : 'hidden' }} items-center gap-2 flex-wrap">
+                                        <a id="file_view_btn_{{ $i }}" href="{{ !empty($files[$i]) ? route('requests.stage_two.view_file', ['accreditationRequest' => $accreditationRequest->id, 'formSubmission' => $formSubmission->id, 'decisionIndex' => $i]) : '#' }}" target="_blank"
+                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20 text-xs font-bold transition-colors no-underline">
+                                            <i class="fa-solid fa-eye"></i> عرض
+                                        </a>
+                                        <button type="button" @click="confirmRemoveFile({{ $i }})" data-action-area
+                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20 text-xs font-bold transition-colors cursor-pointer">
+                                            <i class="fa-solid fa-trash-can"></i> حذف
+                                        </button>
+                                        @if(!empty($files[$i]))
+                                            <input type="hidden" id="existing_file_path_{{ $i }}" value="{{ $files[$i] }}">
+                                        @endif
+                                    </div>
+                                    
+                                    {{-- File Upload Input --}}
+                                    <input type="file" id="decision_file_{{ $i }}" accept="application/pdf" data-action-area
+                                        class="{{ !empty($files[$i]) ? 'hidden' : 'block' }} w-full text-sm text-(--text-secondary) file:me-3 file:py-1.5 file:px-3 file:rounded-lg file:border file:border-(--border-primary) file:text-sm file:font-bold file:bg-(--bg-main) file:text-(--text-primary) hover:file:bg-(--surface-card) file:transition-all file:cursor-pointer"
+                                        @change="handleFileSelect(event, {{ $i }}); markChanged()">
+                                </div>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+
+            {{-- Notes Section for Decisions --}}
+            <div class="rounded-xl border border-(--border-primary) bg-(--surface-card) p-5 space-y-4">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-note-sticky text-(--text-secondary)"></i>
+                    <h3 class="font-bold text-(--text-primary)">ملاحظات حول القرارات</h3>
+                </div>
+                <div class="space-y-2" id="decisionsNotesContainer">
+                </div>
+                <button type="button" onclick="addNoteRow('decisionsNotesContainer', 'decisions')" data-action-area
+                    class="inline-flex items-center gap-2 text-xs font-bold text-(--text-secondary) hover:text-(--text-primary) transition-colors cursor-pointer px-1">
+                    <i class="fa-solid fa-plus-circle"></i> إضافة ملاحظة
+                </button>
+            </div>
+        </div>
+
+        {{-- TAB 2: Student Stats --}}
+        <div x-show="currentTab === 1" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" class="p-6 space-y-6">
+            <div class="flex items-center gap-3 mb-2">
+                <div class="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-100 dark:border-emerald-500/20 shrink-0">
+                    <i class="fa-solid fa-chart-bar"></i>
+                </div>
+                <h2 class="text-lg font-bold text-(--text-primary)">البيانات الإحصائية للطلاب</h2>
+            </div>
+
+            <div class="overflow-x-auto rounded-xl border border-(--border-primary)">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="bg-(--bg-main) text-(--text-secondary)">
+                            <th colspan="2" class="px-4 py-3 text-start font-bold">الفئة</th>
+                            <th class="px-4 py-3 text-center font-bold">العام الماضي</th>
+                            <th class="px-4 py-3 text-center font-bold">العام الحالي</th>
+                            <th class="px-4 py-3 text-center font-bold">المتوقع للعام القادم</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-(--border-primary)">
+                        @php
+                            $studentSections = [
+                                'planned' => ['label' => 'عدد الطلبة المخطط التحاقهم بالبرنامج', 'rows' => [
+                                    'general' => 'قبول عام', 'special' => 'قبول خاص', 'international' => 'قبول دولي'
+                                ]],
+                                'total' => ['label' => 'العدد الكلي للطلاب الملتحقين بالبرنامج', 'rows' => [
+                                    'general' => 'قبول عام', 'special' => 'قبول خاص', 'international' => 'قبول دولي'
+                                ]],
+                                'average' => ['label' => 'متوسط عدد الطلبة في الشعبة الدراسية', 'rows' => [
+                                    'male' => 'ذكور', 'female' => 'إناث'
+                                ], 'hasTotal' => true],
+                                'graduates_higher_ed' => ['label' => 'عدد الخريجين الذين يواصلون تعليمهم في الدراسات العليا', 'rows' => [
+                                    'male' => 'ذكور', 'female' => 'إناث'
+                                ], 'hasTotal' => true],
+                                'graduates_employed' => ['label' => 'عدد الخريجين الذين التحقوا بوظائف', 'rows' => [
+                                    'male' => 'ذكور', 'female' => 'إناث'
+                                ], 'hasTotal' => true],
+                            ];
+                        @endphp
+
+                        @foreach($studentSections as $sectionKey => $section)
+                            @php $rowCount = count($section['rows']) + (isset($section['hasTotal']) ? 1 : 0); @endphp
+                            @foreach($section['rows'] as $rowKey => $rowLabel)
+                                <tr class="hover:bg-(--bg-main)/50 transition-colors">
+                                    @if($loop->first)
+                                        <td rowspan="{{ $rowCount }}" class="px-4 py-3 font-bold text-(--text-primary) border-e border-(--border-primary) bg-(--bg-main)/30 align-top">{{ $section['label'] }}</td>
+                                    @endif
+                                    <td class="px-4 py-3 text-(--text-secondary)">{{ $rowLabel }}</td>
+                                    @foreach(['past', 'current', 'next'] as $period)
+                                        <td class="px-4 py-3">
+                                            <input type="number" min="0" data-student="{{ $sectionKey }}" data-row="{{ $rowKey }}" data-period="{{ $period }}"
+                                                class="w-full bg-(--bg-main) border border-(--border-primary) text-(--text-primary) text-sm rounded-lg px-3 py-2 text-center focus:outline-none focus:ring-2 focus:ring-brand-500/40 transition-all"
+                                                @input="calculateStudentTotal('{{ $sectionKey }}'); markChanged()">
+                                        </td>
+                                    @endforeach
+                                </tr>
+                            @endforeach
+                            @if(isset($section['hasTotal']))
+                                <tr class="bg-(--bg-main)/50">
+                                    <td class="px-4 py-3 font-bold text-(--text-primary)">الإجمالي</td>
+                                    @foreach(['past', 'current', 'next'] as $period)
+                                        <td class="px-4 py-3">
+                                            <input type="text" readonly data-student-total="{{ $sectionKey }}" data-period="{{ $period }}" value="0"
+                                                class="w-full bg-(--border-primary)/30 border border-(--border-primary) text-(--text-primary) text-sm rounded-lg px-3 py-2 text-center font-bold">
+                                        </td>
+                                    @endforeach
+                                </tr>
+                            @endif
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+
+            {{-- Student Notes --}}
+            <div class="rounded-xl border border-(--border-primary) bg-(--surface-card) p-5 space-y-4">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-note-sticky text-(--text-secondary)"></i>
+                    <h3 class="font-bold text-(--text-primary)">ملاحظات حول الطلاب</h3>
+                </div>
+                <div class="space-y-2" id="studentsNotesContainer">
+                </div>
+                <button type="button" onclick="addNoteRow('studentsNotesContainer', 'students')" data-action-area class="inline-flex items-center gap-2 text-xs font-bold text-(--text-secondary) hover:text-(--text-primary) transition-colors cursor-pointer px-1"><i class="fa-solid fa-plus-circle"></i> إضافة ملاحظة</button>
+            </div>
+        </div>
+
+        {{-- TAB 3: Faculty Stats --}}
+        <div x-show="currentTab === 2" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" class="p-6 space-y-6">
+            <div class="flex items-center gap-3 mb-2">
+                <div class="w-9 h-9 rounded-xl bg-violet-50 dark:bg-violet-500/10 text-violet-600 dark:text-violet-400 flex items-center justify-center border border-violet-100 dark:border-violet-500/20 shrink-0">
+                    <i class="fa-solid fa-chalkboard-user"></i>
+                </div>
+                <h2 class="text-lg font-bold text-(--text-primary)">البيانات الإحصائية لأعضاء هيئة التدريس</h2>
+            </div>
+
+            <div class="overflow-x-auto rounded-xl border border-(--border-primary)">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="bg-(--bg-main) text-(--text-secondary)">
+                            <th class="px-4 py-3 text-start font-bold">الدرجة العلمية</th>
+                            <th class="px-4 py-3 text-center font-bold">ذكور</th>
+                            <th class="px-4 py-3 text-center font-bold">إناث</th>
+                            <th class="px-4 py-3 text-center font-bold">متوسط العبء التدريسي</th>
+                            <th class="px-4 py-3 text-center font-bold">عدد غير المتفرغين</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-(--border-primary)">
+                        @php
+                            $facultyRanks = [
+                                'professor' => 'أستاذ', 'associate' => 'أستاذ مشارك', 'assistant' => 'أستاذ مساعد',
+                                'lecturer' => 'مدرس', 'teaching_assistant' => 'معيد',
+                            ];
+                        @endphp
+                        @foreach($facultyRanks as $rankKey => $rankLabel)
+                        <tr class="hover:bg-(--bg-main)/50 transition-colors">
+                            <td class="px-4 py-3 font-medium text-(--text-primary)">{{ $rankLabel }}</td>
+                            @foreach(['male', 'female', 'load', 'parttime'] as $col)
+                                <td class="px-4 py-3">
+                                    <input type="number" min="0" {{ $col === 'load' ? 'step=0.1' : '' }} data-faculty="{{ $rankKey }}" data-col="{{ $col }}"
+                                        class="w-full bg-(--bg-main) border border-(--border-primary) text-(--text-primary) text-sm rounded-lg px-3 py-2 text-center focus:outline-none focus:ring-2 focus:ring-brand-500/40 transition-all"
+                                        @input="calculateFacultyTotals(); markChanged()">
+                                </td>
+                            @endforeach
+                        </tr>
+                        @endforeach
+                    </tbody>
+                    <tfoot>
+                        <tr class="bg-(--bg-main)/50 font-bold">
+                            <td class="px-4 py-3 text-(--text-primary)">الإجمالي</td>
+                            @foreach(['male', 'female', 'load', 'parttime'] as $col)
+                                <td class="px-4 py-3">
+                                    <input type="text" readonly data-faculty-total="{{ $col }}" value="0"
+                                        class="w-full bg-(--border-primary)/30 border border-(--border-primary) text-(--text-primary) text-sm rounded-lg px-3 py-2 text-center font-bold">
+                                </td>
+                            @endforeach
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            {{-- Faculty Notes --}}
+            <div class="rounded-xl border border-(--border-primary) bg-(--surface-card) p-5 space-y-4">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-note-sticky text-(--text-secondary)"></i>
+                    <h3 class="font-bold text-(--text-primary)">ملاحظات حول الهيئة التدريسية</h3>
+                </div>
+                <div class="space-y-2" id="facultyNotesContainer">
+                </div>
+                <button type="button" onclick="addNoteRow('facultyNotesContainer', 'faculty')" data-action-area class="inline-flex items-center gap-2 text-xs font-bold text-(--text-secondary) hover:text-(--text-primary) transition-colors cursor-pointer px-1"><i class="fa-solid fa-plus-circle"></i> إضافة ملاحظة</button>
+            </div>
+        </div>
+
+        {{-- TAB 4: Faculty Members Details --}}
+        <div x-show="currentTab === 3" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" class="p-6 space-y-6">
+            <div class="flex items-center gap-3 mb-2">
+                <div class="w-9 h-9 rounded-xl bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center border border-amber-100 dark:border-amber-500/20 shrink-0">
+                    <i class="fa-solid fa-users"></i>
+                </div>
+                <h2 class="text-lg font-bold text-(--text-primary)">بيانات أعضاء هيئة التدريس التفصيلية</h2>
+            </div>
+
+            <div class="overflow-x-auto rounded-xl border border-(--border-primary)">
+                <table class="w-full text-sm" id="staffTable">
+                    <thead>
+                        <tr class="bg-(--bg-main) text-(--text-secondary)">
+                            <th class="px-4 py-3 text-start font-bold">الاسم</th>
+                            <th class="px-4 py-3 text-start font-bold">الدرجة العلمية</th>
+                            <th class="px-4 py-3 text-start font-bold">التخصص العام</th>
+                            <th class="px-4 py-3 text-start font-bold">التخصص الدقيق</th>
+                            <th class="px-4 py-3 text-start font-bold">بلد التخرج</th>
+                            <th class="px-4 py-3 text-start font-bold">عام التعيين</th>
+                            <th class="px-4 py-3 text-center font-bold w-20" data-action-area>إجراء</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-(--border-primary)" id="staffTableBody">
+                        <tr data-staff-id="1" class="hover:bg-(--bg-main)/50 transition-colors">
+                            <td class="px-4 py-3"><input type="text" placeholder="أدخل الاسم" class="staff-name w-full bg-(--bg-main) border border-(--border-primary) text-(--text-primary) text-sm rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500/40 transition-all placeholder:text-(--text-secondary)/50" @input="markChanged()"></td>
+                            <td class="px-4 py-3">
+                                <select class="staff-degree w-full bg-(--bg-main) border border-(--border-primary) text-(--text-primary) text-sm rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500/40 transition-all" @input="markChanged()">
+                                    <option value="">اختر الدرجة...</option>
+                                    <option value="prof">أستاذ</option>
+                                    <option value="assoc">أستاذ مشارك</option>
+                                    <option value="assist">أستاذ مساعد</option>
+                                    <option value="lecturer">مدرس</option>
+                                    <option value="ta">معيد</option>
+                                </select>
+                            </td>
+                            <td class="px-4 py-3"><input type="text" placeholder="التخصص العام" class="staff-major w-full bg-(--bg-main) border border-(--border-primary) text-(--text-primary) text-sm rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500/40 transition-all placeholder:text-(--text-secondary)/50" @input="markChanged()"></td>
+                            <td class="px-4 py-3"><input type="text" placeholder="التخصص الدقيق" class="staff-minor w-full bg-(--bg-main) border border-(--border-primary) text-(--text-primary) text-sm rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500/40 transition-all placeholder:text-(--text-secondary)/50" @input="markChanged()"></td>
+                            <td class="px-4 py-3"><input type="text" placeholder="بلد التخرج" class="staff-country w-full bg-(--bg-main) border border-(--border-primary) text-(--text-primary) text-sm rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500/40 transition-all placeholder:text-(--text-secondary)/50" @input="markChanged()"></td>
+                            <td class="px-4 py-3"><input type="number" placeholder="سنة" min="1900" max="2100" class="staff-year w-full bg-(--bg-main) border border-(--border-primary) text-(--text-primary) text-sm rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500/40 transition-all" @input="markChanged()"></td>
+                            <td class="px-4 py-3 text-center" data-action-area>
+                                <button type="button" onclick="deleteStaffRow(this)" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20 text-xs font-bold transition-colors cursor-pointer" data-action-area><i class="fa-solid fa-trash-can"></i> حذف</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <button type="button" onclick="addStaffRow()" data-action-area class="inline-flex items-center gap-2 text-xs font-bold text-(--text-secondary) hover:text-(--text-primary) transition-colors cursor-pointer px-1"><i class="fa-solid fa-plus-circle"></i> إضافة عضو جديد</button>
+        </div>
+
+        {{-- Submit Section --}}
+        <div class="px-6 py-5 bg-(--bg-main) border-t border-(--border-primary) flex flex-col items-center gap-4" data-action-area>
+            <div class="flex items-center gap-3 flex-wrap justify-center">
+                <button type="button" @click="submitFormData()"
+                    class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold shadow-brand transition-all cursor-pointer">
+                    <i class="fa-solid fa-floppy-disk"></i> حفظ التغييرات
+                </button>
+                <button type="button" @click="resetForm()"
+                    class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-(--surface-card) border border-(--border-primary) text-(--text-primary) text-sm font-bold hover:bg-(--bg-main) transition-all cursor-pointer">
+                    <i class="fa-solid fa-rotate-left"></i> تفريغ النموذج
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Exit Confirmation Modal --}}
+<div x-show="showExitModal" style="display: none;" class="fixed inset-0 z-50 overflow-y-auto">
+    <div class="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity" @click="showExitModal = false"></div>
+    <div class="flex min-h-full items-center justify-center p-4 text-center">
+        <div x-show="showExitModal" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+            class="relative w-full max-w-md transform overflow-hidden rounded-2xl bg-(--surface-card) p-6 text-right align-middle shadow-xl transition-all border border-(--border-primary)">
+            
+            <div class="w-12 h-12 rounded-full bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center mx-auto mb-4 border border-amber-100 dark:border-amber-500/20">
+                <i class="fa-solid fa-triangle-exclamation text-xl text-amber-600 dark:text-amber-400"></i>
+            </div>
+            
+            <h3 class="text-lg font-bold text-center text-(--text-primary) mb-2">لديك تغييرات غير محفوظة</h3>
+            <p class="text-sm text-center text-(--text-secondary) mb-6">هل ترغب في حفظ التغييرات قبل المغادرة؟ إذا غادرت دون حفظ ستفقد التعديلات الأخيرة.</p>
+            
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+                <button type="button" @click="showExitModal = false; submitFormData('{{ route('requests.show', $accreditationRequest) }}')"
+                    class="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-brand-600 hover:bg-brand-700 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition-all cursor-pointer">
+                    <i class="fa-solid fa-floppy-disk"></i> حفظ ومغادرة
+                </button>
+                <button type="button" @click="discardAndLeave()"
+                    class="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20 px-5 py-2.5 text-sm font-bold transition-all cursor-pointer">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i> مغادرة دون حفظ
+                </button>
+                <button type="button" @click="showExitModal = false"
+                    class="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-(--surface-card) border border-(--border-primary) px-5 py-2.5 text-sm font-bold text-(--text-primary) hover:bg-(--bg-main) transition-all cursor-pointer">
+                    إلغاء
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Delete Confirmation Modal --}}
+<div x-show="showDeleteModal" style="display: none;" class="fixed inset-0 z-50 overflow-y-auto">
+    <div class="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity" @click="showDeleteModal = false"></div>
+    <div class="flex min-h-full items-center justify-center p-4 text-center">
+        <div x-show="showDeleteModal" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+            class="relative w-full max-w-md transform overflow-hidden rounded-2xl bg-(--surface-card) p-6 text-right align-middle shadow-xl transition-all border border-(--border-primary)">
+            
+            <div class="w-12 h-12 rounded-full bg-red-50 dark:bg-red-500/10 flex items-center justify-center mx-auto mb-4 border border-red-100 dark:border-red-500/20">
+                <i class="fa-solid fa-trash-can text-xl text-red-600"></i>
+            </div>
+            
+            <h3 class="text-lg font-bold text-center text-(--text-primary) mb-2">تأكيد حذف المرفق</h3>
+            <p class="text-sm text-center text-(--text-secondary) mb-6">هل أنت متأكد من حذف هذا المرفق؟ سيتم حذف الملف نهائياً ولا يمكن التراجع عن هذا الإجراء بعد حفظ التغييرات.</p>
+            
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+                <button type="button" @click="finalizeRemoveFile()"
+                    class="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-red-600 hover:bg-red-700 px-6 py-2.5 text-sm font-bold text-white shadow-sm transition-all cursor-pointer">
+                    <i class="fa-solid fa-trash-can"></i> تأكيد الحذف
+                </button>
+                <button type="button" @click="showDeleteModal = false"
+                    class="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-(--surface-card) border border-(--border-primary) px-6 py-2.5 text-sm font-bold text-(--text-primary) hover:bg-(--bg-main) transition-all cursor-pointer">
+                    إلغاء
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Notification Container --}}
+<div id="notificationArea" class="fixed top-4 left-4 z-50 space-y-2"></div>
+
+<script>
+// ==================== Input field CSS class constants ====================
+const INPUT_CLASS = 'w-full bg-(--bg-main) border border-(--border-primary) text-(--text-primary) text-sm rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500/40 transition-all placeholder:text-(--text-secondary)/50';
+const INPUT_CLASS_CENTER = INPUT_CLASS + ' text-center';
+const SELECT_CLASS = INPUT_CLASS;
+
+// ==================== Alpine.js Application ====================
+function stageTwoApp() {
+    return {
+        currentTab: 0,
+        hasChanges: false,
+        showExitModal: false,
+        progress: 0,
+        errors: [],
+        tabs: [
+            { label: 'القرارات', icon: 'fa-solid fa-file-signature', activeClasses: 'border-blue-600 text-blue-600 dark:text-blue-400 dark:border-blue-400' },
+            { label: 'إحصائيات الطلاب', icon: 'fa-solid fa-chart-bar', activeClasses: 'border-emerald-600 text-emerald-600 dark:text-emerald-400 dark:border-emerald-400' },
+            { label: 'إحصائيات الهيئة', icon: 'fa-solid fa-chalkboard-user', activeClasses: 'border-violet-600 text-violet-600 dark:text-violet-400 dark:border-violet-400' },
+            { label: 'بيانات الهيئة', icon: 'fa-solid fa-users', activeClasses: 'border-amber-600 text-amber-600 dark:text-amber-400 dark:border-amber-400' },
+        ],
+        showDeleteModal: false,
+        deleteId: null,
+
+        // Start File Deletion Flow
+        confirmRemoveFile(id) {
+            this.deleteId = id;
+            this.showDeleteModal = true;
+        },
+
+        // Finalize File Deletion
+        finalizeRemoveFile() {
+            if (this.deleteId !== null) {
+                removeFileLogic(this.deleteId);
+                this.showDeleteModal = false;
+                this.deleteId = null;
             }
-        });
+        },
 
-        // ==================== إدارة التبويبات ====================
-        function switchTab(tabIndex, event) {
-            // إخفاء التبويب الحالي
-            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+        // Mark form as changed
+        markChanged() {
+            this.hasChanges = true;
+            this.updateProgress();
+        },
 
-            // إظهار التبويب الجديد
-            document.getElementById(`tab-${tabIndex}`).classList.add('active');
-            event.target.classList.add('active');
+        // Calculate progress percentage
+        updateProgress() {
+            const fields = document.querySelectorAll('input:not([type="hidden"]):not([type="file"]):not([readonly]), select');
+            let filled = 0;
+            fields.forEach(f => { if (f.value && f.value.trim()) filled++; });
+            this.progress = Math.round((filled / (fields.length || 1)) * 100);
+        },
 
-            currentTab = tabIndex;
-            updateProgress();
-        }
-
-        // ==================== حساب الإحصائيات ====================
-        function calculateStudentStats(sectionNum) {
-            const periods = ['past', 'current', 'next'];
-
-            periods.forEach(period => {
-                const inputs = document.querySelectorAll(`.calc-${sectionNum}-${period}`);
+        // Calculate student section totals
+        calculateStudentTotal(section) {
+            ['past', 'current', 'next'].forEach(period => {
+                const inputs = document.querySelectorAll(`[data-student="${section}"][data-period="${period}"]`);
                 let sum = 0;
-                inputs.forEach(input => {
-                    const value = Number(input.value) || 0;
-                    if (value < 0) {
-                        input.style.borderColor = '#ef4444';
-                        showNotification('الأرقام يجب أن تكون موجبة!', 'error');
-                        sum += 0;
-                    } else {
-                        input.style.borderColor = '#d1d5db';
-                        sum += value;
-                    }
-                });
-
-                const totalField = document.getElementById(`total-${sectionNum}-${period}`);
-                if (totalField) {
-                    totalField.value = sum;
-                }
+                inputs.forEach(inp => { sum += Math.max(0, Number(inp.value) || 0); });
+                const totalField = document.querySelector(`[data-student-total="${section}"][data-period="${period}"]`);
+                if (totalField) totalField.value = sum;
             });
-        }
+        },
 
-        function calculateFacultyStats() {
-            function getSum(className) {
+        // Calculate faculty totals
+        calculateFacultyTotals() {
+            ['male', 'female', 'load', 'parttime'].forEach(col => {
+                const inputs = document.querySelectorAll(`[data-faculty][data-col="${col}"]`);
                 let sum = 0;
-                document.querySelectorAll('.' + className).forEach(input => {
-                    const value = Number(input.value) || 0;
-                    if (value < 0) {
-                        input.style.borderColor = '#ef4444';
-                    } else {
-                        input.style.borderColor = '#d1d5db';
-                        sum += value;
-                    }
+                inputs.forEach(inp => { sum += Math.max(0, Number(inp.value) || 0); });
+                const totalField = document.querySelector(`[data-faculty-total="${col}"]`);
+                if (totalField) totalField.value = col === 'load' ? sum.toFixed(2) : sum;
+            });
+        },
+
+        // Validate form data
+        validateForm() {
+            const errors = [];
+            document.querySelectorAll('input[type="date"]').forEach(f => {
+                if (f.value && isNaN(new Date(f.value).getTime())) errors.push('تاريخ غير صحيح');
+            });
+            document.querySelectorAll('input[type="number"]').forEach(f => {
+                if (f.value && Number(f.value) < 0) errors.push('لا يمكن إدخال أرقام سالبة');
+            });
+            return errors;
+        },
+
+        // Collect all form data into clean JSON structure
+        collectFormData() {
+            // Decisions
+            const decisions = [];
+            for (let i = 1; i <= 8; i++) {
+                const num = document.querySelector(`[data-decision="${i}"][data-field="number"]`);
+                const auth = document.querySelector(`[data-decision="${i}"][data-field="authority"]`);
+                const date = document.querySelector(`[data-decision="${i}"][data-field="date"]`);
+                decisions.push({
+                    id: i,
+                    number: num ? num.value : '',
+                    authority: auth ? auth.value : '',
+                    date: date ? date.value : ''
                 });
-                return sum;
             }
 
-            document.getElementById('total-male').value = getSum('col-male');
-            document.getElementById('total-female').value = getSum('col-female');
-            document.getElementById('total-load').value = getSum('col-load').toFixed(2);
-            document.getElementById('total-parttime').value = getSum('col-parttime');
-        }
+            // Student stats
+            const studentStats = {};
+            const studentSections = ['planned', 'total', 'average', 'graduates_higher_ed', 'graduates_employed'];
+            studentSections.forEach(section => {
+                studentStats[section] = {};
+                document.querySelectorAll(`[data-student="${section}"]`).forEach(inp => {
+                    const row = inp.dataset.row;
+                    const period = inp.dataset.period;
+                    if (!studentStats[section][row]) studentStats[section][row] = {};
+                    studentStats[section][row][period] = Number(inp.value) || 0;
+                });
+            });
 
-        // ==================== إدارة بيانات الهيئة ====================
-        function addStaffRow() {
-            const table = document.getElementById('staffTable');
-            const newId = Math.max(...Array.from(table.querySelectorAll('tr[data-staff-id]')).map(tr => parseInt(tr.dataset.staffId) || 0)) + 1;
+            // Faculty stats
+            const facultyStats = {};
+            const ranks = ['professor', 'associate', 'assistant', 'lecturer', 'teaching_assistant'];
+            ranks.forEach(rank => {
+                facultyStats[rank] = {};
+                ['male', 'female', 'load', 'parttime'].forEach(col => {
+                    const inp = document.querySelector(`[data-faculty="${rank}"][data-col="${col}"]`);
+                    facultyStats[rank][col] = inp ? Number(inp.value) || 0 : 0;
+                });
+            });
 
-            const row = document.createElement('tr');
-            row.dataset.staffId = newId;
-            row.innerHTML = `
-                <td><input type="text" id="staff-name-${newId}" placeholder="أدخل الاسم" class="staff-name" oninput="updateProgress();"></td>
-                <td>
-                    <select class="staff-degree" id="staff-degree-${newId}" oninput="updateProgress();">
-                        <option value="">اختر الدرجة...</option>
-                        <option value="prof">أستاذ</option>
-                        <option value="assoc">أستاذ مشارك</option>
-                        <option value="assist">أستاذ مساعد</option>
-                        <option value="lecturer">مدرس</option>
-                        <option value="ta">معيد</option>
-                    </select>
-                </td>
-                <td><input type="text" id="staff-major-${newId}" placeholder="التخصص العام" class="staff-major" oninput="updateProgress();"></td>
-                <td><input type="text" id="staff-minor-${newId}"placeholder="التخصص الدقيق" class="staff-minor" oninput="updateProgress();"></td>
-                <td><input type="text" id="staff-country-${newId}"  placeholder="بلد التخرج" class="staff-country" oninput="updateProgress();"></td>
-                <td><input type="number" id="staff-year-${newId}" min="1900" max="2100" placeholder="سنة" class="staff-year" oninput="updateProgress();"></td>
-                <td><button class="btn btn-danger" onclick="deleteStaffRow(this)">حذف</button></td>
-            `;
+            // Faculty members
+            const facultyMembers = [];
+            document.querySelectorAll('#staffTableBody tr[data-staff-id]').forEach(row => {
+                facultyMembers.push({
+                    name: row.querySelector('.staff-name')?.value || '',
+                    degree: row.querySelector('.staff-degree')?.value || '',
+                    major: row.querySelector('.staff-major')?.value || '',
+                    minor: row.querySelector('.staff-minor')?.value || '',
+                    country: row.querySelector('.staff-country')?.value || '',
+                    year: row.querySelector('.staff-year')?.value || ''
+                });
+            });
 
-            table.querySelector('tbody').appendChild(row);
-            hasChanges = true;
-            updateProgress();
-            showNotification('✓ تم إضافة صف جديد', 'success');
-        }
+            // Notes
+            const notes = {};
+            ['decisions', 'students', 'faculty'].forEach(group => {
+                const container = document.getElementById(group + 'NotesContainer');
+                if (!container) return;
+                notes[group] = [];
+                container.querySelectorAll('[data-note-group="' + group + '"]').forEach(inp => {
+                    if (inp.value.trim()) notes[group].push(inp.value.trim());
+                });
+            });
 
-        function deleteStaffRow(button) {
-            if (document.querySelectorAll('#staffTable tbody tr').length === 1) {
-                showNotification('يجب الاحتفاظ بصف واحد على الأقل', 'error');
+            return { decisions, student_stats: studentStats, faculty_stats: facultyStats, faculty_members: facultyMembers, notes };
+        },
+
+        // Return to Dashboard logic
+        handleReturnToDashboard() {
+            if (this.hasChanges) {
+                this.showExitModal = true;
+            } else {
+                window.location.href = "{{ route('requests.show', $accreditationRequest) }}";
+            }
+        },
+
+        // Discard temp files and leave
+        async discardAndLeave() {
+            // Find any temp files currently on the page that were newly uploaded
+            const tempPaths = [];
+            for (let i = 1; i <= 8; i++) {
+                const existingPathInput = document.getElementById('existing_file_path_' + i);
+                if (existingPathInput && existingPathInput.value.startsWith('temp_files/')) {
+                    tempPaths.push(existingPathInput.value);
+                }
+            }
+
+            if (tempPaths.length > 0) {
+                const formData = new FormData();
+                formData.append('_token', document.querySelector('meta[name="csrf-token"]').content);
+                tempPaths.forEach(path => formData.append('paths[]', path));
+                
+                try {
+                    // Fire and forget cleanup
+                    await fetch("{{ route('temp_files.cleanup') }}", { method: 'POST', body: formData });
+                } catch(e) {}
+            }
+            
+            // Bypass native beforeunload listener
+            this.hasChanges = false;
+            
+            window.location.href = "{{ route('requests.show', $accreditationRequest) }}";
+        },
+
+        // Submit form data to server
+        async submitFormData(redirectUrl = null) {
+            const validationErrors = this.validateForm();
+            if (validationErrors.length > 0) {
+                this.errors = validationErrors;
+                window.scrollTo(0, 0);
                 return;
             }
+            this.errors = [];
 
-            button.closest('tr').remove();
-            hasChanges = true;
-            updateProgress();
-            showNotification('✓ تم حذف الصف', 'success');
-        }
+            const jsonData = this.collectFormData();
+            const decisionFilesPaths = {};
+            const payload = new FormData();
+            payload.append('_token', document.querySelector('meta[name="csrf-token"]').content);
 
-        // ==================== التحقق من البيانات ====================
-        function validateForm() {
-            const errors = [];
+            // Handle file paths and uploads
+            for (let i = 1; i <= 8; i++) {
+                const existingPath = document.getElementById('existing_file_path_' + i);
+                if (existingPath) decisionFilesPaths[i] = existingPath.value;
+                const fileInput = document.getElementById('decision_file_' + i);
+                if (fileInput && fileInput.files.length > 0) payload.append('decision_file_' + i, fileInput.files[0]);
+            }
+            jsonData.decision_files_paths = decisionFilesPaths;
+            payload.append('json_data', JSON.stringify(jsonData));
 
-            // التحقق من الحقول المطلوبة
-            document.querySelectorAll('.required-field').forEach(field => {
-                if (!field.value.trim()) {
-                    errors.push(field.previousElementSibling?.textContent || 'حقل مطلوب');
+            showNotification('جاري حفظ التغييرات...', 'info');
+
+            try {
+                const response = await fetch("{{ route('requests.stage_two.save', [$accreditationRequest, $formSubmission]) }}", {
+                    method: 'POST', body: payload, headers: { 'Accept': 'application/json' }
+                });
+                const result = await response.json();
+                if (result.success) {
+                    this.hasChanges = false;
+                    showNotification('تم حفظ البيانات بنجاح!', 'success');
+                    const targetUrl = redirectUrl || "{{ route('requests.stage', [$accreditationRequest, 'stage_two']) }}";
+                    setTimeout(() => { window.location.href = targetUrl; }, 800);
+                } else {
+                    showNotification('حدث خطأ: ' + (result.message || 'غير معروف'), 'error');
                 }
-            });
+            } catch (error) {
+                showNotification('فشل الاتصال بالسيرفر.', 'error');
+            }
+        },
 
-            // التحقق من التواريخ
-            document.querySelectorAll('input[type="date"]').forEach(field => {
-                if (field.value) {
-                    const date = new Date(field.value);
-                    if (isNaN(date.getTime())) {
-                        errors.push('تاريخ غير صحيح');
-                    }
-                }
-            });
+        // Reset form
+        resetForm() {
+            if (!confirm('هل أنت متأكد من رغبتك في تفريغ جميع البيانات؟')) return;
+            document.querySelectorAll('input:not([readonly]):not([type="hidden"]):not([type="file"]), select, textarea').forEach(f => f.value = '');
+            ['average', 'graduates_higher_ed', 'graduates_employed'].forEach(s => this.calculateStudentTotal(s));
+            this.calculateFacultyTotals();
+            this.updateProgress();
+            showNotification('تم تفريغ النموذج', 'success');
+        },
 
-            // التحقق من الأرقام السالبة
-            document.querySelectorAll('input[type="number"]').forEach(field => {
-                if (field.value && Number(field.value) < 0) {
-                    errors.push('لا يمكن إدخال أرقام سالبة');
-                }
-            });
-
-            return errors;
-        }
-
-        // ==================== الحفظ والاستعادة بجدول قواعد البيانات ====================
-        function saveFormToLocalStorage() {
-            // Disabled local storage auto save, logic moved to server save.
-        }
-
-        function loadFormFromServer() {
+        // Load data from server
+        loadFromServer() {
             const saved = {!! isset($formSubmission->form_data) && $formSubmission->form_data ? json_encode($formSubmission->form_data, JSON_UNESCAPED_UNICODE) : 'null' !!};
             if (!saved) return;
 
             try {
-                // 1. استعادة الحقول البسيطة
-                Object.entries(saved).forEach(([key, value]) => {
-                    if (typeof value === 'object') return;
-                    const field = document.getElementById(key);
-                    if (field) field.value = value;
-                });
-
-                // 2. استعادة بيانات الهيئة التدريسية (إن وجدت)
-                if (saved.structured_data && saved.structured_data.staffDetails) {
-                    const tbody = document.querySelector('#staffTable tbody');
-                    // تفريغ الجدول أولاً لإعادة بنائه بدقة
-                    tbody.innerHTML = '';
-                    saved.structured_data.staffDetails.forEach((staff, index) => {
-                        const newId = index + 1;
-                        const row = document.createElement('tr');
-                        row.dataset.staffId = newId;
-                        row.innerHTML = `
-                            <td><input type="text" id="staff-name-${newId}" value="${staff.name || ''}" class="staff-name" oninput="updateProgress();"></td>
-                            <td>
-                                <select class="staff-degree" id="staff-degree-${newId}" oninput="updateProgress();">
-                                    <option value="">اختر الدرجة...</option>
-                                    <option value="prof" ${staff.degree === 'prof' ? 'selected' : ''}>أستاذ</option>
-                                    <option value="assoc" ${staff.degree === 'assoc' ? 'selected' : ''}>أستاذ مشارك</option>
-                                    <option value="assist" ${staff.degree === 'assist' ? 'selected' : ''}>أستاذ مساعد</option>
-                                    <option value="lecturer" ${staff.degree === 'lecturer' ? 'selected' : ''}>مدرس</option>
-                                    <option value="ta" ${staff.degree === 'ta' ? 'selected' : ''}>معيد</option>
-                                </select>
-                            </td>
-                            <td><input type="text" id="staff-major-${newId}" value="${staff.major || ''}" class="staff-major" oninput="updateProgress();"></td>
-                            <td><input type="text" id="staff-minor-${newId}" value="${staff.minor || ''}" class="staff-minor" oninput="updateProgress();"></td>
-                            <td><input type="text" id="staff-country-${newId}" value="${staff.country || ''}" class="staff-country" oninput="updateProgress();"></td>
-                            <td><input type="number" id="staff-year-${newId}" value="${staff.year || ''}" class="staff-year" oninput="updateProgress();"></td>
-                            <td><button class="btn btn-danger" onclick="deleteStaffRow(this)">حذف</button></td>
-                        `;
-                        tbody.appendChild(row);
+                // Load decisions
+                if (saved.decisions) {
+                    saved.decisions.forEach(d => {
+                        const num = document.querySelector(`[data-decision="${d.id}"][data-field="number"]`);
+                        const auth = document.querySelector(`[data-decision="${d.id}"][data-field="authority"]`);
+                        const date = document.querySelector(`[data-decision="${d.id}"][data-field="date"]`);
+                        if (num) num.value = d.number || '';
+                        if (auth) auth.value = d.authority || '';
+                        if (date) date.value = d.date || '';
                     });
                 }
 
-                // 3. استعادة الملاحظات (إن وجدت)
-                const noteTables = ['decisionsNotesTable', 'studentsNotesTable', 'facultyNotesTable'];
-                const notePrefixes = ['decision_note', 'student_note', 'faculty_note'];
+                // Load student stats
+                if (saved.student_stats) {
+                    Object.entries(saved.student_stats).forEach(([section, rows]) => {
+                        Object.entries(rows).forEach(([row, periods]) => {
+                            Object.entries(periods).forEach(([period, value]) => {
+                                const inp = document.querySelector(`[data-student="${section}"][data-row="${row}"][data-period="${period}"]`);
+                                if (inp) inp.value = value || '';
+                            });
+                        });
+                        this.calculateStudentTotal(section);
+                    });
+                }
+
+                // Load faculty stats
+                if (saved.faculty_stats) {
+                    Object.entries(saved.faculty_stats).forEach(([rank, cols]) => {
+                        Object.entries(cols).forEach(([col, value]) => {
+                            const inp = document.querySelector(`[data-faculty="${rank}"][data-col="${col}"]`);
+                            if (inp) inp.value = value || '';
+                        });
+                    });
+                    this.calculateFacultyTotals();
+                }
+
+                // Load faculty members
+                if (saved.faculty_members && saved.faculty_members.length > 0) {
+                    const tbody = document.getElementById('staffTableBody');
+                    tbody.innerHTML = '';
+                    saved.faculty_members.forEach((m, idx) => {
+                        const id = idx + 1;
+                        const tr = document.createElement('tr');
+                        tr.dataset.staffId = id;
+                        tr.className = 'hover:bg-(--bg-main)/50 transition-colors';
+                        tr.innerHTML = buildStaffRowHTML(id, m);
+                        tbody.appendChild(tr);
+                    });
+                }
+
+                // Load notes
+                const isReadonly = {{ isset($readonly) && $readonly ? 'true' : 'false' }};
                 
-                noteTables.forEach((tableId, idx) => {
-                    const prefix = notePrefixes[idx];
-                    const tbody = document.getElementById(tableId).querySelector('tbody');
-                    let noteIndex = 1;
-                    let foundAny = false;
+                ['decisions', 'students', 'faculty'].forEach(group => {
+                    const arr = saved.notes && saved.notes[group] ? saved.notes[group] : [];
+                    const container = document.getElementById(group + 'NotesContainer');
+                    if (!container) return;
                     
-                    // تحقق من وجود ملاحظات في البيانات المحفوظة
-                    while(saved[`${prefix}_${noteIndex}`] !== undefined) {
-                        if (noteIndex === 1) {
-                            tbody.innerHTML = ''; // مسح الصف الافتراضي الأول فقط عند العثور على بيانات
-                        }
-                        const value = saved[`${prefix}_${noteIndex}`];
-                        const row = document.createElement("tr");
-                        row.innerHTML = `
-                            <td class="row-number">${noteIndex}</td>
-                            <td><input type="text" id="${prefix}_${noteIndex}" value="${value}" placeholder="أدخل الملاحظة"></td>
-                            <td><button class="btn btn-danger" onclick="deleteNoteRow(this,'${tableId}')">حذف</button></td>
-                        `;
-                        tbody.appendChild(row);
-                        noteIndex++;
-                        foundAny = true;
+                    container.innerHTML = '';
+                    
+                    // Filter out truly empty notes
+                    const validNotes = arr.filter(note => note && note.trim() !== '');
+                    
+                    if (validNotes.length > 0) {
+                        validNotes.forEach((note, idx) => {
+                            container.appendChild(buildNoteRowElement(group, idx + 1, note));
+                        });
                     }
                 });
-
-                hasChanges = false;
-                updateProgress();
-                showNotification('✓ تم تحميل البيانات بنجاح', 'success');
-            } catch (error) {
-                console.error('خطأ في استعادة البيانات:', error);
-            }
-        }
-
-        // ==================== شريط التقدم ====================
-        function updateProgress() {
-            const totalFields = document.querySelectorAll('input, select, textarea').length;
-            const filledFields = document.querySelectorAll('input:not([readonly]), select, textarea').length;
-
-            let filledCount = 0;
-            document.querySelectorAll('input:not([readonly]), select, textarea').forEach(field => {
-                if (field.value) filledCount++;
-            });
-
-            const progress = Math.round((filledCount / (filledFields || 1)) * 100);
-            const progressFill = document.getElementById('progressFill');
-            if(progressFill) progressFill.style.width = progress + '%';
-            
-            const progressText = document.getElementById('progressText');
-            if(progressText) progressText.textContent = `${progress}% مكتمل`;
-        }
-
-        // ==================== الإخطارات ====================
-        function showNotification(message, type = 'info') {
-            const notification = document.createElement('div');
-            notification.className = `notification ${type}`;
-            notification.textContent = message;
-            document.body.appendChild(notification);
-
-            setTimeout(() => {
-                notification.remove();
-            }, 3000);
-        }
-
-        // ==================== رفع النموذج للحفظ في السيرفر ====================
-        async function submitFormData() {
-            const errors = validateForm();
-
-            if (errors.length > 0) {
-                const errorBanner = document.getElementById('errorBanner');
-                errorBanner.innerHTML = `
-                    <strong>⚠️ توجد أخطاء في النموذج:</strong><br>
-                    ${errors.join('<br>')}
-                `;
-                errorBanner.classList.add('show');
-                window.scrollTo(0, 0);
-                return;
-            }
-
-            const errorBanner = document.getElementById('errorBanner');
-            if(errorBanner) errorBanner.classList.remove('show');
-
-            // جمع كافة الحقول لتسهيل الإستعادة
-            const flatData = {};
-            document.querySelectorAll('input:not([type="file"]), select, textarea').forEach(field => {
-                if(field.id) flatData[field.id] = field.value;
-            });
-
-            // 2. البيانات المنظمة (Structured Data) لجداول الإحصائيات
-            flatData['structured_data'] = {
-                timestamp: new Date().toISOString(),
-                decisions: Array.from({length: 8}).map((_, idx) => {
-                    const id = idx + 1;
-                    return {
-                        id: id,
-                        number: document.getElementById('decision_number_' + id)?.value || '',
-                        authority: document.getElementById('decision_authority_' + id)?.value || '',
-                        date: document.getElementById('decision_date_' + id)?.value || ''
-                    };
-                }),
-                students: {
-                    past: Array.from(document.querySelectorAll('.student-input[class*="-past"]')).map(i => i.value),
-                    current: Array.from(document.querySelectorAll('.student-input[class*="-current"]')).map(i => i.value),
-                    next: Array.from(document.querySelectorAll('.student-input[class*="-next"]')).map(i => i.value)
-                },
-                staffCount: {
-                    males: document.getElementById('total-male')?.value || 0,
-                    females: document.getElementById('total-female')?.value || 0,
-                    teaching_load: document.getElementById('total-load')?.value || 0,
-                    parttime: document.getElementById('total-parttime')?.value || 0
-                },
-                staffDetails: Array.from(document.querySelectorAll('#staffTable tbody tr')).map(row => ({
-                    name: row.querySelector('.staff-name')?.value,
-                    degree: row.querySelector('.staff-degree')?.value,
-                    major: row.querySelector('.staff-major')?.value,
-                    minor: row.querySelector('.staff-minor')?.value,
-                    country: row.querySelector('.staff-country')?.value,
-                    year: row.querySelector('.staff-year')?.value
-                }))
-            };
-
-            const payload = new FormData();
-            payload.append('_token', '{{ csrf_token() }}');
-            // 3. مسارات الملفات للقرارات والمرفقات الجديدة
-            const decisionFilesPaths = {};
-            for (let i = 1; i <= 8; i++) {
-                const existingPath = document.getElementById('existing_file_path_' + i);
-                if (existingPath) {
-                    decisionFilesPaths[i] = existingPath.value;
-                }
-                const fileInput = document.getElementById('decision_file_' + i);
-                if (fileInput && fileInput.files.length > 0) {
-                    payload.append('decision_file_' + i, fileInput.files[0]);
-                }
-            }
-            flatData['decision_files_paths'] = decisionFilesPaths;
-
-            payload.append('json_data', JSON.stringify(flatData));
-
-            console.log('Sending payload:', flatData);
-            showNotification('⏳ جاري حفظ التغييرات في السيرفر...', 'info');
-
-            try {
-                const response = await fetch("{{ route('requests.stage_two.save', [$accreditationRequest, $formSubmission]) }}", {
-                    method: 'POST',
-                    body: payload,
-                    headers: { 'Accept': 'application/json' }
-                });
                 
-                const result = await response.json();
-                console.log('Server response:', result);
-                
-                if (result.success) {
-                    hasChanges = false;
-                    showNotification('✓ تم حفظ البيانات بنجاح!', 'success');
-                    
-                    setTimeout(() => {
-                        window.location.href = "{{ route('requests.stage', [$accreditationRequest, 'stage_two']) }}";
-                    }, 800);
-                } else {
-                    showNotification('حدث خطأ أثناء الحفظ: ' + (result.message || 'خطأ غير معروف'), 'error');
-                }
+                ['decisionsNotesContainer', 'studentsNotesContainer', 'facultyNotesContainer'].forEach(c => updateNoteNumbers(c));
+
+                this.hasChanges = false;
+                this.updateProgress();
+                showNotification('تم تحميل البيانات بنجاح', 'success');
             } catch (error) {
-                console.error('Fetch error:', error);
-                showNotification('فشل الاتصال بالسيرفر. تأكد من جودة الإنترنت.', 'error');
+                console.error('Load error:', error);
             }
-        }
+        },
 
-        // ==================== إدارة الملفات الموجودة ====================
-        function removeFile(id) {
-            if (!confirm('هل أنت متأكد من حذف هذا المرفق المسبق رفعِه؟')) return;
-            const container = document.getElementById('existing_file_div_' + id);
-            if (container) {
-                container.remove();
-            }
-            const fileInput = document.getElementById('decision_file_' + id);
-            if (fileInput) {
-                fileInput.style.display = 'block';
-                // Trigger visual update
-                hasChanges = true;
-                updateProgress();
-            }
-            showNotification('تم إزالة الملف (لن يتم الحذف نهائياً حتى يتم حفظ التغييرات)', 'info');
-        }
-
-        function resetForm() {
-            if (confirm('هل أنت متأكد من رغبتك في تفريغ جميع البيانات؟')) {
-                document.querySelectorAll('input:not([readonly]), select, textarea').forEach(field => {
-                    field.value = '';
-                });
-                localStorage.removeItem('programFormData');
-                calculateStudentStats(1);
-                calculateStudentStats(2);
-                calculateStudentStats(3);
-                calculateStudentStats(4);
-                calculateStudentStats(5);
-                calculateFacultyStats();
-                updateProgress();
-                showNotification('✓ تم تفريغ النموذج', 'success');
-            }
-        }
-
-        // ==================== التهيئة الأولية ====================
-        document.addEventListener('DOMContentLoaded', function () {
-            loadFormFromServer();
-
-            // تنبيه عند محاولة مغادرة الصفحة بوجود تغييرات غير محفوظة
-            window.addEventListener('beforeunload', function (e) {
-                if (hasChanges) {
-                    const message = "لديك تغييرات غير محفوظة، هل أنت متأكد من المغادرة؟";
-                    e.returnValue = message;
-                    return message;
+        // Initialize
+        init() {
+            this.loadFromServer();
+            
+            // Watch for changes to setup history trap
+            this.$watch('hasChanges', (isDirty) => {
+                if (isDirty) {
+                    history.pushState({ trap: true }, null, location.href);
                 }
             });
 
-            updateProgress();
-            
+            // Intercept browser back button
+            window.addEventListener('popstate', (e) => {
+                if (this.hasChanges && !this.showExitModal) {
+                    // Push state again to keep user on same page
+                    history.pushState({ trap: true }, null, location.href);
+                    this.showExitModal = true;
+                }
+            });
+
+            // Native browser trap for Refresh / Close Tab
+            window.addEventListener('beforeunload', (e) => {
+                if (this.hasChanges) { e.returnValue = 'لديك تغييرات غير محفوظة'; return e.returnValue; }
+            });
+
             @if(isset($readonly) && $readonly)
-                document.querySelectorAll('input, select, textarea, button').forEach(el => el.disabled = true);
-                document.querySelectorAll('.button-group').forEach(el => el.style.display = 'none');
+                this.$nextTick(() => {
+                    document.querySelectorAll('input, select, textarea, button:not([data-keep])').forEach(el => el.disabled = true);
+                    document.querySelectorAll('[data-action-area]').forEach(el => el.style.display = 'none');
+                });
             @endif
+        }
+    };
+}
+
+// ==================== Global Helper Functions ====================
+
+// Build staff row HTML
+function buildStaffRowHTML(id, data = {}) {
+    return `
+        <td class="px-4 py-3"><input type="text" value="${data.name || ''}" placeholder="أدخل الاسم" class="staff-name ${INPUT_CLASS}" @input="markChanged()"></td>
+        <td class="px-4 py-3">
+            <select class="staff-degree ${SELECT_CLASS}" @input="markChanged()">
+                <option value="">اختر الدرجة...</option>
+                <option value="prof" ${data.degree === 'prof' ? 'selected' : ''}>أستاذ</option>
+                <option value="assoc" ${data.degree === 'assoc' ? 'selected' : ''}>أستاذ مشارك</option>
+                <option value="assist" ${data.degree === 'assist' ? 'selected' : ''}>أستاذ مساعد</option>
+                <option value="lecturer" ${data.degree === 'lecturer' ? 'selected' : ''}>مدرس</option>
+                <option value="ta" ${data.degree === 'ta' ? 'selected' : ''}>معيد</option>
+            </select>
+        </td>
+        <td class="px-4 py-3"><input type="text" value="${data.major || ''}" placeholder="التخصص العام" class="staff-major ${INPUT_CLASS}" @input="markChanged()"></td>
+        <td class="px-4 py-3"><input type="text" value="${data.minor || ''}" placeholder="التخصص الدقيق" class="staff-minor ${INPUT_CLASS}" @input="markChanged()"></td>
+        <td class="px-4 py-3"><input type="text" value="${data.country || ''}" placeholder="بلد التخرج" class="staff-country ${INPUT_CLASS}" @input="markChanged()"></td>
+        <td class="px-4 py-3"><input type="number" value="${data.year || ''}" min="1900" max="2100" placeholder="سنة" class="staff-year ${INPUT_CLASS}" @input="markChanged()"></td>
+        <td class="px-4 py-3 text-center" data-action-area>
+            <button type="button" onclick="deleteStaffRow(this)" data-action-area class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20 text-xs font-bold transition-colors cursor-pointer"><i class="fa-solid fa-trash-can"></i> حذف</button>
+        </td>`;
+}
+
+// Add staff row
+function addStaffRow() {
+    const tbody = document.getElementById('staffTableBody');
+    const newId = Math.max(...Array.from(tbody.querySelectorAll('tr[data-staff-id]')).map(tr => parseInt(tr.dataset.staffId) || 0), 0) + 1;
+    const tr = document.createElement('tr');
+    tr.dataset.staffId = newId;
+    tr.className = 'hover:bg-(--bg-main)/50 transition-colors';
+    tr.innerHTML = buildStaffRowHTML(newId);
+    tbody.appendChild(tr);
+    showNotification('تم إضافة صف جديد', 'success');
+}
+
+// Delete staff row
+function deleteStaffRow(btn) {
+    const tbody = document.getElementById('staffTableBody');
+    if (tbody.querySelectorAll('tr').length === 1) { showNotification('يجب الاحتفاظ بصف واحد على الأقل', 'error'); return; }
+    btn.closest('tr').remove();
+    showNotification('تم حذف الصف', 'success');
+}
+
+// Build note row element
+function buildNoteRowElement(group, num, value = '') {
+    const div = document.createElement('div');
+    div.className = 'flex items-center gap-2 note-row';
+    div.innerHTML = `
+        <span class="w-7 h-7 rounded-full bg-(--bg-main) border border-(--border-primary) flex items-center justify-center text-xs font-bold text-(--text-secondary) shrink-0 row-number">${num}</span>
+        <input type="text" data-note-group="${group}" value="${value}" placeholder="أدخل الملاحظة" class="flex-1 bg-(--bg-main) border border-(--border-primary) text-(--text-primary) text-sm rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500/40 transition-all placeholder:text-(--text-secondary)/50" @input="markChanged()">
+        <button type="button" onclick="deleteNoteRow(this, '${group}NotesContainer')" data-action-area class="w-8 h-8 flex items-center justify-center rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors cursor-pointer shrink-0"><i class="fa-solid fa-trash-can text-xs"></i></button>`;
+    return div;
+}
+
+// Add note row
+function addNoteRow(containerId, group) {
+    const container = document.getElementById(containerId);
+    const placeholder = container.querySelector('.no-notes-placeholder');
+    if (placeholder) placeholder.remove();
+    
+    const num = container.querySelectorAll('.note-row').length + 1;
+    container.appendChild(buildNoteRowElement(group, num));
+    updateNoteNumbers(containerId);
+}
+
+// Delete note row
+function deleteNoteRow(btn, containerId) {
+    const container = document.getElementById(containerId);
+    btn.closest('.note-row').remove();
+    updateNoteNumbers(containerId);
+    
+    // If no notes left, you might want to show a placeholder or just leave it empty.
+    // The user can always add one back via the "Add Note" button.
+}
+
+// Update note row numbers
+function updateNoteNumbers(containerId) {
+    const container = document.getElementById(containerId);
+    const rows = container.querySelectorAll('.note-row');
+    
+    if (rows.length === 0) {
+        container.innerHTML = `<div class="no-notes-placeholder text-sm text-(--text-secondary) italic px-4 py-3 bg-(--bg-main) rounded-lg border border-dashed border-(--border-primary) text-center"><i class="fa-solid fa-circle-info me-1"></i> لا توجد ملاحظات</div>`;
+    } else {
+        const placeholder = container.querySelector('.no-notes-placeholder');
+        if (placeholder) placeholder.remove();
+        
+        rows.forEach((row, idx) => {
+            const num = row.querySelector('.row-number');
+            if (num) num.textContent = idx + 1;
         });
-
-        // استدعاء الحسابات عند التحميل
-        window.addEventListener('load', function () {
-            calculateStudentStats(1);
-            calculateStudentStats(2);
-            calculateStudentStats(3);
-            calculateStudentStats(4);
-            calculateStudentStats(5);
-            calculateFacultyStats();
-        });
-
-
-
-
-        // ==================== إدارة جداول الملاحظات ====================
-
-function addNoteRow(tableId, prefix) {
-
-const table = document.getElementById(tableId).querySelector("tbody");
-const rowCount = table.rows.length + 1;
-
-const row = document.createElement("tr");
-
-row.innerHTML = `
-<td class="row-number">${rowCount}</td>
-
-<td>
-<input type="text" id="${prefix}_${rowCount}" placeholder="أدخل الملاحظة">
-</td>
-
-<td>
-<button class="btn btn-danger" onclick="deleteNoteRow(this,'${tableId}')">
-حذف
-</button>
-</td>
-`;
-
-table.appendChild(row);
-hasChanges = true;
-updateNoteNumbers(tableId);
-updateProgress();
-
-}
-
-function deleteNoteRow(button, tableId) {
-
-const table = document.getElementById(tableId).querySelector("tbody");
-
-if (table.rows.length === 1) {
-showNotification('يجب الاحتفاظ بملاحظة واحدة على الأقل', 'error');
-return;
-}
-
-button.closest("tr").remove();
-hasChanges = true;
-updateNoteNumbers(tableId);
-
-updateProgress();
-
-}
-
-function updateNoteNumbers(tableId){
-
-const rows = document.querySelectorAll(`#${tableId} tbody tr`);
-
-rows.forEach((row,index)=>{
-
-row.querySelector(".row-number").textContent = index + 1;
-
-const input = row.querySelector("input");
-
-if(input && input.id){
-    const parts = input.id.split("_");
-    if(parts.length >= 3) {
-        input.id = parts[0] + "_" + parts[1] + "_" + (index+1);
     }
 }
 
-});
+// Handle local file selection preview and async upload
+async function handleFileSelect(event, id) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    if (file.type !== 'application/pdf') {
+        showNotification('يجب اختيار ملف PDF', 'error');
+        event.target.value = '';
+        return;
+    }
+    
+    event.target.disabled = true;
+    showNotification('جاري رفع الملف في الخلفية...', 'info');
+    
+    const formData = new FormData();
+    formData.append('_token', document.querySelector('meta[name="csrf-token"]').content);
+    formData.append('file', file);
+    
+    const url = "{{ route('requests.stage_two.upload_file', ['accreditationRequest' => $accreditationRequest->id, 'formSubmission' => $formSubmission->id, 'decisionIndex' => ':id']) }}".replace(':id', id);
+    
+    try {
+        const response = await fetch(url, { method: 'POST', body: formData, headers: {'Accept': 'application/json'} });
+        const result = await response.json();
+        
+        if (result.success) {
+            // Hide file input, show preview div
+            event.target.classList.remove('block');
+            event.target.classList.add('hidden');
+            event.target.disabled = false;
+            
+            const previewDiv = document.getElementById('file_preview_' + id);
+            if(previewDiv) {
+                previewDiv.classList.remove('hidden');
+                previewDiv.classList.add('flex');
+            }
+            
+            // Generate Local Blob URL
+            const blobUrl = URL.createObjectURL(file);
+            
+            // Update URL to blob
+            const viewBtn = document.getElementById('file_view_btn_' + id);
+            if(viewBtn) {
+                if (viewBtn.href && viewBtn.href.startsWith('blob:')) {
+                    URL.revokeObjectURL(viewBtn.href); // Clean previous blob
+                }
+                viewBtn.href = blobUrl;
+            }
 
+            // Set existing path to maintain compatibility with save function
+            const existingPathInput = document.getElementById('existing_file_path_' + id);
+            if (existingPathInput) {
+                existingPathInput.value = result.path;
+            } else {
+                const hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.id = 'existing_file_path_' + id;
+                hiddenInput.value = result.path;
+                if(previewDiv) previewDiv.appendChild(hiddenInput);
+            }
+            
+            // Trigger Alpine change detection safely
+            if (typeof stageTwoApp === 'function') {
+                const component = document.querySelector('[x-data]');
+                if (component && component.__x) {
+                    component.__x.$data.hasChanges = true;
+                }
+            }
+            
+            showNotification('تم الرفع للذاكرة المؤقتة!', 'success');
+        } else {
+            showNotification(result.message || 'حدث خطأ أثناء الرفع', 'error');
+            event.target.value = '';
+            event.target.disabled = false;
+        }
+    } catch(e) {
+        showNotification('فشل الاتصال بالخادم', 'error');
+        event.target.value = '';
+        event.target.disabled = false;
+    }
 }
-    </script>
-    <script>(function () { function c() { var b = a.contentDocument || a.contentWindow.document; if (b) { var d = b.createElement('script'); d.innerHTML = "window.__CF$cv$params={r:'9d4bd01757b7738b',t:'MTc3MjIzODYyMS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);"; b.getElementsByTagName('head')[0].appendChild(d) } } if (document.body) { var a = document.createElement('iframe'); a.height = 1; a.width = 1; a.style.position = 'absolute'; a.style.top = 0; a.style.left = 0; a.style.border = 'none'; a.style.visibility = 'hidden'; document.body.appendChild(a); if ('loading' !== document.readyState) c(); else if (window.addEventListener) document.addEventListener('DOMContentLoaded', c); else { var e = document.onreadystatechange || function () { }; document.onreadystatechange = function (b) { e(b); 'loading' !== document.readyState && (document.onreadystatechange = e, c()) } } } })();</script>
-</body>
 
+// Remove uploaded file from UI (Actual deletion happens on Save Draft)
+function removeFileLogic(id) {
+    
+    const existingPath = document.getElementById('existing_file_path_' + id);
+    if (existingPath) {
+        existingPath.remove();
+    }
+    
+    // Clear the file input
+    const fileInput = document.getElementById('decision_file_' + id);
+    if (fileInput) { 
+        fileInput.value = ''; 
+        fileInput.classList.remove('hidden'); 
+        fileInput.classList.add('block');
+        fileInput.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+    
+    // Hide preview div
+    const previewDiv = document.getElementById('file_preview_' + id);
+    if (previewDiv) {
+        previewDiv.classList.remove('flex');
+        previewDiv.classList.add('hidden');
+    }
+    
+    // Clean up local blob
+    const viewBtn = document.getElementById('file_view_btn_' + id);
+    if (viewBtn && viewBtn.href.startsWith('blob:')) {
+        URL.revokeObjectURL(viewBtn.href);
+        viewBtn.href = '#';
+    }
+    
+    // Mark changes as dirty to trigger Exit modal
+    if (typeof stageTwoApp === 'function') {
+        const component = document.querySelector('[x-data]');
+        if (component && component.__x) {
+            component.__x.$data.hasChanges = true;
+        }
+    }
+    
+    showNotification('تم إزالة الملف محلياً وسيتم التطبيق فور الحفظ.', 'info');
+}
+
+// Show notification toast
+function showNotification(message, type = 'info') {
+    const colors = {
+        success: 'bg-green-600', error: 'bg-red-600', info: 'bg-brand-600'
+    };
+    const area = document.getElementById('notificationArea');
+    const el = document.createElement('div');
+    el.className = `${colors[type] || colors.info} text-white px-5 py-3 rounded-xl shadow-lg text-sm font-bold flex items-center gap-2 animate-[slideIn_0.3s_ease-out]`;
+    const icons = { success: 'fa-circle-check', error: 'fa-circle-xmark', info: 'fa-circle-info' };
+    el.innerHTML = `<i class="fa-solid ${icons[type] || icons.info}"></i> ${message}`;
+    area.appendChild(el);
+    setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity 0.3s'; setTimeout(() => el.remove(), 300); }, 3000);
+}
+</script>
+
+<style>
+@keyframes slideIn { from { transform: translateX(-20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+</style>
+</body>
 </html>
