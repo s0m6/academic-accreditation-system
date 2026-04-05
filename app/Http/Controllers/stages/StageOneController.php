@@ -3,7 +3,9 @@
 /**
  * Controller for handling Accreditation Stage One (Initial Request).
  */
+
 namespace App\Http\Controllers\stages;
+
 use App\Http\Controllers\Controller;
 use App\Mail\ProgramCoordinatorCreated;
 use App\Models\AccreditationRequest;
@@ -32,7 +34,17 @@ class StageOneController extends Controller
             'coord_name' => 'required|string|max:255',
             'coord_phone' => 'nullable|string|max:30',
             'coord_mobile' => 'nullable|string|max:30',
-            'coord_email' => 'required|email|max:255|unique:users,email',
+            'coord_email' => [
+                'required',
+                'email',
+                'max:255',
+                function ($attribute, $value, $fail) {
+                    $user = User::where('email', $value)->first();
+                    if ($user && $user->role !== 'program_coordinator') {
+                        $fail('البريد الإلكتروني مستخدم بالفعل لنوع حساب آخر.');
+                    }
+                },
+            ],
         ]);
 
         $accreditationRequest->load('program.department.college.university');
@@ -207,8 +219,12 @@ class StageOneController extends Controller
             'current_stage' => 'stage_two',
         ]);
 
+        $message = $existingCoord
+            ? 'تمت الموافقة على الطلب وإسناده للمنسق الحالي.'
+            : 'تمت الموافقة على الطلب وتم إنشاء حساب منسق البرنامج وإرسال بريد التفعيل.';
+
         return redirect()->route('requests.stage', [$accreditationRequest, 'stage_one'])
-            ->with('success', 'تمت الموافقة على الطلب وتم إنشاء حساب منسق البرنامج وإرسال بريد التفعيل.');
+            ->with('success', $message);
     }
 
     // ─── Helpers ──────────────────────────────────────────────────────────────

@@ -40,7 +40,7 @@ class StageTwoController extends Controller
             ->where('stage', 'stage_two')
             ->where('status', 'draft')
             ->exists();
-            
+
         if ($draftExists) {
             return back()->with('error', 'يوجد مسودة بالفعل يمكنك تعديلها.');
         }
@@ -67,17 +67,17 @@ class StageTwoController extends Controller
     public function edit(Request $request, AccreditationRequest $accreditationRequest, FormSubmission $formSubmission)
     {
         $this->ensureAuthorized($request, $accreditationRequest, $formSubmission);
-        
+
         $readonly = false;
-        
+
         // If not a draft, or not the coordinator, make it readonly
         if ($formSubmission->status !== 'draft' || $request->user()->role !== 'program_coordinator') {
             $readonly = true;
         }
-
+        return $formSubmission;
         return view('requests.stageTwoForm', compact('accreditationRequest', 'formSubmission', 'readonly'));
     }
-    
+
     /**
      * Show the stage two data (view only).
      */
@@ -85,6 +85,7 @@ class StageTwoController extends Controller
     {
         $this->ensureAuthorized($request, $accreditationRequest, $formSubmission);
         $readonly = true;
+
         return view('requests.stageTwoForm', compact('accreditationRequest', 'formSubmission', 'readonly'));
     }
 
@@ -108,7 +109,7 @@ class StageTwoController extends Controller
 
         // Extract JSON data
         $jsonData = json_decode($request->input('json_data', '{}'), true);
-        
+
         $existingPaths = $jsonData['decision_files_paths'] ?? [];
 
         // Handle files handling up to 8 decision files.
@@ -119,24 +120,24 @@ class StageTwoController extends Controller
             if ($request->hasFile($fileKey)) {
                 $file = $request->file($fileKey);
                 $path = $file->storeAs(
-                    "req_{$accreditationRequest->id}/stage_two_decisions", 
-                    $fileKey . '_' . time() . '.' . $file->getClientOriginalExtension(),
+                    "req_{$accreditationRequest->id}/stage_two_decisions",
+                    $fileKey.'_'.time().'.'.$file->getClientOriginalExtension(),
                     'local'
                 );
-                
+
                 // If there was an old file, delete it from storage
                 if ($oldPath && Storage::exists($oldPath)) {
                     Storage::delete($oldPath);
                 }
 
                 // Modify the JSON data to point to the new file
-                if (!isset($jsonData['decision_files'])) {
+                if (! isset($jsonData['decision_files'])) {
                     $jsonData['decision_files'] = [];
                 }
                 $jsonData['decision_files'][$i] = $path;
-            } else if (!empty($existingPaths[$i])) {
+            } elseif (! empty($existingPaths[$i])) {
                 // keep the old file mapping if it was not deleted
-                if (!isset($jsonData['decision_files'])) {
+                if (! isset($jsonData['decision_files'])) {
                     $jsonData['decision_files'] = [];
                 }
                 $jsonData['decision_files'][$i] = $existingPaths[$i];
@@ -150,11 +151,11 @@ class StageTwoController extends Controller
                 }
             }
         }
-        
+
         unset($jsonData['decision_files_paths']); // Remove temp payload key
-        
+
         $formSubmission->update([
-            'form_data' => $jsonData
+            'form_data' => $jsonData,
         ]);
 
         return response()->json(['success' => true, 'message' => 'Data saved successfully']);
@@ -193,13 +194,13 @@ class StageTwoController extends Controller
 
         $path = $formSubmission->form_data['decision_files'][$decisionIndex] ?? null;
 
-        if (!$path) {
+        if (! $path) {
             abort(404, 'لم يتم العثور على رابط للملف.');
         }
 
         // Backward compatibility: check if it exists in local disk, else check public disk
         $disk = 'local';
-        if (!Storage::exists($path)) {
+        if (! Storage::exists($path)) {
             if (Storage::disk('public')->exists($path)) {
                 $disk = 'public';
             } else {
@@ -209,11 +210,62 @@ class StageTwoController extends Controller
 
         // Return the file inline so it displays in the browser instead of downloading directly
         $fullPath = Storage::disk($disk)->path($path);
-        
+
         return response()->file($fullPath, [
             'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'inline; filename="attachment.pdf"'
+            'Content-Disposition' => 'inline; filename="attachment.pdf"',
         ]);
+    }
+
+    /**
+     * Reject the stage two submission with reasons.
+     */
+    public function reject(Request $request, AccreditationRequest $accreditationRequest, FormSubmission $formSubmission)
+    {
+        $user = $request->user();
+        if ($user->role !== 'council_secretariat') {
+            abort(403);
+        }
+        $this->ensureAuthorized($request, $accreditationRequest, $formSubmission);
+
+        $validated = $request->validate([
+            'reasons' => 'required|array|min:1',
+            'reasons.*' => 'required|string|max:500',
+        ]);
+
+        $formSubmission->update([
+            'status' => 'rejected',
+            'decision_reasons' => $validated['reasons'],
+            'decided_by' => $user->id,
+            'decision_at' => Carbon::now(),
+        ]);
+
+        return back()->with('success', 'تم رفض نموذج البيانات الأساسية وإعادته للمنسق للتعديل.');
+    }
+
+    /**
+     * Approve the stage two submission and advance to stage three.
+     */
+    public function approve(Request $request, AccreditationRequest $accreditationRequest, FormSubmission $formSubmission)
+    {
+        $user = $request->user();
+        if ($user->role !== 'council_secretariat') {
+            abort(403);
+        }
+        $this->ensureAuthorized($request, $accreditationRequest, $formSubmission);
+
+        $formSubmission->update([
+            'status' => 'approved',
+            'decided_by' => $user->id,
+            'decision_at' => Carbon::now(),
+        ]);
+
+        // Advance the request to stage three
+        $accreditationRequest->update([
+            'current_stage' => 'stage_three',
+        ]);
+
+        return back()->with('success', 'تمت الموافقة على البيانات الأساسية، والطلب الآن في مرحلة تقرير الدراسة الذاتية.');
     }
 
     /**

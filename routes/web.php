@@ -69,4 +69,8 @@ Route::middleware('auth')->group(function () {
         ->name('requests.stage_two.download_file');
     Route::patch('/requests/{accreditationRequest}/stage-two/{formSubmission}/submit', [StageTwoController::class, 'submit'])
         ->name('requests.stage_two.submit');
+    Route::patch('/requests/{accreditationRequest}/stage-two/{formSubmission}/reject', [StageTwoController::class, 'reject'])
+        ->name('requests.stage_two.reject');
+    Route::patch('/requests/{accreditationRequest}/stage-two/{formSubmission}/approve', [StageTwoController::class, 'approve'])
+        ->name('requests.stage_two.approve');
 });
