@@ -7,11 +7,11 @@
   <title>نظام الدراسة الذاتية للبرنامج</title>
 
 
-    {{-- Font Awesome 6.4.0 --}}
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  {{-- Font Awesome 6.4.0 --}}
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
-    {{-- Vite-compiled assets (Tailwind v4 + FlyonUI) --}}
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+  {{-- Vite-compiled assets (Tailwind v4 + FlyonUI) --}}
+  @vite(['resources/css/app.css', 'resources/js/app.js'])
 
   <style>
     body {
@@ -215,16 +215,17 @@
     .indicator-row:hover {
       background: rgba(71, 85, 105, 0.3);
     }
- 
   </style>
 
 
 </head>
 
 <body class="h-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 italic-arabic">
-  <div id="app" class="flex h-full"><!-- Sidebar -->
-    <aside id="sidebar" class="w-72 bg-white dark:bg-slate-900 h-full flex flex-col fixed right-0 top-0 shadow-xl z-50 border-l border-slate-200 dark:border-slate-800">
-      <!-- Logo Section -->
+  <div id="app" class="flex h-full">
+    {{--! Sidebar --}}
+    <aside id="sidebar"
+      class="w-72 bg-white dark:bg-slate-900 h-full flex flex-col fixed right-0 top-0 shadow-xl z-50 border-l border-slate-200 dark:border-slate-800">
+      {{-- Logo Section --}}
       <div class="p-6 border-b border-slate-100 dark:border-slate-800">
         <div class="flex items-center gap-3">
           <div
@@ -240,17 +241,19 @@
           </div>
         </div>
         <div class="mt-4 flex justify-center">
-            <button onclick="toggleDarkMode()" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all flex items-center gap-2 text-sm font-medium border border-slate-200 dark:border-slate-700">
-                <i class="fas fa-moon dark:hidden"></i>
-                <i class="fas fa-sun hidden dark:block"></i>
-                <span class="dark:hidden">الوضع الليلي</span>
-                <span class="hidden dark:inline">الوضع النهاري</span>
-            </button>
+          <button onclick="toggleDarkMode()"
+            class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all flex items-center gap-2 text-sm font-medium border border-slate-200 dark:border-slate-700">
+            <i class="fas fa-moon dark:hidden"></i>
+            <i class="fas fa-sun hidden dark:block"></i>
+            <span class="dark:hidden">الوضع الليلي</span>
+            <span class="hidden dark:inline">الوضع النهاري</span>
+          </button>
         </div>
-      </div><!-- Progress Overview -->
+      </div>{{-- Progress Overview --}}
       <div class="p-4 border-b border-slate-100 dark:border-slate-800">
         <div class="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4 border border-slate-100 dark:border-slate-800">
-          <div class="flex items-center justify-between mb-3"><span class="text-sm text-slate-600 dark:text-slate-400">نسبة الإنجاز</span>
+          <div class="flex items-center justify-between mb-3"><span
+              class="text-sm text-slate-600 dark:text-slate-400">نسبة الإنجاز</span>
             <span id="progress-percent" class="text-lg font-bold text-blue-600 dark:text-blue-400">0%</span>
           </div>
           <div class="h-2 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
@@ -259,19 +262,24 @@
               style="width: 0%"></div>
           </div>
         </div>
-      </div><!-- Navigation -->
+      </div>
+      {{-- Navigation --}}
       <nav class="flex-1 py-4 overflow-y-auto custom-scrollbar">
-        <div class="px-3 mb-2"><span class="text-xs text-slate-500 font-medium px-3">أقسام التقرير</span>
-        </div><button onclick="switchSection(1)" id="nav-1"
+        <div class="px-3 mb-2"><span class="text-xs text-slate-500 font-medium px-3">أقسام الدراسة الذاتية</span>
+        </div>
+        {{-- Part 1 --}}
+        <button onclick="switchSection(1)" id="nav-1"
           class="sidebar-item active w-full text-right px-6 py-4 flex items-center gap-4 hover:bg-slate-700/50">
           <div class="w-10 h-10 bg-blue-500/20 rounded-xl flex items-center justify-center"><span
               class="text-blue-400 font-bold">١</span>
           </div>
           <div class="flex-1"><span class="block font-medium text-white">الجزء الأول</span> <span
-              class="text-xs text-slate-400">الدراسة الذاتية</span>
+              class="text-xs text-slate-400">بيانات البرنامج</span>
           </div>
           <div id="status-1" class="w-3 h-3 rounded-full bg-yellow-500"></div>
-        </button> <!-- Part 2 --> <button onclick="switchSection(2); switchStandardTab(1)" id="nav-2"
+        </button>
+        {{-- Part 2 --}}
+        <button onclick="switchSection(2); switchStandardTab(1)" id="nav-2"
           class="sidebar-item w-full text-right px-6 py-4 flex items-center gap-4 hover:bg-slate-700/50">
           <div class="w-10 h-10 bg-emerald-500/20 rounded-xl flex items-center justify-center"><span
               class="text-emerald-400 font-bold">٢</span>
@@ -279,29 +287,41 @@
           <div class="flex-1"><span class="block font-medium text-white">الجزء الثاني</span> <span
               class="text-xs text-slate-400">التقييم وفق المعايير</span>
           </div>
-        </button><button onclick="switchSection(3)" id="nav-3"
+        </button>
+        {{-- Part 3 --}}
+        <button onclick="switchSection(3)" id="nav-3"
           class="sidebar-item w-full text-right px-6 py-4 flex items-center gap-4 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all group">
-          <div class="w-10 h-10 bg-purple-50 dark:bg-purple-500/10 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform"><span
-              class="text-purple-600 dark:text-purple-400 font-bold">٣</span>
+          <div
+            class="w-10 h-10 bg-purple-50 dark:bg-purple-500/10 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+            <span class="text-purple-600 dark:text-purple-400 font-bold">٣</span>
           </div>
-          <div class="flex-1 text-slate-700 dark:text-slate-300 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors"><span class="block font-medium">الجزء الثالث</span> <span
-              class="text-xs text-slate-400">التقييمات والنتائج</span>
+          <div
+            class="flex-1 text-slate-700 dark:text-slate-300 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+            <span class="block font-medium">الجزء الثالث</span> <span class="text-xs text-slate-400">التقييمات
+              والنتائج</span>
           </div>
           <div id="status-3" class="w-2.5 h-2.5 rounded-full bg-slate-300 dark:bg-slate-700"></div>
         </button>
-      </nav><!-- Submit Button -->
-    
-    </aside><!-- Main Content -->
-    <main class="flex-1 mr-72 h-full overflow-y-auto custom-scrollbar bg-slate-900"><!-- Section 1: Self Study -->
-      <div id="section-1" class="section-content p-8 fade-in"><!-- Header -->
+      </nav>
+
+    </aside>
+    {{--! Main Content --}}
+    <main class="flex-1 mr-72 h-full overflow-y-auto custom-scrollbar bg-slate-900">
+      {{--? Section 1: program data --}}
+      <div id="section-1" class="section-content p-8 fade-in">
+        {{--! Header --}}
         <div class="mb-8">
           <div class="flex items-center gap-3 mb-2">
             <div class="w-2 h-8 bg-blue-500 rounded-full"></div>
             <h2 class="text-2xl font-bold text-slate-800 dark:text-white">الجزء الأول: الدراسة الذاتية</h2>
           </div>
-          <p class="text-slate-500 dark:text-slate-400 mr-5 font-medium">إدخال وتحرير كافة بيانات الدراسة الذاتية للبرنامج</p>
-        </div><!-- Tabs Navigation -->
-        <div class="bg-white dark:bg-slate-800 p-1.5 rounded-2xl mb-8 flex flex-wrap gap-1.5 shadow-sm border border-slate-100 dark:border-slate-700/50"><button onclick="switchTab('general')"
+          <p class="text-slate-500 dark:text-slate-400 mr-5 font-medium">إدخال وتحرير كافة بيانات الدراسة الذاتية
+            للبرنامج</p>
+        </div>
+        {{--! Tabs Navigation --}}
+        <div
+          class="bg-white dark:bg-slate-800 p-1.5 rounded-2xl mb-8 flex flex-wrap gap-1.5 shadow-sm border border-slate-100 dark:border-slate-700/50">
+          <button onclick="switchTab('general')"
             class="tab-btn active px-6 py-2.5 rounded-xl text-sm font-semibold transition-all bg-blue-600 text-white shadow-md shadow-blue-500/20"
             data-tab="general"> معلومات عامة </button> <button onclick="switchTab('program')"
             class="tab-btn px-6 py-2.5 rounded-xl text-sm font-semibold transition-all text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50"
@@ -310,7 +330,8 @@
             data-tab="profile"> ملف البرنامج </button> <button onclick="switchTab('tables')"
             class="tab-btn px-6 py-2.5 rounded-xl text-sm font-semibold transition-all text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50"
             data-tab="tables"> الجداول والبيانات </button>
-        </div><!-- Tab Contents -->
+        </div>
+        {{--! Tab Contents --}}
         <div id="tab-general" class="tab-content">
           <div class="bg-slate-800 rounded-2xl p-6 shadow-xl">
             <h3 class="text-lg font-bold text-white mb-6 flex items-center gap-2">
@@ -319,7 +340,7 @@
                   d="M13 16h-1v-4h-1m1-4h.01M21 12a. 0z" />
               </svg> المعلومات العامة
             </h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6"><!-- Auto Fields -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">{{--! Auto Fields --}}
               <div><label class="block text-sm text-slate-400 mb-2">اسم المؤسسة / الجامعة</label> <input type="text"
                   value="جامعة الملك سعود" disabled class="w-full px-4 py-3 rounded-xl opacity-60 cursor-not-allowed">
               </div>
@@ -336,7 +357,7 @@
                     class="text-red-400">*</span></label> <input type="date" id="review_date"
                   class="w-full px-4 py-3 rounded-xl" onchange="saveField('general', 'review_date', this.value)">
               </div>
-            </div><!-- Long Text -->
+            </div>
           </div>
         </div>
         <div id="tab-program" class="tab-content hidden">
@@ -346,7 +367,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
               </svg> البيانات التعريفية بالبرنامج
-            </h3><!-- Auto-filled Institution Info -->
+            </h3>{{--! Auto-filled Institution Info --}}
             <div class="bg-slate-700/50 rounded-xl p-5 mb-6">
               <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-6">
                 <div><span class="text-xs text-slate-400 block mb-1">الجامعة</span> <span
@@ -381,24 +402,35 @@
               <div>
                 <h4 class="text-md font-bold text-white mb-4 flex items-center gap-2">
                   <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg> بيانات منسق إعداد التقرير
                 </h4>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div><label class="block text-sm text-slate-400 mb-2">الاسم</label>
-                    <input type="text" id="coordinator_name" placeholder="أدخل اسم المنسق" class="w-full px-4 py-3 rounded-xl" onchange="saveField('program', 'coordinator_name', this.value)">
+                    <input type="text" id="coordinator_name" placeholder="أدخل اسم المنسق"
+                      class="w-full px-4 py-3 rounded-xl"
+                      onchange="saveField('program', 'coordinator_name', this.value)">
                   </div>
                   <div><label class="block text-sm text-slate-400 mb-2">الصفة</label>
-                    <input type="text" id="coordinator_title" placeholder="الصفة الوظيفية" class="w-full px-4 py-3 rounded-xl" onchange="saveField('program', 'coordinator_title', this.value)">
+                    <input type="text" id="coordinator_title" placeholder="الصفة الوظيفية"
+                      class="w-full px-4 py-3 rounded-xl"
+                      onchange="saveField('program', 'coordinator_title', this.value)">
                   </div>
                   <div><label class="block text-sm text-slate-400 mb-2">البريد الإلكتروني</label>
-                    <input type="email" id="coordinator_email" placeholder="example@ksu.edu.sa" class="w-full px-4 py-3 rounded-xl text-right" dir="ltr" onchange="saveField('program', 'coordinator_email', this.value)">
+                    <input type="email" id="coordinator_email" placeholder="example@ksu.edu.sa"
+                      class="w-full px-4 py-3 rounded-xl text-right" dir="ltr"
+                      onchange="saveField('program', 'coordinator_email', this.value)">
                   </div>
                   <div><label class="block text-sm text-slate-400 mb-2">رقم الهاتف</label>
-                    <input type="tel" id="coordinator_phone" placeholder="05xxxxxxxx" class="w-full px-4 py-3 rounded-xl text-right" dir="ltr" onchange="saveField('program', 'coordinator_phone', this.value)">
+                    <input type="tel" id="coordinator_phone" placeholder="05xxxxxxxx"
+                      class="w-full px-4 py-3 rounded-xl text-right" dir="ltr"
+                      onchange="saveField('program', 'coordinator_phone', this.value)">
                   </div>
-                  <div class="md:col-span-2"><label class="block text-sm text-slate-400 mb-2">تاريخ إعداد التقرير</label>
-                    <input type="date" id="report_date" class="w-full px-4 py-3 rounded-xl" onchange="saveField('program', 'report_date', this.value)">
+                  <div class="md:col-span-2"><label class="block text-sm text-slate-400 mb-2">تاريخ إعداد
+                      التقرير</label>
+                    <input type="date" id="report_date" class="w-full px-4 py-3 rounded-xl"
+                      onchange="saveField('program', 'report_date', this.value)">
                   </div>
                 </div>
               </div>
@@ -414,136 +446,162 @@
               </svg> ملف البرنامج
             </h3>
             <div class="space-y-6">
-            <div class="space-y-8">
-              <div><label class="block text-sm text-slate-400 mb-2">رسالة البرنامج <span
-                    class="text-red-400">*</span></label> <textarea id="program_mission" rows="4"
-                  placeholder="اكتب رسالة البرنامج بوضوح..." class="w-full px-4 py-3 rounded-xl resize-none"
-                  onchange="saveField('profile', 'program_mission', this.value)"></textarea>
-              </div>
+              <div class="space-y-8">
+                <div><label class="block text-sm text-slate-400 mb-2">رسالة البرنامج <span
+                      class="text-red-400">*</span></label> <textarea id="program_mission" rows="4"
+                    placeholder="اكتب رسالة البرنامج بوضوح..." class="w-full px-4 py-3 rounded-xl resize-none"
+                    onchange="saveField('profile', 'program_mission', this.value)"></textarea>
+                </div>
 
-              <!-- Dynamic Objectives -->
-              <div class="pt-6 border-t border-slate-700">
-                <div class="flex items-center justify-between mb-4">
-                  <h4 class="text-md font-bold text-white flex items-center gap-2">
-                    <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                    </svg> أهداف البرنامج (على شكل نقاط) <span class="text-red-400">*</span>
+                {{--! Dynamic Objectives --}}
+                <div class="pt-6 border-t border-slate-700">
+                  <div class="flex items-center justify-between mb-4">
+                    <h4 class="text-md font-bold text-white flex items-center gap-2">
+                      <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                      </svg> أهداف البرنامج (على شكل نقاط) <span class="text-red-400">*</span>
+                    </h4>
+                    <button onclick="addObjective()"
+                      class="text-blue-400 text-sm flex items-center gap-1 hover:text-blue-300">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                      </svg> إضافة هدف
+                    </button>
+                  </div>
+                  <div id="objectives-list-container" class="space-y-3 mb-4">
+                    {{--! Objectives inputs will be rendered here dynamically --}}
+                  </div>
+                </div>
+
+                {{--! Program System Details --}}
+                <div class="pt-6 border-t border-slate-700">
+                  <h4 class="text-md font-bold text-white mb-4 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                    </svg> نظام البرنامج وساعاته ومقرراته
                   </h4>
-                  <button onclick="addObjective()" class="text-blue-400 text-sm flex items-center gap-1 hover:text-blue-300">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                    </svg> إضافة هدف
-                  </button>
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div><label class="block text-sm text-slate-400 mb-2">نظام البرنامج</label>
+                      <select id="program_system" class="w-full px-4 py-3 rounded-xl"
+                        onchange="saveField('profile', 'program_system', this.value)">
+                        <option value="semester">نظام فصلي</option>
+                        <option value="annual">نظام سنوي</option>
+                        <option value="modules">نظام وحدات</option>
+                      </select>
+                    </div>
+                    <div><label class="block text-sm text-slate-400 mb-2">عدد الساعات المعتمدة للبرنامج</label>
+                      <input type="number" id="credit_hours" placeholder="0" class="w-full px-4 py-3 rounded-xl"
+                        onchange="saveField('profile', 'credit_hours', this.value)">
+                    </div>
+                    <div><label class="block text-sm text-slate-400 mb-2">عدد المقررات</label>
+                      <input type="number" id="courses_total" placeholder="0" class="w-full px-4 py-3 rounded-xl"
+                        onchange="saveField('profile', 'courses_total', this.value)">
+                    </div>
+                  </div>
                 </div>
-                <div id="objectives-list-container" class="space-y-3 mb-4">
-                  <!-- Objectives inputs will be rendered here dynamically -->
-                </div>
-              </div>
 
-              <!-- Program System Details -->
-              <div class="pt-6 border-t border-slate-700">
-                <h4 class="text-md font-bold text-white mb-4 flex items-center gap-2">
-                  <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                  </svg> نظام البرنامج وساعاته ومقرراته
-                </h4>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div><label class="block text-sm text-slate-400 mb-2">نظام البرنامج</label>
-                    <select id="program_system" class="w-full px-4 py-3 rounded-xl" onchange="saveField('profile', 'program_system', this.value)">
-                      <option value="semester">نظام فصلي</option>
-                      <option value="annual">نظام سنوي</option>
-                      <option value="modules">نظام وحدات</option>
-                    </select>
-                  </div>
-                  <div><label class="block text-sm text-slate-400 mb-2">عدد الساعات المعتمدة للبرنامج</label>
-                    <input type="number" id="credit_hours" placeholder="0" class="w-full px-4 py-3 rounded-xl" onchange="saveField('profile', 'credit_hours', this.value)">
-                  </div>
-                  <div><label class="block text-sm text-slate-400 mb-2">عدد المقررات</label>
-                    <input type="number" id="courses_total" placeholder="0" class="w-full px-4 py-3 rounded-xl" onchange="saveField('profile', 'courses_total', this.value)">
+                {{--! Student Numbers --}}
+                <div class="pt-6 border-t border-slate-700">
+                  <h4 class="text-md font-bold text-white mb-4 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0H6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+                    </svg> عدد الطلبة المقيدين بالبرنامج
+                  </h4>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div><label class="block text-sm text-slate-400 mb-2">عدد الذكور</label>
+                      <input type="number" id="male_students_count" placeholder="0" class="w-full px-4 py-3 rounded-xl"
+                        onchange="saveField('profile', 'male_students_count', this.value)">
+                    </div>
+                    <div><label class="block text-sm text-slate-400 mb-2">عدد الإناث</label>
+                      <input type="number" id="female_students_count" placeholder="0"
+                        class="w-full px-4 py-3 rounded-xl"
+                        onchange="saveField('profile', 'female_students_count', this.value)">
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <!-- Student Numbers -->
-              <div class="pt-6 border-t border-slate-700">
-                <h4 class="text-md font-bold text-white mb-4 flex items-center gap-2">
-                  <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0H6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-                  </svg> عدد الطلبة المقيدين بالبرنامج
-                </h4>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div><label class="block text-sm text-slate-400 mb-2">عدد الذكور</label>
-                    <input type="number" id="male_students_count" placeholder="0" class="w-full px-4 py-3 rounded-xl" onchange="saveField('profile', 'male_students_count', this.value)">
-                  </div>
-                  <div><label class="block text-sm text-slate-400 mb-2">عدد الإناث</label>
-                    <input type="number" id="female_students_count" placeholder="0" class="w-full px-4 py-3 rounded-xl" onchange="saveField('profile', 'female_students_count', this.value)">
+                {{--! Approval Dates --}}
+                <div class="pt-6 border-t border-slate-700">
+                  <h4 class="text-md font-bold text-white mb-4 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg> تواريخ اعتماد التوصيف الحالي للبرنامج من مجالس الجامعة
+                  </h4>
+                  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div><label class="block text-sm text-slate-400 mb-2 text-xs">مجلس القسم</label>
+                      <input type="date" id="dept_council_date" class="w-full px-3 py-3 rounded-xl text-sm"
+                        onchange="saveField('profile', 'dept_council_date', this.value)">
+                    </div>
+                    <div><label class="block text-sm text-slate-400 mb-2 text-xs">مجلس الكلية</label>
+                      <input type="date" id="college_council_date" class="w-full px-3 py-3 rounded-xl text-sm"
+                        onchange="saveField('profile', 'college_council_date', this.value)">
+                    </div>
+                    <div><label class="block text-sm text-slate-400 mb-2 text-xs">المجلس الأكاديمي</label>
+                      <input type="date" id="academic_council_date" class="w-full px-3 py-3 rounded-xl text-sm"
+                        onchange="saveField('profile', 'academic_council_date', this.value)">
+                    </div>
+                    <div><label class="block text-sm text-slate-400 mb-2 text-xs">مجلس الجامعة</label>
+                      <input type="date" id="university_council_date" class="w-full px-3 py-3 rounded-xl text-sm"
+                        onchange="saveField('profile', 'university_council_date', this.value)">
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <!-- Approval Dates -->
-              <div class="pt-6 border-t border-slate-700">
-                <h4 class="text-md font-bold text-white mb-4 flex items-center gap-2">
-                  <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg> تواريخ اعتماد التوصيف الحالي للبرنامج من مجالس الجامعة
-                </h4>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <div><label class="block text-sm text-slate-400 mb-2 text-xs">مجلس القسم</label>
-                    <input type="date" id="dept_council_date" class="w-full px-3 py-3 rounded-xl text-sm" onchange="saveField('profile', 'dept_council_date', this.value)">
-                  </div>
-                  <div><label class="block text-sm text-slate-400 mb-2 text-xs">مجلس الكلية</label>
-                    <input type="date" id="college_council_date" class="w-full px-3 py-3 rounded-xl text-sm" onchange="saveField('profile', 'college_council_date', this.value)">
-                  </div>
-                  <div><label class="block text-sm text-slate-400 mb-2 text-xs">المجلس الأكاديمي</label>
-                    <input type="date" id="academic_council_date" class="w-full px-3 py-3 rounded-xl text-sm" onchange="saveField('profile', 'academic_council_date', this.value)">
-                  </div>
-                  <div><label class="block text-sm text-slate-400 mb-2 text-xs">مجلس الجامعة</label>
-                    <input type="date" id="university_council_date" class="w-full px-3 py-3 rounded-xl text-sm" onchange="saveField('profile', 'university_council_date', this.value)">
+                {{--! Program Context --}}
+                <div class="pt-6 border-t border-slate-700">
+                  <h4 class="text-md font-bold text-white mb-4 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg> سياق البرنامج وتاريخه
+                  </h4>
+                  <div class="space-y-6">
+                    <div><label class="block text-sm text-slate-400 mb-2">موجز عن تاريخ البرنامج</label>
+                      <textarea id="program_history" rows="4" placeholder="اكتب موجز تاريخ البرنامج هنا..."
+                        class="w-full px-4 py-3 rounded-xl resize-none bg-slate-700/50 border border-slate-600 appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                        onchange="saveField('profile', 'program_history', this.value)"></textarea>
+                    </div>
+                    <div><label class="block text-sm text-slate-400 mb-2">التغيرات في البيئة الداخلية والخارجية
+                        للبرنامج</label>
+                      <textarea id="env_changes" rows="4" placeholder="اكتب التغيرات هنا..."
+                        class="w-full px-4 py-3 rounded-xl resize-none bg-slate-700/50 border border-slate-600 appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                        onchange="saveField('profile', 'env_changes', this.value)"></textarea>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <!-- Program Context -->
-              <div class="pt-6 border-t border-slate-700">
-                <h4 class="text-md font-bold text-white mb-4 flex items-center gap-2">
-                  <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg> سياق البرنامج وتاريخه
-                </h4>
-                <div class="space-y-6">
-                  <div><label class="block text-sm text-slate-400 mb-2">موجز عن تاريخ البرنامج</label>
-                    <textarea id="program_history" rows="4" placeholder="اكتب موجز تاريخ البرنامج هنا..." class="w-full px-4 py-3 rounded-xl resize-none bg-slate-700/50 border border-slate-600 appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500/50" onchange="saveField('profile', 'program_history', this.value)"></textarea>
-                  </div>
-                  <div><label class="block text-sm text-slate-400 mb-2">التغيرات في البيئة الداخلية والخارجية للبرنامج</label>
-                    <textarea id="env_changes" rows="4" placeholder="اكتب التغيرات هنا..." class="w-full px-4 py-3 rounded-xl resize-none bg-slate-700/50 border border-slate-600 appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500/50" onchange="saveField('profile', 'env_changes', this.value)"></textarea>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Self Study Details -->
-              <div class="pt-6 border-t border-slate-700">
-                <h4 class="text-md font-bold text-white mb-4 flex items-center gap-2">
-                  <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                  </svg> الدراسة الذاتية للبرنامج
-                </h4>
-                <div class="space-y-6">
-                  <div><label class="block text-sm text-slate-400 mb-2">ترتيبات إجراء الدراسة الذاتية</label>
-                    <textarea id="self_study_arrangements" rows="4" placeholder="اكتب الترتيبات هنا..." class="w-full px-4 py-3 rounded-xl resize-none bg-slate-700/50 border border-slate-600 appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500/50" onchange="saveField('profile', 'self_study_arrangements', this.value)"></textarea>
-                  </div>
-                  <div><label class="block text-sm text-slate-400 mb-2">منهجية المقارنة الداخلية والخارجية</label>
-                    <textarea id="comparison_methodology" rows="4" placeholder="اكتب المنهجية هنا..." class="w-full px-4 py-3 rounded-xl resize-none bg-slate-700/50 border border-slate-600 appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500/50" onchange="saveField('profile', 'comparison_methodology', this.value)"></textarea>
+                {{--! Self Study Details --}}
+                <div class="pt-6 border-t border-slate-700">
+                  <h4 class="text-md font-bold text-white mb-4 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                    </svg> الدراسة الذاتية للبرنامج
+                  </h4>
+                  <div class="space-y-6">
+                    <div><label class="block text-sm text-slate-400 mb-2">ترتيبات إجراء الدراسة الذاتية</label>
+                      <textarea id="self_study_arrangements" rows="4" placeholder="اكتب الترتيبات هنا..."
+                        class="w-full px-4 py-3 rounded-xl resize-none bg-slate-700/50 border border-slate-600 appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                        onchange="saveField('profile', 'self_study_arrangements', this.value)"></textarea>
+                    </div>
+                    <div><label class="block text-sm text-slate-400 mb-2">منهجية المقارنة الداخلية والخارجية</label>
+                      <textarea id="comparison_methodology" rows="4" placeholder="اكتب المنهجية هنا..."
+                        class="w-full px-4 py-3 rounded-xl resize-none bg-slate-700/50 border border-slate-600 appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                        onchange="saveField('profile', 'comparison_methodology', this.value)"></textarea>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-        </div>
 
         <div id="tab-tables" class="tab-content hidden">
-          <!-- Graduates Table (3 years) -->
+          {{--! Graduates Table (3 years) --}}
           <div class="bg-slate-800 rounded-2xl p-6 shadow-xl mb-6">
             <div class="flex items-center justify-between mb-6">
               <h3 class="text-lg font-bold text-white flex items-center gap-2">
@@ -557,16 +615,25 @@
               <table class="w-full text-right border-collapse border border-slate-200 dark:border-slate-700">
                 <thead>
                   <tr class="bg-slate-100 dark:bg-slate-700/50">
-                    <th colspan="8" class="py-3 px-4 font-bold text-center border border-slate-200 dark:border-slate-700">تقديرات الطلبة الخريجين في البرنامج خلال الأعوام الثلاثة الأخيرة</th>
+                    <th colspan="8"
+                      class="py-3 px-4 font-bold text-center border border-slate-200 dark:border-slate-700">تقديرات
+                      الطلبة الخريجين في البرنامج خلال الأعوام الثلاثة الأخيرة</th>
                   </tr>
                   <tr class="bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-sm">
-                    <th colspan="2" class="py-3 px-4 font-semibold border border-slate-200 dark:border-slate-700">التقدير</th>
-                    <th class="py-3 px-4 font-semibold border border-slate-200 dark:border-slate-700 text-center">ممتاز</th>
-                    <th class="py-3 px-4 font-semibold border border-slate-200 dark:border-slate-700 text-center">جيد جداً</th>
-                    <th class="py-3 px-4 font-semibold border border-slate-200 dark:border-slate-700 text-center">جيد</th>
-                    <th class="py-3 px-4 font-semibold border border-slate-200 dark:border-slate-700 text-center">مقبول</th>
-                    <th class="py-3 px-4 font-semibold border border-slate-200 dark:border-slate-700 text-center">ضعيف</th>
-                    <th class="py-3 px-4 font-semibold border border-slate-200 dark:border-slate-700 text-center">المجموع</th>
+                    <th colspan="2" class="py-3 px-4 font-semibold border border-slate-200 dark:border-slate-700">
+                      التقدير</th>
+                    <th class="py-3 px-4 font-semibold border border-slate-200 dark:border-slate-700 text-center">ممتاز
+                    </th>
+                    <th class="py-3 px-4 font-semibold border border-slate-200 dark:border-slate-700 text-center">جيد
+                      جداً</th>
+                    <th class="py-3 px-4 font-semibold border border-slate-200 dark:border-slate-700 text-center">جيد
+                    </th>
+                    <th class="py-3 px-4 font-semibold border border-slate-200 dark:border-slate-700 text-center">مقبول
+                    </th>
+                    <th class="py-3 px-4 font-semibold border border-slate-200 dark:border-slate-700 text-center">ضعيف
+                    </th>
+                    <th class="py-3 px-4 font-semibold border border-slate-200 dark:border-slate-700 text-center">
+                      المجموع</th>
                   </tr>
                 </thead>
                 <tbody id="graduates-table">
@@ -580,50 +647,61 @@
                   @endphp
 
                   @foreach($years as $rowKey => $yearLabel)
-                  <!-- Year Group: {{ $yearLabel }} -->
-                  <tr class="border-b border-slate-200 dark:border-slate-700" data-row-group="{{ $rowKey }}">
-                    <td rowspan="2" class="py-4 px-4 font-bold text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 w-44 text-center">
+                    {{--! Year Group: {{ $yearLabel }} --}}
+                    <tr class="border-b border-slate-200 dark:border-slate-700" data-row-group="{{ $rowKey }}">
+                      <td rowspan="2"
+                        class="py-4 px-4 font-bold text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 w-44 text-center">
                         <div class="flex flex-col gap-2">
-                            <span class="text-[10px] uppercase text-slate-400 dark:text-slate-500">العام الأكاديمي</span>
-                            <input type="text" 
-                                   value="" 
-                                   class="w-full px-2 py-1 text-center bg-transparent border-b border-dashed border-slate-300 dark:border-slate-600 focus:border-blue-500 outline-none font-bold text-sm"
-                                   placeholder="مثلاً: 2024/2023"
-                                   onchange="saveField('tables', 'ft_graduates_{{ $rowKey }}_year_display', this.value)">
+                          <span class="text-[10px] uppercase text-slate-400 dark:text-slate-500">العام الأكاديمي</span>
+                          <input type="text" value=""
+                            class="w-full px-2 py-1 text-center bg-transparent border-b border-dashed border-slate-300 dark:border-slate-600 focus:border-blue-500 outline-none font-bold text-sm"
+                            placeholder="مثلاً: 2024/2023"
+                            onchange="saveField('tables', 'ft_graduates_{{ $rowKey }}_year_display', this.value)">
                         </div>
-                    </td>
-                    <td class="py-3 px-4 text-sm font-medium text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/20">عدد الطلبة</td>
-                    @foreach($grades as $grade)
-                    <td class="py-2 px-2 border border-slate-200 dark:border-slate-700">
-                      <input type="number" min="0" 
-                             class="w-full px-2 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-center text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500/50 outline-none" 
-                             onchange="updateFixedTable('graduates', '{{ $rowKey }}', '{{ $grade }}', this.value)">
-                    </td>
-                    @endforeach
-                    <td class="py-2 px-2 border border-slate-200 dark:border-slate-700 bg-emerald-50/50 dark:bg-emerald-900/10">
-                      <div id="grad-total-{{ $rowKey }}" class="text-center font-bold text-emerald-700 dark:text-emerald-400">0</div>
-                    </td>
-                  </tr>
-                  <tr class="border-b border-slate-200 dark:border-slate-700 bg-emerald-50 dark:bg-emerald-900/40" data-row-percent="{{ $rowKey }}">
-                    <td class="py-3 px-4 text-sm font-medium text-emerald-800 dark:text-emerald-300 border border-slate-200 dark:border-slate-700">%</td>
-                    @foreach($grades as $grade)
-                    <td class="py-3 px-2 border border-slate-200 dark:border-slate-700">
-                      <div id="grad-percent-{{ $rowKey }}-{{ $grade }}" class="text-center text-xs font-bold text-emerald-900 dark:text-emerald-100">0%</div>
-                    </td>
-                    @endforeach
-                    <td class="py-3 px-2 border border-slate-200 dark:border-slate-700 font-bold text-center text-emerald-800/60 dark:text-emerald-200/60">100%</td>
-                  </tr>
+                      </td>
+                      <td
+                        class="py-3 px-4 text-sm font-medium text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/20">
+                        عدد الطلبة</td>
+                      @foreach($grades as $grade)
+                        <td class="py-2 px-2 border border-slate-200 dark:border-slate-700">
+                          <input type="number" min="0"
+                            class="w-full px-2 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-600 text-center text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500/50 outline-none"
+                            onchange="updateFixedTable('graduates', '{{ $rowKey }}', '{{ $grade }}', this.value)">
+                        </td>
+                      @endforeach
+                      <td
+                        class="py-2 px-2 border border-slate-200 dark:border-slate-700 bg-emerald-50/50 dark:bg-emerald-900/10">
+                        <div id="grad-total-{{ $rowKey }}"
+                          class="text-center font-bold text-emerald-700 dark:text-emerald-400">0</div>
+                      </td>
+                    </tr>
+                    <tr class="border-b border-slate-200 dark:border-slate-700 bg-emerald-50 dark:bg-emerald-900/40"
+                      data-row-percent="{{ $rowKey }}">
+                      <td
+                        class="py-3 px-4 text-sm font-medium text-emerald-800 dark:text-emerald-300 border border-slate-200 dark:border-slate-700">
+                        %</td>
+                      @foreach($grades as $grade)
+                        <td class="py-3 px-2 border border-slate-200 dark:border-slate-700">
+                          <div id="grad-percent-{{ $rowKey }}-{{ $grade }}"
+                            class="text-center text-xs font-bold text-emerald-900 dark:text-emerald-100">0%</div>
+                        </td>
+                      @endforeach
+                      <td
+                        class="py-3 px-2 border border-slate-200 dark:border-slate-700 font-bold text-center text-emerald-800/60 dark:text-emerald-200/60">
+                        100%</td>
+                    </tr>
                   @endforeach
                 </tbody>
               </table>
             </div>
           </div>
 
-          <!-- Research Table (8 indicators) -->
+          {{--! Research Table (8 indicators) --}}
           <div class="bg-slate-800 rounded-2xl p-6 shadow-xl mb-6">
             <h3 class="text-lg font-bold text-white flex items-center gap-2 mb-6">
               <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
               </svg> البحث العلمي والأنشطة البحثية للبرنامج خلال العام السابق للتقييم
             </h3>
             <div class="overflow-x-auto">
@@ -650,23 +728,27 @@
                     ];
                   @endphp
                   @foreach($researchIndicators as $key => $label)
-                  <tr class="border-b border-slate-700">
-                    <td class="py-3 px-4 text-slate-400 text-sm font-medium">{{ $loop->iteration }}</td>
-                    <td class="py-3 px-4 text-white text-sm font-medium">{{ $label }}</td>
-                    <td class="py-3 px-4"><input type="number" min="0" class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-600 text-center text-white" onchange="updateResearchTable('{{ $key }}', 'count', this.value)"></td>
-                  </tr>
+                    <tr class="border-b border-slate-700">
+                      <td class="py-3 px-4 text-slate-400 text-sm font-medium">{{ $loop->iteration }}</td>
+                      <td class="py-3 px-4 text-white text-sm font-medium">{{ $label }}</td>
+                      <td class="py-3 px-4"><input type="number" min="0"
+                          class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-600 text-center text-white"
+                          onchange="updateResearchTable('{{ $key }}', 'count', this.value)"></td>
+                    </tr>
                   @endforeach
                 </tbody>
               </table>
             </div>
           </div>
 
-          <!-- Facilities Table -->
+          {{--! Facilities Table --}}
           <div class="bg-slate-800 rounded-2xl p-6 shadow-xl">
             <h3 class="text-lg font-bold text-white flex items-center gap-2 mb-6">
               <svg class="w-5 h-5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-              </svg> جدول المرافق التعليمية والخدمية            </h3>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg> جدول المرافق التعليمية والخدمية
+            </h3>
             <div class="overflow-x-auto">
               <table class="w-full text-right border-collapse">
                 <thead>
@@ -692,20 +774,28 @@
                     ];
                   @endphp
                   @foreach($facilityTypes as $key => $label)
-                  <tr class="border-b border-slate-700">
-                    <td class="py-3 px-2 text-white text-xs font-medium">{{ $label }}</td>
-                    <td class="py-3 px-2"><input type="number" min="0" class="w-full px-2 py-2 rounded-lg bg-slate-900 border border-slate-600 text-center text-white text-xs" onchange="updateFacilitiesTable('{{ $key }}', 'count', this.value)"></td>
-                    <td class="py-3 px-2"><input type="number" min="0" class="w-full px-2 py-2 rounded-lg bg-slate-900 border border-slate-600 text-center text-white text-xs" onchange="updateFacilitiesTable('{{ $key }}', 'area', this.value)"></td>
-                    <td class="py-3 px-2"><input type="number" min="0" class="w-full px-2 py-2 rounded-lg bg-slate-900 border border-slate-600 text-center text-white text-xs" onchange="updateFacilitiesTable('{{ $key }}', 'students', this.value)"></td>
-                    <td class="py-3 px-2"><input type="number" min="0" class="w-full px-2 py-2 rounded-lg bg-slate-900 border border-slate-600 text-center text-white text-xs" onchange="updateFacilitiesTable('{{ $key }}', 'hours', this.value)"></td>
-                  </tr>
+                    <tr class="border-b border-slate-700">
+                      <td class="py-3 px-2 text-white text-xs font-medium">{{ $label }}</td>
+                      <td class="py-3 px-2"><input type="number" min="0"
+                          class="w-full px-2 py-2 rounded-lg bg-slate-900 border border-slate-600 text-center text-white text-xs"
+                          onchange="updateFacilitiesTable('{{ $key }}', 'count', this.value)"></td>
+                      <td class="py-3 px-2"><input type="number" min="0"
+                          class="w-full px-2 py-2 rounded-lg bg-slate-900 border border-slate-600 text-center text-white text-xs"
+                          onchange="updateFacilitiesTable('{{ $key }}', 'area', this.value)"></td>
+                      <td class="py-3 px-2"><input type="number" min="0"
+                          class="w-full px-2 py-2 rounded-lg bg-slate-900 border border-slate-600 text-center text-white text-xs"
+                          onchange="updateFacilitiesTable('{{ $key }}', 'students', this.value)"></td>
+                      <td class="py-3 px-2"><input type="number" min="0"
+                          class="w-full px-2 py-2 rounded-lg bg-slate-900 border border-slate-600 text-center text-white text-xs"
+                          onchange="updateFacilitiesTable('{{ $key }}', 'hours', this.value)"></td>
+                    </tr>
                   @endforeach
                 </tbody>
               </table>
             </div>
           </div>
         </div>
-        <!-- Save Status -->
+        {{--! Save Status --}}
         <div class="mt-6 flex items-center justify-between">
           <div class="flex items-center gap-2 text-slate-400 text-sm">
             <div id="save-indicator" class="w-2 h-2 rounded-full bg-emerald-500"></div><span id="save-status">تم الحفظ
@@ -717,1678 +807,310 @@
                 d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
             </svg> حفظ كمسودة </button>
         </div>
-      </div><!-- Section 2: Standards Evaluation -->
+      </div>
+      {{--? Section 2: Standards Evaluation --}}
       <div id="section-2" class="section-content hidden p-8 fade-in">
         <div class="mb-6">
           <div class="flex items-center gap-3 mb-2">
             <div class="w-2 h-8 bg-emerald-500 rounded-full"></div>
             <h2 class="text-2xl font-bold text-slate-800 dark:text-white">الجزء الثاني: التقييم وفق معايير الاعتماد</h2>
           </div>
-          <p class="text-slate-500 dark:text-slate-400 mr-5 font-medium">تقييم 7 معايير رئيسية بناءً على مؤشرات محددة</p>
-        </div>
-        
-        <!-- Standard Tabs Navigation -->
-        <div class="bg-white dark:bg-slate-800 p-1.5 rounded-2xl mb-8 flex flex-wrap gap-1.5 shadow-sm border border-slate-100 dark:border-slate-700/50">
-            <button onclick="switchStandardTab(1)" class="std-tab-btn active px-4 py-2.5 rounded-xl text-sm font-semibold transition-all bg-emerald-600 text-white shadow-md shadow-emerald-500/20" data-std="1">١. الرسالة والأهداف</button>
-            <button onclick="switchStandardTab(2)" class="std-tab-btn px-4 py-2.5 rounded-xl text-sm font-semibold transition-all text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50" data-std="2">٢. البرنامج والجودة</button>
-            <button onclick="switchStandardTab(3)" class="std-tab-btn px-4 py-2.5 rounded-xl text-sm font-semibold transition-all text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50" data-std="3">٣. التعليم والتعلم</button>
-            <button onclick="switchStandardTab(4)" class="std-tab-btn px-4 py-2.5 rounded-xl text-sm font-semibold transition-all text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50" data-std="4">٤. الطلاب</button>
-            <button onclick="switchStandardTab(5)" class="std-tab-btn px-4 py-2.5 rounded-xl text-sm font-semibold transition-all text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50" data-std="5">٥. هيئة التدريس</button>
-            <button onclick="switchStandardTab(6)" class="std-tab-btn px-4 py-2.5 rounded-xl text-sm font-semibold transition-all text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50" data-std="6">٦. مصادر التعلم والمرافق</button>
-            <button onclick="switchStandardTab(7)" class="std-tab-btn px-4 py-2.5 rounded-xl text-sm font-semibold transition-all text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50" data-std="7">٧. البحث والابتكار</button>
+          <p class="text-slate-500 dark:text-slate-400 mr-5 font-medium">تقييم 7 معايير رئيسية بناءً على مؤشرات محددة
+          </p>
         </div>
 
-        <!-- Standards Content Area -->
+        {{-- Standard Tabs Navigation --}}
+        <div
+          class="bg-white dark:bg-slate-800 p-1.5 rounded-2xl mb-8 flex flex-wrap gap-1.5 shadow-sm border border-slate-100 dark:border-slate-700/50">
+          <button onclick="switchStandardTab(1)"
+            class="std-tab-btn active px-4 py-2.5 rounded-xl text-sm font-semibold transition-all bg-emerald-600 text-white shadow-md shadow-emerald-500/20"
+            data-std="1">١. الرسالة والأهداف</button>
+          <button onclick="switchStandardTab(2)"
+            class="std-tab-btn px-4 py-2.5 rounded-xl text-sm font-semibold transition-all text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50"
+            data-std="2">٢. البرنامج والجودة</button>
+          <button onclick="switchStandardTab(3)"
+            class="std-tab-btn px-4 py-2.5 rounded-xl text-sm font-semibold transition-all text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50"
+            data-std="3">٣. التعليم والتعلم</button>
+          <button onclick="switchStandardTab(4)"
+            class="std-tab-btn px-4 py-2.5 rounded-xl text-sm font-semibold transition-all text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50"
+            data-std="4">٤. الطلاب</button>
+          <button onclick="switchStandardTab(5)"
+            class="std-tab-btn px-4 py-2.5 rounded-xl text-sm font-semibold transition-all text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50"
+            data-std="5">٥. هيئة التدريس</button>
+          <button onclick="switchStandardTab(6)"
+            class="std-tab-btn px-4 py-2.5 rounded-xl text-sm font-semibold transition-all text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50"
+            data-std="6">٦. مصادر التعلم والمرافق</button>
+          <button onclick="switchStandardTab(7)"
+            class="std-tab-btn px-4 py-2.5 rounded-xl text-sm font-semibold transition-all text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50"
+            data-std="7">٧. البحث والابتكار</button>
+        </div>
+
+        {{-- Standards Content Area --}}
         <div id="standards-container">
-          <!-- Standard 1 -->
+          {{-- main Standard  --}}
           <div id="standard-1-tab-content" class="std-content  fade-in">
-            <!-- Standard Header -->
+            {{--Standard Header --}}
             <div class="bg-slate-800 rounded-2xl p-6 shadow-xl mb-8 border-r-4 border-emerald-500">
               <div class="flex items-center justify-between">
                 <div>
                   <h2 class="text-2xl font-bold text-white flex items-center gap-3">
-                    <div class="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center text-emerald-400 font-bold text-xl">1</div>
+                    <div
+                      class="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center text-emerald-400 font-bold text-xl">
+                      1</div>
                     المعيار الأول: الرسالة والأهداف
                   </h2>
-                  <p class="text-slate-400 text-sm mt-2">يحتوي على 5 مؤشرات موزعة على المعايير الفرعية</p>
+                  <p class="text-slate-400 text-sm mt-2">وصف المعيار الرئيس</p>
                 </div>
                 <div class="text-left bg-slate-900/50 p-4 rounded-xl border border-slate-700">
                   <span class="block text-xs text-slate-400 mb-1 text-center">التقييم</span>
                   <div class="flex items-center justify-center gap-1">
-                      <span id="standard-1-score" class="text-3xl font-bold text-emerald-400">0.0</span>
-                      <span class="text-slate-500 text-lg">/5</span>
+                    <span id="standard-1-score" class="text-3xl font-bold text-emerald-400">0.0</span>
+                    <span class="text-slate-500 text-lg">/5</span>
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- Substandards Container -->
+            {{-- Substandards Container --}}
             <div class="space-y-8">
-                
-                <!-- Substandard 1.1 -->
-                <div class="bg-slate-800/80 rounded-2xl shadow-lg border border-slate-700/50 overflow-hidden">
-                    <div class="bg-slate-700/30 p-4 border-b border-slate-700/50 flex items-center gap-3">
-                        <span class="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-lg font-bold text-sm">1.1</span>
-                        <h3 class="font-bold text-lg text-white">رسالة البرنامج</h3>
-                    </div>
-                    <div class="p-6 space-y-4">
-                        
-                        <!-- Indicator 1-1 -->
-                        <div class="indicator-row rounded-xl p-5 border border-slate-600 bg-slate-800/50" data-indicator="1-1">
-                            <div class="flex items-start justify-between mb-4">
-                                <div class="flex-1"><span class="text-xs text-blue-400 font-medium">مؤشر 1-1</span>
-                                    <p class="text-white mt-1">وضوح رسالة البرنامج واتساقها مع رسالة المؤسسة</p>
-                                </div>
-                                <div class="tooltip-container mr-2">
-                                    <svg class="w-5 h-5 text-slate-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                    <div class="tooltip-text"><strong>أمثلة للأدلة:</strong><br>• وثيقة الرسالة المعتمدة<br>• محاضر اجتماعات المراجعة<br>• استبيانات أصحاب المصلحة</div>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-3 mb-4"><span class="text-sm text-slate-400">التقييم:</span>
-                                <div class="flex gap-2">
-                                    <button onclick="setRating(1, 1, 1)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-red-500" data-rating="1">1</button>
-                                    <button onclick="setRating(1, 1, 2)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-orange-500" data-rating="2">2</button>
-                                    <button onclick="setRating(1, 1, 3)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-yellow-500" data-rating="3">3</button>
-                                    <button onclick="setRating(1, 1, 4)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-lime-500" data-rating="4">4</button>
-                                    <button onclick="setRating(1, 1, 5)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-emerald-500" data-rating="5">5</button>
-                                </div>
-                            </div>
-                            <div id="evidences-1-1" class="space-y-2 mb-3"></div>
-                            <button onclick="addEvidence(1, 1)" class="text-blue-400 text-sm flex items-center gap-2 hover:text-blue-300 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg> إرفاق دليل
-                            </button>
-                        </div>
 
-                        <!-- Indicator 1-2 -->
-                        <div class="indicator-row rounded-xl p-5 border border-slate-600 bg-slate-800/50" data-indicator="1-2">
-                            <div class="flex items-start justify-between mb-4">
-                                <div class="flex-1"><span class="text-xs text-blue-400 font-medium">مؤشر 1-2</span>
-                                    <p class="text-white mt-1">مشاركة أصحاب المصلحة في صياغة الرسالة والأهداف</p>
-                                </div>
-                                <div class="tooltip-container mr-2">
-                                    <svg class="w-5 h-5 text-slate-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                    <div class="tooltip-text"><strong>أمثلة للأدلة:</strong><br>• محاضر الاجتماعات<br>• قوائم الحضور<br>• نماذج الاستبيانات</div>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-3 mb-4"><span class="text-sm text-slate-400">التقييم:</span>
-                                <div class="flex gap-2">
-                                    <button onclick="setRating(1, 2, 1)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-red-500" data-rating="1">1</button>
-                                    <button onclick="setRating(1, 2, 2)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-orange-500" data-rating="2">2</button>
-                                    <button onclick="setRating(1, 2, 3)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-yellow-500" data-rating="3">3</button>
-                                    <button onclick="setRating(1, 2, 4)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-lime-500" data-rating="4">4</button>
-                                    <button onclick="setRating(1, 2, 5)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-emerald-500" data-rating="5">5</button>
-                                </div>
-                            </div>
-                            <div id="evidences-1-2" class="space-y-2 mb-3"></div>
-                            <button onclick="addEvidence(1, 2)" class="text-blue-400 text-sm flex items-center gap-2 hover:text-blue-300 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg> إرفاق دليل
-                            </button>
-                        </div>
+              {{-- Substandard --}}
+              <div class="bg-slate-800/80 rounded-2xl shadow-lg border border-slate-700/50 overflow-hidden">
+                <div class="bg-slate-700/30 p-4 border-b border-slate-700/50 flex items-center gap-3">
+                  <span class="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-lg font-bold text-sm">1.1</span>
+                  <h3 class="font-bold text-lg text-white">رسالة البرنامج</h3>
+                </div>
+                <div class="p-6 space-y-4">
+
+                  {{-- Indicators --}}
+                  <div class="indicator-row rounded-xl p-5 border border-slate-600 bg-slate-800/50"
+                    data-indicator="1-1">
+                    <div class="flex items-start justify-between mb-4">
+                      <div class="flex-1"><span class="text-xs text-blue-400 font-medium">مؤشر 1-1</span>
+                        <p class="text-white mt-1">وضوح رسالة البرنامج واتساقها مع رسالة المؤسسة</p>
+                      </div>
+                      <div class="tooltip-container mr-2">
+                        <svg class="w-5 h-5 text-slate-400 cursor-help" fill="none" stroke="currentColor"
+                          viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <div class="tooltip-text"><strong>أمثلة للأدلة:</strong><br>• وثيقة الرسالة المعتمدة<br>• محاضر
+                          اجتماعات المراجعة<br>• استبيانات أصحاب المصلحة</div>
+                      </div>
                     </div>
+                    <div class="flex items-center gap-3 mb-4"><span class="text-sm text-slate-400">التقييم:</span>
+                      <div class="flex gap-2">
+                        <button onclick="setRating(1, 1, 1)"
+                          class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-red-500"
+                          data-rating="1">1</button>
+                        <button onclick="setRating(1, 1, 2)"
+                          class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-orange-500"
+                          data-rating="2">2</button>
+                        <button onclick="setRating(1, 1, 3)"
+                          class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-yellow-500"
+                          data-rating="3">3</button>
+                        <button onclick="setRating(1, 1, 4)"
+                          class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-lime-500"
+                          data-rating="4">4</button>
+                        <button onclick="setRating(1, 1, 5)"
+                          class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-emerald-500"
+                          data-rating="5">5</button>
+                      </div>
+                    </div>
+                    <div id="evidences-1-1" class="space-y-2 mb-3"></div>
+                    <button onclick="addEvidence(1, 1)"
+                      class="text-blue-400 text-sm flex items-center gap-2 hover:text-blue-300 transition-colors">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                      </svg> إرفاق دليل
+                    </button>
+                  </div>
+
                 </div>
 
-                <!-- Substandard 1.2 -->
-                <div class="bg-slate-800/80 rounded-2xl shadow-lg border border-slate-700/50 overflow-hidden">
-                    <div class="bg-slate-700/30 p-4 border-b border-slate-700/50 flex items-center gap-3">
-                        <span class="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-lg font-bold text-sm">1.2</span>
-                        <h3 class="font-bold text-lg text-white">أهداف البرنامج</h3>
-                    </div>
-                    <div class="p-6 space-y-4">
-                        
-                        <!-- Indicator 1-3 -->
-                        <div class="indicator-row rounded-xl p-5 border border-slate-600 bg-slate-800/50" data-indicator="1-3">
-                            <div class="flex items-start justify-between mb-4">
-                                <div class="flex-1"><span class="text-xs text-blue-400 font-medium">مؤشر 1-3</span>
-                                    <p class="text-white mt-1">قابلية قياس أهداف البرنامج</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-3 mb-4"><span class="text-sm text-slate-400">التقييم:</span>
-                                <div class="flex gap-2">
-                                    <button onclick="setRating(1, 3, 1)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-red-500" data-rating="1">1</button>
-                                    <button onclick="setRating(1, 3, 2)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-orange-500" data-rating="2">2</button>
-                                    <button onclick="setRating(1, 3, 3)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-yellow-500" data-rating="3">3</button>
-                                    <button onclick="setRating(1, 3, 4)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-lime-500" data-rating="4">4</button>
-                                    <button onclick="setRating(1, 3, 5)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-emerald-500" data-rating="5">5</button>
-                                </div>
-                            </div>
-                            <div id="evidences-1-3" class="space-y-2 mb-3"></div>
-                            <button onclick="addEvidence(1, 3)" class="text-blue-400 text-sm flex items-center gap-2 hover:text-blue-300 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg> إرفاق دليل
-                            </button>
-                        </div>
-
-                        <!-- Indicator 1-4 -->
-                        <div class="indicator-row rounded-xl p-5 border border-slate-600 bg-slate-800/50" data-indicator="1-4">
-                            <div class="flex items-start justify-between mb-4">
-                                <div class="flex-1"><span class="text-xs text-blue-400 font-medium">مؤشر 1-4</span>
-                                    <p class="text-white mt-1">توافق أهداف البرنامج مع رسالته</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-3 mb-4"><span class="text-sm text-slate-400">التقييم:</span>
-                                <div class="flex gap-2">
-                                    <button onclick="setRating(1, 4, 1)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-red-500" data-rating="1">1</button>
-                                    <button onclick="setRating(1, 4, 2)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-orange-500" data-rating="2">2</button>
-                                    <button onclick="setRating(1, 4, 3)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-yellow-500" data-rating="3">3</button>
-                                    <button onclick="setRating(1, 4, 4)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-lime-500" data-rating="4">4</button>
-                                    <button onclick="setRating(1, 4, 5)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-emerald-500" data-rating="5">5</button>
-                                </div>
-                            </div>
-                            <div id="evidences-1-4" class="space-y-2 mb-3"></div>
-                            <button onclick="addEvidence(1, 4)" class="text-blue-400 text-sm flex items-center gap-2 hover:text-blue-300 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg> إرفاق دليل
-                            </button>
-                        </div>
-
-                        <!-- Indicator 1-5 -->
-                        <div class="indicator-row rounded-xl p-5 border border-slate-600 bg-slate-800/50" data-indicator="1-5">
-                            <div class="flex items-start justify-between mb-4">
-                                <div class="flex-1"><span class="text-xs text-blue-400 font-medium">مؤشر 1-5</span>
-                                    <p class="text-white mt-1">آلية المراجعة الدورية للرسالة والأهداف</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-3 mb-4"><span class="text-sm text-slate-400">التقييم:</span>
-                                <div class="flex gap-2">
-                                    <button onclick="setRating(1, 5, 1)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-red-500" data-rating="1">1</button>
-                                    <button onclick="setRating(1, 5, 2)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-orange-500" data-rating="2">2</button>
-                                    <button onclick="setRating(1, 5, 3)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-yellow-500" data-rating="3">3</button>
-                                    <button onclick="setRating(1, 5, 4)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-lime-500" data-rating="4">4</button>
-                                    <button onclick="setRating(1, 5, 5)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-emerald-500" data-rating="5">5</button>
-                                </div>
-                            </div>
-                            <div id="evidences-1-5" class="space-y-2 mb-3"></div>
-                            <button onclick="addEvidence(1, 5)" class="text-blue-400 text-sm flex items-center gap-2 hover:text-blue-300 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg> إرفاق دليل
-                            </button>
-                        </div>
-                    </div>
-                </div>
+              </div>
             </div>
-            
-            <!-- Standard Comments -->
-            <div class="mt-8 bg-slate-800 rounded-2xl shadow-xl overflow-hidden border border-slate-700">
-                <div class="bg-slate-700/50 p-4 border-b border-slate-600">
+            {{-- Standard Comments --}}
+                <div class="mt-8 bg-slate-800 rounded-2xl shadow-xl overflow-hidden border border-slate-700">
+                  <div class="bg-slate-700/50 p-4 border-b border-slate-600">
                     <h4 class="font-bold text-white flex items-center gap-2">
-                        <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
-                        </svg> التعليقات الختامية للمعيار
+                      <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                      </svg> التعليقات الختامية للمعيار
                     </h4>
-                </div>
-                <div class="p-6 space-y-5">
+                  </div>
+                  <div class="p-6 space-y-5">
                     <div>
-                        <label class="block text-sm font-medium text-slate-300 mb-2">تعليق البرنامج</label> 
-                        <textarea rows="3" placeholder="أدخل تعليق البرنامج على هذا المعيار..." class="w-full px-4 py-3 rounded-xl resize-none bg-slate-900 border border-slate-600 focus:ring-2 focus:ring-blue-500 text-white" onchange="saveStandardComment(1, 'program_comment', this.value)"></textarea>
+                      <label class="block text-sm font-medium text-slate-300 mb-2">تعليق البرنامج</label>
+                      <textarea rows="3" placeholder="أدخل تعليق البرنامج على هذا المعيار..."
+                        class="w-full px-4 py-3 rounded-xl resize-none bg-slate-900 border border-slate-600 focus:ring-2 focus:ring-blue-500 text-white"
+                        onchange="saveStandardComment(1, 'program_comment', this.value)"></textarea>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-emerald-400 mb-2">جوانب القوة</label> 
-                        <textarea rows="3" placeholder="• نقطة قوة 1" class="w-full px-4 py-3 rounded-xl resize-none bg-emerald-900/10 border border-emerald-800/50 focus:ring-2 focus:ring-emerald-500 text-white" onchange="saveStandardComment(1, 'strengths', this.value)"></textarea>
+                      <label class="block text-sm font-medium text-emerald-400 mb-2">جوانب القوة</label>
+                      <textarea rows="3" placeholder="• نقطة قوة 1"
+                        class="w-full px-4 py-3 rounded-xl resize-none bg-emerald-900/10 border border-emerald-800/50 focus:ring-2 focus:ring-emerald-500 text-white"
+                        onchange="saveStandardComment(1, 'strengths', this.value)"></textarea>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-red-400 mb-2">جوانب تحتاج تحسين</label> 
-                        <textarea rows="3" placeholder="• جانب للتحسين 1" class="w-full px-4 py-3 rounded-xl resize-none bg-red-900/10 border border-red-800/50 focus:ring-2 focus:ring-red-500 text-white" onchange="saveStandardComment(1, 'improvements', this.value)"></textarea>
+                      <label class="block text-sm font-medium text-red-400 mb-2">جوانب تحتاج تحسين</label>
+                      <textarea rows="3" placeholder="• جانب للتحسين 1"
+                        class="w-full px-4 py-3 rounded-xl resize-none bg-red-900/10 border border-red-800/50 focus:ring-2 focus:ring-red-500 text-white"
+                        onchange="saveStandardComment(1, 'improvements', this.value)"></textarea>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-amber-400 mb-2">أولويات التحسين</label> 
-                        <textarea rows="3" placeholder="• أولوية 1" class="w-full px-4 py-3 rounded-xl resize-none bg-amber-900/10 border border-amber-800/50 focus:ring-2 focus:ring-amber-500 text-white" onchange="saveStandardComment(1, 'priorities', this.value)"></textarea>
+                      <label class="block text-sm font-medium text-amber-400 mb-2">أولويات التحسين</label>
+                      <textarea rows="3" placeholder="• أولوية 1"
+                        class="w-full px-4 py-3 rounded-xl resize-none bg-amber-900/10 border border-amber-800/50 focus:ring-2 focus:ring-amber-500 text-white"
+                        onchange="saveStandardComment(1, 'priorities', this.value)"></textarea>
                     </div>
                     <div class="pt-4 border-t border-slate-700">
-                        <label class="block text-sm font-medium text-blue-400 mb-2">الرأي المستقل</label> 
-                        <textarea rows="3" placeholder="أدخل الرأي المستقل..." class="w-full px-4 py-3 rounded-xl resize-none bg-blue-900/10 border border-blue-800/50 focus:ring-2 focus:ring-blue-500 text-white" onchange="saveStandardComment(1, 'independent_opinion', this.value)"></textarea>
+                      <label class="block text-sm font-medium text-blue-400 mb-2">الرأي المستقل</label>
+                      <textarea rows="3" placeholder="أدخل الرأي المستقل..."
+                        class="w-full px-4 py-3 rounded-xl resize-none bg-blue-900/10 border border-blue-800/50 focus:ring-2 focus:ring-blue-500 text-white"
+                        onchange="saveStandardComment(1, 'independent_opinion', this.value)"></textarea>
                     </div>
-                </div>
-            </div>
-          </div>
-
-          <!-- Standard 2 -->
-          <div id="standard-2-tab-content" class="std-content hidden fade-in">
-            <!-- Standard Header -->
-            <div class="bg-slate-800 rounded-2xl p-6 shadow-xl mb-8 border-r-4 border-emerald-500">
-              <div class="flex items-center justify-between">
-                <div>
-                  <h2 class="text-2xl font-bold text-white flex items-center gap-3">
-                    <div class="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center text-emerald-400 font-bold text-xl">2</div>
-                    المعيار الثاني: إدارة البرنامج وضمان الجودة
-                  </h2>
-                  <p class="text-slate-400 text-sm mt-2">يحتوي على 6 مؤشرات موزعة على المعايير الفرعية</p>
-                </div>
-                <div class="text-left bg-slate-900/50 p-4 rounded-xl border border-slate-700">
-                  <span class="block text-xs text-slate-400 mb-1 text-center">التقييم</span>
-                  <div class="flex items-center justify-center gap-1">
-                      <span id="standard-2-score" class="text-3xl font-bold text-emerald-400">0.0</span>
-                      <span class="text-slate-500 text-lg">/5</span>
                   </div>
                 </div>
-              </div>
-            </div>
-
-            <!-- Substandards Container -->
-            <div class="space-y-8">
-                
-                <!-- Substandard 2.1 -->
-                <div class="bg-slate-800/80 rounded-2xl shadow-lg border border-slate-700/50 overflow-hidden">
-                    <div class="bg-slate-700/30 p-4 border-b border-slate-700/50 flex items-center gap-3">
-                        <span class="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-lg font-bold text-sm">2.1</span>
-                        <h3 class="font-bold text-lg text-white">إدارة البرنامج</h3>
-                    </div>
-                    <div class="p-6 space-y-4">
-                        
-                        <!-- Indicator 2-1 -->
-                        <div class="indicator-row rounded-xl p-5 border border-slate-600 bg-slate-800/50" data-indicator="2-1">
-                            <div class="flex items-start justify-between mb-4">
-                                <div class="flex-1"><span class="text-xs text-blue-400 font-medium">مؤشر 2-1</span>
-                                    <p class="text-white mt-1">فاعلية الهيكل التنظيمي للبرنامج</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-3 mb-4"><span class="text-sm text-slate-400">التقييم:</span>
-                                <div class="flex gap-2">
-                                    <button onclick="setRating(2, 1, 1)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-red-500" data-rating="1">1</button>
-                                    <button onclick="setRating(2, 1, 2)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-orange-500" data-rating="2">2</button>
-                                    <button onclick="setRating(2, 1, 3)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-yellow-500" data-rating="3">3</button>
-                                    <button onclick="setRating(2, 1, 4)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-lime-500" data-rating="4">4</button>
-                                    <button onclick="setRating(2, 1, 5)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-emerald-500" data-rating="5">5</button>
-                                </div>
-                            </div>
-                            <div id="evidences-2-1" class="space-y-2 mb-3"></div>
-                            <button onclick="addEvidence(2, 1)" class="text-blue-400 text-sm flex items-center gap-2 hover:text-blue-300 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg> إرفاق دليل
-                            </button>
-                        </div>
-
-                        <!-- Indicator 2-2 -->
-                        <div class="indicator-row rounded-xl p-5 border border-slate-600 bg-slate-800/50" data-indicator="2-2">
-                            <div class="flex items-start justify-between mb-4">
-                                <div class="flex-1"><span class="text-xs text-blue-400 font-medium">مؤشر 2-2</span>
-                                    <p class="text-white mt-1">وضوح المهام والمسؤوليات للقيادات واللجان</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-3 mb-4"><span class="text-sm text-slate-400">التقييم:</span>
-                                <div class="flex gap-2">
-                                    <button onclick="setRating(2, 2, 1)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-red-500" data-rating="1">1</button>
-                                    <button onclick="setRating(2, 2, 2)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-orange-500" data-rating="2">2</button>
-                                    <button onclick="setRating(2, 2, 3)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-yellow-500" data-rating="3">3</button>
-                                    <button onclick="setRating(2, 2, 4)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-lime-500" data-rating="4">4</button>
-                                    <button onclick="setRating(2, 2, 5)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-emerald-500" data-rating="5">5</button>
-                                </div>
-                            </div>
-                            <div id="evidences-2-2" class="space-y-2 mb-3"></div>
-                            <button onclick="addEvidence(2, 2)" class="text-blue-400 text-sm flex items-center gap-2 hover:text-blue-300 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg> إرفاق دليل
-                            </button>
-                        </div>
-
-                        <!-- Indicator 2-3 -->
-                        <div class="indicator-row rounded-xl p-5 border border-slate-600 bg-slate-800/50" data-indicator="2-3">
-                            <div class="flex items-start justify-between mb-4">
-                                <div class="flex-1"><span class="text-xs text-blue-400 font-medium">مؤشر 2-3</span>
-                                    <p class="text-white mt-1">كفاءة نظام إدارة المعلومات والسجلات</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-3 mb-4"><span class="text-sm text-slate-400">التقييم:</span>
-                                <div class="flex gap-2">
-                                    <button onclick="setRating(2, 3, 1)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-red-500" data-rating="1">1</button>
-                                    <button onclick="setRating(2, 3, 2)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-orange-500" data-rating="2">2</button>
-                                    <button onclick="setRating(2, 3, 3)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-yellow-500" data-rating="3">3</button>
-                                    <button onclick="setRating(2, 3, 4)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-lime-500" data-rating="4">4</button>
-                                    <button onclick="setRating(2, 3, 5)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-emerald-500" data-rating="5">5</button>
-                                </div>
-                            </div>
-                            <div id="evidences-2-3" class="space-y-2 mb-3"></div>
-                            <button onclick="addEvidence(2, 3)" class="text-blue-400 text-sm flex items-center gap-2 hover:text-blue-300 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg> إرفاق دليل
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Substandard 2.2 -->
-                <div class="bg-slate-800/80 rounded-2xl shadow-lg border border-slate-700/50 overflow-hidden">
-                    <div class="bg-slate-700/30 p-4 border-b border-slate-700/50 flex items-center gap-3">
-                        <span class="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-lg font-bold text-sm">2.2</span>
-                        <h3 class="font-bold text-lg text-white">ضمان جودة البرنامج</h3>
-                    </div>
-                    <div class="p-6 space-y-4">
-                        
-                        <!-- Indicator 2-4 -->
-                        <div class="indicator-row rounded-xl p-5 border border-slate-600 bg-slate-800/50" data-indicator="2-4">
-                            <div class="flex items-start justify-between mb-4">
-                                <div class="flex-1"><span class="text-xs text-blue-400 font-medium">مؤشر 2-4</span>
-                                    <p class="text-white mt-1">مشاركة جميع المنسوبين في عمليات الجودة</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-3 mb-4"><span class="text-sm text-slate-400">التقييم:</span>
-                                <div class="flex gap-2">
-                                    <button onclick="setRating(2, 4, 1)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-red-500" data-rating="1">1</button>
-                                    <button onclick="setRating(2, 4, 2)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-orange-500" data-rating="2">2</button>
-                                    <button onclick="setRating(2, 4, 3)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-yellow-500" data-rating="3">3</button>
-                                    <button onclick="setRating(2, 4, 4)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-lime-500" data-rating="4">4</button>
-                                    <button onclick="setRating(2, 4, 5)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-emerald-500" data-rating="5">5</button>
-                                </div>
-                            </div>
-                            <div id="evidences-2-4" class="space-y-2 mb-3"></div>
-                            <button onclick="addEvidence(2, 4)" class="text-blue-400 text-sm flex items-center gap-2 hover:text-blue-300 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg> إرفاق دليل
-                            </button>
-                        </div>
-
-                        <!-- Indicator 2-5 -->
-                        <div class="indicator-row rounded-xl p-5 border border-slate-600 bg-slate-800/50" data-indicator="2-5">
-                            <div class="flex items-start justify-between mb-4">
-                                <div class="flex-1"><span class="text-xs text-blue-400 font-medium">مؤشر 2-5</span>
-                                    <p class="text-white mt-1">فاعلية نظام التقويم والمراجعة الداخلية</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-3 mb-4"><span class="text-sm text-slate-400">التقييم:</span>
-                                <div class="flex gap-2">
-                                    <button onclick="setRating(2, 5, 1)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-red-500" data-rating="1">1</button>
-                                    <button onclick="setRating(2, 5, 2)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-orange-500" data-rating="2">2</button>
-                                    <button onclick="setRating(2, 5, 3)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-yellow-500" data-rating="3">3</button>
-                                    <button onclick="setRating(2, 5, 4)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-lime-500" data-rating="4">4</button>
-                                    <button onclick="setRating(2, 5, 5)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-emerald-500" data-rating="5">5</button>
-                                </div>
-                            </div>
-                            <div id="evidences-2-5" class="space-y-2 mb-3"></div>
-                            <button onclick="addEvidence(2, 5)" class="text-blue-400 text-sm flex items-center gap-2 hover:text-blue-300 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg> إرفاق دليل
-                            </button>
-                        </div>
-
-                        <!-- Indicator 2-6 -->
-                        <div class="indicator-row rounded-xl p-5 border border-slate-600 bg-slate-800/50" data-indicator="2-6">
-                            <div class="flex items-start justify-between mb-4">
-                                <div class="flex-1"><span class="text-xs text-blue-400 font-medium">مؤشر 2-6</span>
-                                    <p class="text-white mt-1">استخدام نتائج التقويم في خطط التحسين</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-3 mb-4"><span class="text-sm text-slate-400">التقييم:</span>
-                                <div class="flex gap-2">
-                                    <button onclick="setRating(2, 6, 1)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-red-500" data-rating="1">1</button>
-                                    <button onclick="setRating(2, 6, 2)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-orange-500" data-rating="2">2</button>
-                                    <button onclick="setRating(2, 6, 3)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-yellow-500" data-rating="3">3</button>
-                                    <button onclick="setRating(2, 6, 4)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-lime-500" data-rating="4">4</button>
-                                    <button onclick="setRating(2, 6, 5)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-emerald-500" data-rating="5">5</button>
-                                </div>
-                            </div>
-                            <div id="evidences-2-6" class="space-y-2 mb-3"></div>
-                            <button onclick="addEvidence(2, 6)" class="text-blue-400 text-sm flex items-center gap-2 hover:text-blue-300 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg> إرفاق دليل
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Standard Comments -->
-            <div class="mt-8 bg-slate-800 rounded-2xl shadow-xl overflow-hidden border border-slate-700">
-                <div class="bg-slate-700/50 p-4 border-b border-slate-600">
-                    <h4 class="font-bold text-white flex items-center gap-2">
-                        <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
-                        </svg> التعليقات الختامية للمعيار
-                    </h4>
-                </div>
-                <div class="p-6 space-y-5">
-                    <div>
-                        <label class="block text-sm font-medium text-slate-300 mb-2">تعليق البرنامج</label> 
-                        <textarea rows="3" placeholder="أدخل تعليق البرنامج على هذا المعيار..." class="w-full px-4 py-3 rounded-xl resize-none bg-slate-900 border border-slate-600 focus:ring-2 focus:ring-blue-500 text-white" onchange="saveStandardComment(2, 'program_comment', this.value)"></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-emerald-400 mb-2">جوانب القوة</label> 
-                        <textarea rows="3" placeholder="• نقطة قوة 1" class="w-full px-4 py-3 rounded-xl resize-none bg-emerald-900/10 border border-emerald-800/50 focus:ring-2 focus:ring-emerald-500 text-white" onchange="saveStandardComment(2, 'strengths', this.value)"></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-red-400 mb-2">جوانب تحتاج تحسين</label> 
-                        <textarea rows="3" placeholder="• جانب للتحسين 1" class="w-full px-4 py-3 rounded-xl resize-none bg-red-900/10 border border-red-800/50 focus:ring-2 focus:ring-red-500 text-white" onchange="saveStandardComment(2, 'improvements', this.value)"></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-amber-400 mb-2">أولويات التحسين</label> 
-                        <textarea rows="3" placeholder="• أولوية 1" class="w-full px-4 py-3 rounded-xl resize-none bg-amber-900/10 border border-amber-800/50 focus:ring-2 focus:ring-amber-500 text-white" onchange="saveStandardComment(2, 'priorities', this.value)"></textarea>
-                    </div>
-                    <div class="pt-4 border-t border-slate-700">
-                        <label class="block text-sm font-medium text-blue-400 mb-2">الرأي المستقل</label> 
-                        <textarea rows="3" placeholder="أدخل الرأي المستقل..." class="w-full px-4 py-3 rounded-xl resize-none bg-blue-900/10 border border-blue-800/50 focus:ring-2 focus:ring-blue-500 text-white" onchange="saveStandardComment(2, 'independent_opinion', this.value)"></textarea>
-                    </div>
-                </div>
-            </div>
           </div>
-
-          <!-- Standard 3 -->
-          <div id="standard-3-tab-content" class="std-content hidden fade-in">
-            <!-- Standard Header -->
-            <div class="bg-slate-800 rounded-2xl p-6 shadow-xl mb-8 border-r-4 border-emerald-500">
-              <div class="flex items-center justify-between">
-                <div>
-                  <h2 class="text-2xl font-bold text-white flex items-center gap-3">
-                    <div class="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center text-emerald-400 font-bold text-xl">3</div>
-                    المعيار الثالث: التعليم والتعلم
-                  </h2>
-                  <p class="text-slate-400 text-sm mt-2">يحتوي على 8 مؤشرات موزعة على المعايير الفرعية</p>
-                </div>
-                <div class="text-left bg-slate-900/50 p-4 rounded-xl border border-slate-700">
-                  <span class="block text-xs text-slate-400 mb-1 text-center">التقييم</span>
-                  <div class="flex items-center justify-center gap-1">
-                      <span id="standard-3-score" class="text-3xl font-bold text-emerald-400">0.0</span>
-                      <span class="text-slate-500 text-lg">/5</span>
+          {{--? Section 3: Independent Evaluations --}}
+          <div id="section-3" class="section-content hidden p-8 fade-in">
+            <div class="mb-8">
+              <div class="flex items-center gap-3 mb-2">
+                <div class="w-2 h-8 bg-purple-500 rounded-full"></div>
+                <h2 class="text-2xl font-bold text-white">الجزء الثالث: التقييمات المستقلة والنتائج</h2>
+              </div>
+              <p class="text-slate-400 mr-5">إدخال نتائج التقييم الخارجي والتوصيات وخطة الاستجابة</p>
+            </div>
+            <div class="space-y-6">
+              {{-- Independent Evaluations --}}
+              <div class="bg-slate-800 rounded-2xl p-6 shadow-xl">
+                <h3 class="text-lg font-bold text-white mb-6 flex items-center gap-2">
+                  <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                  </svg> التقييمات المستقلة
+                </h3>
+                <div class="space-y-4">
+                  <div><label class="block text-sm text-slate-400 mb-2">الإجراءات المتبعة للحصول على التقييم <span
+                        class="text-red-400">*</span></label> <textarea id="evaluation_procedures" rows="4"
+                      placeholder="صف الإجراءات المتبعة للحصول على التقييم المستقل..."
+                      class="w-full px-4 py-3 rounded-xl resize-none"
+                      onchange="saveField('evaluations', 'evaluation_procedures', this.value)"></textarea>
+                  </div>
+                  <div><label class="block text-sm text-slate-400 mb-2">توصيات المقيمين <span
+                        class="text-red-400">*</span></label> <textarea id="evaluator_recommendations" rows="4"
+                      placeholder="" class="w-full px-4 py-3 rounded-xl resize-none"
+                      onchange="saveField('evaluations', 'evaluator_recommendations', this.value)"></textarea>
                   </div>
                 </div>
-              </div>
-            </div>
-
-            <!-- Substandards Container -->
-            <div class="space-y-8">
-                
-                <!-- Substandard 3.1 -->
-                <div class="bg-slate-800/80 rounded-2xl shadow-lg border border-slate-700/50 overflow-hidden">
-                    <div class="bg-slate-700/30 p-4 border-b border-slate-700/50 flex items-center gap-3">
-                        <span class="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-lg font-bold text-sm">3.1</span>
-                        <h3 class="font-bold text-lg text-white">خصائص الخريجين ونواتج التعلم</h3>
-                    </div>
-                    <div class="p-6 space-y-4">
-                        
-                        <!-- Indicator 3-1 -->
-                        <div class="indicator-row rounded-xl p-5 border border-slate-600 bg-slate-800/50" data-indicator="3-1">
-                            <div class="flex items-start justify-between mb-4">
-                                <div class="flex-1"><span class="text-xs text-blue-400 font-medium">مؤشر 3-1</span>
-                                    <p class="text-white mt-1">اتساق نواتج تعلم البرنامج مع الإطار الوطني للمؤهلات</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-3 mb-4"><span class="text-sm text-slate-400">التقييم:</span>
-                                <div class="flex gap-2">
-                                    <button onclick="setRating(3, 1, 1)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-red-500" data-rating="1">1</button>
-                                    <button onclick="setRating(3, 1, 2)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-orange-500" data-rating="2">2</button>
-                                    <button onclick="setRating(3, 1, 3)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-yellow-500" data-rating="3">3</button>
-                                    <button onclick="setRating(3, 1, 4)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-lime-500" data-rating="4">4</button>
-                                    <button onclick="setRating(3, 1, 5)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-emerald-500" data-rating="5">5</button>
-                                </div>
-                            </div>
-                            <div id="evidences-3-1" class="space-y-2 mb-3"></div>
-                            <button onclick="addEvidence(3, 1)" class="text-blue-400 text-sm flex items-center gap-2 hover:text-blue-300 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg> إرفاق دليل
-                            </button>
-                        </div>
-
-                        <!-- Indicator 3-2 -->
-                        <div class="indicator-row rounded-xl p-5 border border-slate-600 bg-slate-800/50" data-indicator="3-2">
-                            <div class="flex items-start justify-between mb-4">
-                                <div class="flex-1"><span class="text-xs text-blue-400 font-medium">مؤشر 3-2</span>
-                                    <p class="text-white mt-1">قياس نواتج التعلم وتقييمها بشكل دوري</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-3 mb-4"><span class="text-sm text-slate-400">التقييم:</span>
-                                <div class="flex gap-2">
-                                    <button onclick="setRating(3, 2, 1)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-red-500" data-rating="1">1</button>
-                                    <button onclick="setRating(3, 2, 2)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-orange-500" data-rating="2">2</button>
-                                    <button onclick="setRating(3, 2, 3)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-yellow-500" data-rating="3">3</button>
-                                    <button onclick="setRating(3, 2, 4)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-lime-500" data-rating="4">4</button>
-                                    <button onclick="setRating(3, 2, 5)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-emerald-500" data-rating="5">5</button>
-                                </div>
-                            </div>
-                            <div id="evidences-3-2" class="space-y-2 mb-3"></div>
-                            <button onclick="addEvidence(3, 2)" class="text-blue-400 text-sm flex items-center gap-2 hover:text-blue-300 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg> إرفاق دليل
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Substandard 3.2 -->
-                <div class="bg-slate-800/80 rounded-2xl shadow-lg border border-slate-700/50 overflow-hidden">
-                    <div class="bg-slate-700/30 p-4 border-b border-slate-700/50 flex items-center gap-3">
-                        <span class="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-lg font-bold text-sm">3.2</span>
-                        <h3 class="font-bold text-lg text-white">المنهج الدراسي</h3>
-                    </div>
-                    <div class="p-6 space-y-4">
-                        
-                        <!-- Indicator 3-3 -->
-                        <div class="indicator-row rounded-xl p-5 border border-slate-600 bg-slate-800/50" data-indicator="3-3">
-                            <div class="flex items-start justify-between mb-4">
-                                <div class="flex-1"><span class="text-xs text-blue-400 font-medium">مؤشر 3-3</span>
-                                    <p class="text-white mt-1">توازن المنهج وتغطيته لمتطلبات التخصص</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-3 mb-4"><span class="text-sm text-slate-400">التقييم:</span>
-                                <div class="flex gap-2">
-                                    <button onclick="setRating(3, 3, 1)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-red-500" data-rating="1">1</button>
-                                    <button onclick="setRating(3, 3, 2)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-orange-500" data-rating="2">2</button>
-                                    <button onclick="setRating(3, 3, 3)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-yellow-500" data-rating="3">3</button>
-                                    <button onclick="setRating(3, 3, 4)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-lime-500" data-rating="4">4</button>
-                                    <button onclick="setRating(3, 3, 5)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-emerald-500" data-rating="5">5</button>
-                                </div>
-                            </div>
-                            <div id="evidences-3-3" class="space-y-2 mb-3"></div>
-                            <button onclick="addEvidence(3, 3)" class="text-blue-400 text-sm flex items-center gap-2 hover:text-blue-300 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg> إرفاق دليل
-                            </button>
-                        </div>
-
-                        <!-- Indicator 3-4 -->
-                        <div class="indicator-row rounded-xl p-5 border border-slate-600 bg-slate-800/50" data-indicator="3-4">
-                            <div class="flex items-start justify-between mb-4">
-                                <div class="flex-1"><span class="text-xs text-blue-400 font-medium">مؤشر 3-4</span>
-                                    <p class="text-white mt-1">توصيف المقررات والبرامج وفق نماذج المركز</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-3 mb-4"><span class="text-sm text-slate-400">التقييم:</span>
-                                <div class="flex gap-2">
-                                    <button onclick="setRating(3, 4, 1)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-red-500" data-rating="1">1</button>
-                                    <button onclick="setRating(3, 4, 2)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-orange-500" data-rating="2">2</button>
-                                    <button onclick="setRating(3, 4, 3)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-yellow-500" data-rating="3">3</button>
-                                    <button onclick="setRating(3, 4, 4)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-lime-500" data-rating="4">4</button>
-                                    <button onclick="setRating(3, 4, 5)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-emerald-500" data-rating="5">5</button>
-                                </div>
-                            </div>
-                            <div id="evidences-3-4" class="space-y-2 mb-3"></div>
-                            <button onclick="addEvidence(3, 4)" class="text-blue-400 text-sm flex items-center gap-2 hover:text-blue-300 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg> إرفاق دليل
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Substandard 3.3 -->
-                <div class="bg-slate-800/80 rounded-2xl shadow-lg border border-slate-700/50 overflow-hidden">
-                    <div class="bg-slate-700/30 p-4 border-b border-slate-700/50 flex items-center gap-3">
-                        <span class="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-lg font-bold text-sm">3.3</span>
-                        <h3 class="font-bold text-lg text-white">استراتيجيات التعليم والتعلم والتقويم</h3>
-                    </div>
-                    <div class="p-6 space-y-4">
-                        
-                        <!-- Indicator 3-5 -->
-                        <div class="indicator-row rounded-xl p-5 border border-slate-600 bg-slate-800/50" data-indicator="3-5">
-                            <div class="flex items-start justify-between mb-4">
-                                <div class="flex-1"><span class="text-xs text-blue-400 font-medium">مؤشر 3-5</span>
-                                    <p class="text-white mt-1">فاعلية استراتيجيات التعليم والتعلم</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-3 mb-4"><span class="text-sm text-slate-400">التقييم:</span>
-                                <div class="flex gap-2">
-                                    <button onclick="setRating(3, 5, 1)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-red-500" data-rating="1">1</button>
-                                    <button onclick="setRating(3, 5, 2)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-orange-500" data-rating="2">2</button>
-                                    <button onclick="setRating(3, 5, 3)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-yellow-500" data-rating="3">3</button>
-                                    <button onclick="setRating(3, 5, 4)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-lime-500" data-rating="4">4</button>
-                                    <button onclick="setRating(3, 5, 5)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-emerald-500" data-rating="5">5</button>
-                                </div>
-                            </div>
-                            <div id="evidences-3-5" class="space-y-2 mb-3"></div>
-                            <button onclick="addEvidence(3, 5)" class="text-blue-400 text-sm flex items-center gap-2 hover:text-blue-300 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg> إرفاق دليل
-                            </button>
-                        </div>
-
-                        <!-- Indicator 3-6 -->
-                        <div class="indicator-row rounded-xl p-5 border border-slate-600 bg-slate-800/50" data-indicator="3-6">
-                            <div class="flex items-start justify-between mb-4">
-                                <div class="flex-1"><span class="text-xs text-blue-400 font-medium">مؤشر 3-6</span>
-                                    <p class="text-white mt-1">عدالة وشفافية إجراءات تقييم الطلاب</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-3 mb-4"><span class="text-sm text-slate-400">التقييم:</span>
-                                <div class="flex gap-2">
-                                    <button onclick="setRating(3, 6, 1)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-red-500" data-rating="1">1</button>
-                                    <button onclick="setRating(3, 6, 2)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-orange-500" data-rating="2">2</button>
-                                    <button onclick="setRating(3, 6, 3)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-yellow-500" data-rating="3">3</button>
-                                    <button onclick="setRating(3, 6, 4)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-lime-500" data-rating="4">4</button>
-                                    <button onclick="setRating(3, 6, 5)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-emerald-500" data-rating="5">5</button>
-                                </div>
-                            </div>
-                            <div id="evidences-3-6" class="space-y-2 mb-3"></div>
-                            <button onclick="addEvidence(3, 6)" class="text-blue-400 text-sm flex items-center gap-2 hover:text-blue-300 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg> إرفاق دليل
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Substandard 3.4 -->
-                <div class="bg-slate-800/80 rounded-2xl shadow-lg border border-slate-700/50 overflow-hidden">
-                    <div class="bg-slate-700/30 p-4 border-b border-slate-700/50 flex items-center gap-3">
-                        <span class="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-lg font-bold text-sm">3.4</span>
-                        <h3 class="font-bold text-lg text-white">جودة التعليم والدعم التعليمي</h3>
-                    </div>
-                    <div class="p-6 space-y-4">
-                        
-                        <!-- Indicator 3-7 -->
-                        <div class="indicator-row rounded-xl p-5 border border-slate-600 bg-slate-800/50" data-indicator="3-7">
-                            <div class="flex items-start justify-between mb-4">
-                                <div class="flex-1"><span class="text-xs text-blue-400 font-medium">مؤشر 3-7</span>
-                                    <p class="text-white mt-1">كفاءة الدعم التعليمي المقدم للطلاب</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-3 mb-4"><span class="text-sm text-slate-400">التقييم:</span>
-                                <div class="flex gap-2">
-                                    <button onclick="setRating(3, 7, 1)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-red-500" data-rating="1">1</button>
-                                    <button onclick="setRating(3, 7, 2)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-orange-500" data-rating="2">2</button>
-                                    <button onclick="setRating(3, 7, 3)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-yellow-500" data-rating="3">3</button>
-                                    <button onclick="setRating(3, 7, 4)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-lime-500" data-rating="4">4</button>
-                                    <button onclick="setRating(3, 7, 5)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-emerald-500" data-rating="5">5</button>
-                                </div>
-                            </div>
-                            <div id="evidences-3-7" class="space-y-2 mb-3"></div>
-                            <button onclick="addEvidence(3, 7)" class="text-blue-400 text-sm flex items-center gap-2 hover:text-blue-300 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg> إرفاق دليل
-                            </button>
-                        </div>
-
-                        <!-- Indicator 3-8 -->
-                        <div class="indicator-row rounded-xl p-5 border border-slate-600 bg-slate-800/50" data-indicator="3-8">
-                            <div class="flex items-start justify-between mb-4">
-                                <div class="flex-1"><span class="text-xs text-blue-400 font-medium">مؤشر 3-8</span>
-                                    <p class="text-white mt-1">تنوع مصادر التعلم وتوفرها</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-3 mb-4"><span class="text-sm text-slate-400">التقييم:</span>
-                                <div class="flex gap-2">
-                                    <button onclick="setRating(3, 8, 1)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-red-500" data-rating="1">1</button>
-                                    <button onclick="setRating(3, 8, 2)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-orange-500" data-rating="2">2</button>
-                                    <button onclick="setRating(3, 8, 3)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-yellow-500" data-rating="3">3</button>
-                                    <button onclick="setRating(3, 8, 4)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-lime-500" data-rating="4">4</button>
-                                    <button onclick="setRating(3, 8, 5)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-emerald-500" data-rating="5">5</button>
-                                </div>
-                            </div>
-                            <div id="evidences-3-8" class="space-y-2 mb-3"></div>
-                            <button onclick="addEvidence(3, 8)" class="text-blue-400 text-sm flex items-center gap-2 hover:text-blue-300 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg> إرفاق دليل
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Standard Comments -->
-            <div class="mt-8 bg-slate-800 rounded-2xl shadow-xl overflow-hidden border border-slate-700">
-                <div class="bg-slate-700/50 p-4 border-b border-slate-600">
-                    <h4 class="font-bold text-white flex items-center gap-2">
-                        <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
-                        </svg> التعليقات الختامية للمعيار
-                    </h4>
-                </div>
-                <div class="p-6 space-y-5">
-                    <div>
-                        <label class="block text-sm font-medium text-slate-300 mb-2">تعليق البرنامج</label> 
-                        <textarea rows="3" placeholder="أدخل تعليق البرنامج على هذا المعيار..." class="w-full px-4 py-3 rounded-xl resize-none bg-slate-900 border border-slate-600 focus:ring-2 focus:ring-blue-500 text-white" onchange="saveStandardComment(3, 'program_comment', this.value)"></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-emerald-400 mb-2">جوانب القوة</label> 
-                        <textarea rows="3" placeholder="• نقطة قوة 1" class="w-full px-4 py-3 rounded-xl resize-none bg-emerald-900/10 border border-emerald-800/50 focus:ring-2 focus:ring-emerald-500 text-white" onchange="saveStandardComment(3, 'strengths', this.value)"></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-red-400 mb-2">جوانب تحتاج تحسين</label> 
-                        <textarea rows="3" placeholder="• جانب للتحسين 1" class="w-full px-4 py-3 rounded-xl resize-none bg-red-900/10 border border-red-800/50 focus:ring-2 focus:ring-red-500 text-white" onchange="saveStandardComment(3, 'improvements', this.value)"></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-amber-400 mb-2">أولويات التحسين</label> 
-                        <textarea rows="3" placeholder="• أولوية 1" class="w-full px-4 py-3 rounded-xl resize-none bg-amber-900/10 border border-amber-800/50 focus:ring-2 focus:ring-amber-500 text-white" onchange="saveStandardComment(3, 'priorities', this.value)"></textarea>
-                    </div>
-                    <div class="pt-4 border-t border-slate-700">
-                        <label class="block text-sm font-medium text-blue-400 mb-2">الرأي المستقل</label> 
-                        <textarea rows="3" placeholder="أدخل الرأي المستقل..." class="w-full px-4 py-3 rounded-xl resize-none bg-blue-900/10 border border-blue-800/50 focus:ring-2 focus:ring-blue-500 text-white" onchange="saveStandardComment(3, 'independent_opinion', this.value)"></textarea>
-                    </div>
-                </div>
-            </div>
-          </div>
-
-          <!-- Standard 4 -->
-          <div id="standard-4-tab-content" class="std-content hidden fade-in">
-            <!-- Standard Header -->
-            <div class="bg-slate-800 rounded-2xl p-6 shadow-xl mb-8 border-r-4 border-emerald-500">
-              <div class="flex items-center justify-between">
-                <div>
-                  <h2 class="text-2xl font-bold text-white flex items-center gap-3">
-                    <div class="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center text-emerald-400 font-bold text-xl">4</div>
-                    المعيار الرابع: الطلاب
-                  </h2>
-                  <p class="text-slate-400 text-sm mt-2">يحتوي على 7 مؤشرات موزعة على المعايير الفرعية</p>
-                </div>
-                <div class="text-left bg-slate-900/50 p-4 rounded-xl border border-slate-700">
-                  <span class="block text-xs text-slate-400 mb-1 text-center">التقييم</span>
-                  <div class="flex items-center justify-center gap-1">
-                      <span id="standard-4-score" class="text-3xl font-bold text-emerald-400">0.0</span>
-                      <span class="text-slate-500 text-lg">/5</span>
+              </div>{{--! Response to Recommendations --}}
+              <div class="bg-slate-800 rounded-2xl p-6 shadow-xl">
+                <h3 class="text-lg font-bold text-white mb-6 flex items-center gap-2">
+                  <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  </svg> الاستجابة للتوصيات
+                </h3>
+                <div class="space-y-4">
+                  <div><label class="block text-sm text-slate-400 mb-2">آلية الاستجابة</label> <textarea
+                      id="response_mechanism" rows="4" placeholder="صف آلية الاستجابة للتوصيات..."
+                      class="w-full px-4 py-3 rounded-xl resize-none"
+                      onchange="saveField('evaluations', 'response_mechanism', this.value)"></textarea>
                   </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Substandards Container -->
-            <div class="space-y-8">
-                
-                <!-- Substandard 4.1 -->
-                <div class="bg-slate-800/80 rounded-2xl shadow-lg border border-slate-700/50 overflow-hidden">
-                    <div class="bg-slate-700/30 p-4 border-b border-slate-700/50 flex items-center gap-3">
-                        <span class="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-lg font-bold text-sm">4.1</span>
-                        <h3 class="font-bold text-lg text-white">قبول وتسجيل الطلاب</h3>
-                    </div>
-                    <div class="p-6 space-y-4">
-                        
-                        <!-- Indicator 4-1 -->
-                        <div class="indicator-row rounded-xl p-5 border border-slate-600 bg-slate-800/50" data-indicator="4-1">
-                            <div class="flex items-start justify-between mb-4">
-                                <div class="flex-1"><span class="text-xs text-blue-400 font-medium">مؤشر 4-1</span>
-                                    <p class="text-white mt-1">عدالة ووضوح ضوابط القبول والتحويل</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-3 mb-4"><span class="text-sm text-slate-400">التقييم:</span>
-                                <div class="flex gap-2">
-                                    <button onclick="setRating(4, 1, 1)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-red-500" data-rating="1">1</button>
-                                    <button onclick="setRating(4, 1, 2)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-orange-500" data-rating="2">2</button>
-                                    <button onclick="setRating(4, 1, 3)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-yellow-500" data-rating="3">3</button>
-                                    <button onclick="setRating(4, 1, 4)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-lime-500" data-rating="4">4</button>
-                                    <button onclick="setRating(4, 1, 5)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-emerald-500" data-rating="5">5</button>
-                                </div>
-                            </div>
-                            <div id="evidences-4-1" class="space-y-2 mb-3"></div>
-                            <button onclick="addEvidence(4, 1)" class="text-blue-400 text-sm flex items-center gap-2 hover:text-blue-300 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg> إرفاق دليل
-                            </button>
-                        </div>
-
-                        <!-- Indicator 4-2 -->
-                        <div class="indicator-row rounded-xl p-5 border border-slate-600 bg-slate-800/50" data-indicator="4-2">
-                            <div class="flex items-start justify-between mb-4">
-                                <div class="flex-1"><span class="text-xs text-blue-400 font-medium">مؤشر 4-2</span>
-                                    <p class="text-white mt-1">كفاءة أنظمة التسجيل ورصد الدرجات</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-3 mb-4"><span class="text-sm text-slate-400">التقييم:</span>
-                                <div class="flex gap-2">
-                                    <button onclick="setRating(4, 2, 1)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-red-500" data-rating="1">1</button>
-                                    <button onclick="setRating(4, 2, 2)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-orange-500" data-rating="2">2</button>
-                                    <button onclick="setRating(4, 2, 3)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-yellow-500" data-rating="3">3</button>
-                                    <button onclick="setRating(4, 2, 4)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-lime-500" data-rating="4">4</button>
-                                    <button onclick="setRating(4, 2, 5)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-emerald-500" data-rating="5">5</button>
-                                </div>
-                            </div>
-                            <div id="evidences-4-2" class="space-y-2 mb-3"></div>
-                            <button onclick="addEvidence(4, 2)" class="text-blue-400 text-sm flex items-center gap-2 hover:text-blue-300 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg> إرفاق دليل
-                            </button>
-                        </div>
-
-                        <!-- Indicator 4-3 -->
-                        <div class="indicator-row rounded-xl p-5 border border-slate-600 bg-slate-800/50" data-indicator="4-3">
-                            <div class="flex items-start justify-between mb-4">
-                                <div class="flex-1"><span class="text-xs text-blue-400 font-medium">مؤشر 4-3</span>
-                                    <p class="text-white mt-1">دقة وسرية سجلات الطلاب</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-3 mb-4"><span class="text-sm text-slate-400">التقييم:</span>
-                                <div class="flex gap-2">
-                                    <button onclick="setRating(4, 3, 1)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-red-500" data-rating="1">1</button>
-                                    <button onclick="setRating(4, 3, 2)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-orange-500" data-rating="2">2</button>
-                                    <button onclick="setRating(4, 3, 3)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-yellow-500" data-rating="3">3</button>
-                                    <button onclick="setRating(4, 3, 4)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-lime-500" data-rating="4">4</button>
-                                    <button onclick="setRating(4, 3, 5)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-emerald-500" data-rating="5">5</button>
-                                </div>
-                            </div>
-                            <div id="evidences-4-3" class="space-y-2 mb-3"></div>
-                            <button onclick="addEvidence(4, 3)" class="text-blue-400 text-sm flex items-center gap-2 hover:text-blue-300 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg> إرفاق دليل
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Substandard 4.2 -->
-                <div class="bg-slate-800/80 rounded-2xl shadow-lg border border-slate-700/50 overflow-hidden">
-                    <div class="bg-slate-700/30 p-4 border-b border-slate-700/50 flex items-center gap-3">
-                        <span class="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-lg font-bold text-sm">4.2</span>
-                        <h3 class="font-bold text-lg text-white">الخدمات والأنشطة الطلابية</h3>
-                    </div>
-                    <div class="p-6 space-y-4">
-                        
-                        <!-- Indicator 4-4 -->
-                        <div class="indicator-row rounded-xl p-5 border border-slate-600 bg-slate-800/50" data-indicator="4-4">
-                            <div class="flex items-start justify-between mb-4">
-                                <div class="flex-1"><span class="text-xs text-blue-400 font-medium">مؤشر 4-4</span>
-                                    <p class="text-white mt-1">تفعيل الإرشاد الأكاديمي والطلابي</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-3 mb-4"><span class="text-sm text-slate-400">التقييم:</span>
-                                <div class="flex gap-2">
-                                    <button onclick="setRating(4, 4, 1)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-red-500" data-rating="1">1</button>
-                                    <button onclick="setRating(4, 4, 2)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-orange-500" data-rating="2">2</button>
-                                    <button onclick="setRating(4, 4, 3)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-yellow-500" data-rating="3">3</button>
-                                    <button onclick="setRating(4, 4, 4)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-lime-500" data-rating="4">4</button>
-                                    <button onclick="setRating(4, 4, 5)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-emerald-500" data-rating="5">5</button>
-                                </div>
-                            </div>
-                            <div id="evidences-4-4" class="space-y-2 mb-3"></div>
-                            <button onclick="addEvidence(4, 4)" class="text-blue-400 text-sm flex items-center gap-2 hover:text-blue-300 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg> إرفاق دليل
-                            </button>
-                        </div>
-
-                        <!-- Indicator 4-5 -->
-                        <div class="indicator-row rounded-xl p-5 border border-slate-600 bg-slate-800/50" data-indicator="4-5">
-                            <div class="flex items-start justify-between mb-4">
-                                <div class="flex-1"><span class="text-xs text-blue-400 font-medium">مؤشر 4-5</span>
-                                    <p class="text-white mt-1">تنوع الأنشطة الطلابية ودعم المواهب</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-3 mb-4"><span class="text-sm text-slate-400">التقييم:</span>
-                                <div class="flex gap-2">
-                                    <button onclick="setRating(4, 5, 1)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-red-500" data-rating="1">1</button>
-                                    <button onclick="setRating(4, 5, 2)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-orange-500" data-rating="2">2</button>
-                                    <button onclick="setRating(4, 5, 3)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-yellow-500" data-rating="3">3</button>
-                                    <button onclick="setRating(4, 5, 4)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-lime-500" data-rating="4">4</button>
-                                    <button onclick="setRating(4, 5, 5)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-emerald-500" data-rating="5">5</button>
-                                </div>
-                            </div>
-                            <div id="evidences-4-5" class="space-y-2 mb-3"></div>
-                            <button onclick="addEvidence(4, 5)" class="text-blue-400 text-sm flex items-center gap-2 hover:text-blue-300 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg> إرفاق دليل
-                            </button>
-                        </div>
-
-                        <!-- Indicator 4-6 -->
-                        <div class="indicator-row rounded-xl p-5 border border-slate-600 bg-slate-800/50" data-indicator="4-6">
-                            <div class="flex items-start justify-between mb-4">
-                                <div class="flex-1"><span class="text-xs text-blue-400 font-medium">مؤشر 4-6</span>
-                                    <p class="text-white mt-1">فاعلية نظام الشكاوى والتظلمات</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-3 mb-4"><span class="text-sm text-slate-400">التقييم:</span>
-                                <div class="flex gap-2">
-                                    <button onclick="setRating(4, 6, 1)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-red-500" data-rating="1">1</button>
-                                    <button onclick="setRating(4, 6, 2)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-orange-500" data-rating="2">2</button>
-                                    <button onclick="setRating(4, 6, 3)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-yellow-500" data-rating="3">3</button>
-                                    <button onclick="setRating(4, 6, 4)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-lime-500" data-rating="4">4</button>
-                                    <button onclick="setRating(4, 6, 5)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-emerald-500" data-rating="5">5</button>
-                                </div>
-                            </div>
-                            <div id="evidences-4-6" class="space-y-2 mb-3"></div>
-                            <button onclick="addEvidence(4, 6)" class="text-blue-400 text-sm flex items-center gap-2 hover:text-blue-300 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg> إرفاق دليل
-                            </button>
-                        </div>
-
-                        <!-- Indicator 4-7 -->
-                        <div class="indicator-row rounded-xl p-5 border border-slate-600 bg-slate-800/50" data-indicator="4-7">
-                            <div class="flex items-start justify-between mb-4">
-                                <div class="flex-1"><span class="text-xs text-blue-400 font-medium">مؤشر 4-7</span>
-                                    <p class="text-white mt-1">قياس رضا الطلاب عن الخدمات المقدمة</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-3 mb-4"><span class="text-sm text-slate-400">التقييم:</span>
-                                <div class="flex gap-2">
-                                    <button onclick="setRating(4, 7, 1)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-red-500" data-rating="1">1</button>
-                                    <button onclick="setRating(4, 7, 2)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-orange-500" data-rating="2">2</button>
-                                    <button onclick="setRating(4, 7, 3)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-yellow-500" data-rating="3">3</button>
-                                    <button onclick="setRating(4, 7, 4)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-lime-500" data-rating="4">4</button>
-                                    <button onclick="setRating(4, 7, 5)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-emerald-500" data-rating="5">5</button>
-                                </div>
-                            </div>
-                            <div id="evidences-4-7" class="space-y-2 mb-3"></div>
-                            <button onclick="addEvidence(4, 7)" class="text-blue-400 text-sm flex items-center gap-2 hover:text-blue-300 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg> إرفاق دليل
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Standard Comments -->
-            <div class="mt-8 bg-slate-800 rounded-2xl shadow-xl overflow-hidden border border-slate-700">
-                <div class="bg-slate-700/50 p-4 border-b border-slate-600">
-                    <h4 class="font-bold text-white flex items-center gap-2">
-                        <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
-                        </svg> التعليقات الختامية للمعيار
-                    </h4>
-                </div>
-                <div class="p-6 space-y-5">
-                    <div>
-                        <label class="block text-sm font-medium text-slate-300 mb-2">تعليق البرنامج</label> 
-                        <textarea rows="3" placeholder="أدخل تعليق البرنامج على هذا المعيار..." class="w-full px-4 py-3 rounded-xl resize-none bg-slate-900 border border-slate-600 focus:ring-2 focus:ring-blue-500 text-white" onchange="saveStandardComment(4, 'program_comment', this.value)"></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-emerald-400 mb-2">جوانب القوة</label> 
-                        <textarea rows="3" placeholder="• نقطة قوة 1" class="w-full px-4 py-3 rounded-xl resize-none bg-emerald-900/10 border border-emerald-800/50 focus:ring-2 focus:ring-emerald-500 text-white" onchange="saveStandardComment(4, 'strengths', this.value)"></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-red-400 mb-2">جوانب تحتاج تحسين</label> 
-                        <textarea rows="3" placeholder="• جانب للتحسين 1" class="w-full px-4 py-3 rounded-xl resize-none bg-red-900/10 border border-red-800/50 focus:ring-2 focus:ring-red-500 text-white" onchange="saveStandardComment(4, 'improvements', this.value)"></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-amber-400 mb-2">أولويات التحسين</label> 
-                        <textarea rows="3" placeholder="• أولوية 1" class="w-full px-4 py-3 rounded-xl resize-none bg-amber-900/10 border border-amber-800/50 focus:ring-2 focus:ring-amber-500 text-white" onchange="saveStandardComment(4, 'priorities', this.value)"></textarea>
-                    </div>
-                    <div class="pt-4 border-t border-slate-700">
-                        <label class="block text-sm font-medium text-blue-400 mb-2">الرأي المستقل</label> 
-                        <textarea rows="3" placeholder="أدخل الرأي المستقل..." class="w-full px-4 py-3 rounded-xl resize-none bg-blue-900/10 border border-blue-800/50 focus:ring-2 focus:ring-blue-500 text-white" onchange="saveStandardComment(4, 'independent_opinion', this.value)"></textarea>
-                    </div>
-                </div>
-            </div>
-          </div>
-
-          <!-- Standard 5 -->
-          <div id="standard-5-tab-content" class="std-content hidden fade-in">
-            <!-- Standard Header -->
-            <div class="bg-slate-800 rounded-2xl p-6 shadow-xl mb-8 border-r-4 border-emerald-500">
-              <div class="flex items-center justify-between">
-                <div>
-                  <h2 class="text-2xl font-bold text-white flex items-center gap-3">
-                    <div class="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center text-emerald-400 font-bold text-xl">5</div>
-                    المعيار الخامس: هيئة التدريس
-                  </h2>
-                  <p class="text-slate-400 text-sm mt-2">يحتوي على 6 مؤشرات موزعة على المعايير الفرعية</p>
-                </div>
-                <div class="text-left bg-slate-900/50 p-4 rounded-xl border border-slate-700">
-                  <span class="block text-xs text-slate-400 mb-1 text-center">التقييم</span>
-                  <div class="flex items-center justify-center gap-1">
-                      <span id="standard-5-score" class="text-3xl font-bold text-emerald-400">0.0</span>
-                      <span class="text-slate-500 text-lg">/5</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Substandards Container -->
-            <div class="space-y-8">
-                
-                <!-- Substandard 5.1 -->
-                <div class="bg-slate-800/80 rounded-2xl shadow-lg border border-slate-700/50 overflow-hidden">
-                    <div class="bg-slate-700/30 p-4 border-b border-slate-700/50 flex items-center gap-3">
-                        <span class="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-lg font-bold text-sm">5.1</span>
-                        <h3 class="font-bold text-lg text-white">استقطاب وتطوير هيئة التدريس</h3>
-                    </div>
-                    <div class="p-6 space-y-4">
-                        
-                        <!-- Indicator 5-1 -->
-                        <div class="indicator-row rounded-xl p-5 border border-slate-600 bg-slate-800/50" data-indicator="5-1">
-                            <div class="flex items-start justify-between mb-4">
-                                <div class="flex-1"><span class="text-xs text-blue-400 font-medium">مؤشر 5-1</span>
-                                    <p class="text-white mt-1">كفاءة وتنوع تخصصات أعضاء هيئة التدريس</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-3 mb-4"><span class="text-sm text-slate-400">التقييم:</span>
-                                <div class="flex gap-2">
-                                    <button onclick="setRating(5, 1, 1)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-red-500" data-rating="1">1</button>
-                                    <button onclick="setRating(5, 1, 2)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-orange-500" data-rating="2">2</button>
-                                    <button onclick="setRating(5, 1, 3)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-yellow-500" data-rating="3">3</button>
-                                    <button onclick="setRating(5, 1, 4)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-lime-500" data-rating="4">4</button>
-                                    <button onclick="setRating(5, 1, 5)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-emerald-500" data-rating="5">5</button>
-                                </div>
-                            </div>
-                            <div id="evidences-5-1" class="space-y-2 mb-3"></div>
-                            <button onclick="addEvidence(5, 1)" class="text-blue-400 text-sm flex items-center gap-2 hover:text-blue-300 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg> إرفاق دليل
-                            </button>
-                        </div>
-
-                        <!-- Indicator 5-2 -->
-                        <div class="indicator-row rounded-xl p-5 border border-slate-600 bg-slate-800/50" data-indicator="5-2">
-                            <div class="flex items-start justify-between mb-4">
-                                <div class="flex-1"><span class="text-xs text-blue-400 font-medium">مؤشر 5-2</span>
-                                    <p class="text-white mt-1">فاعلية برامج التطوير المهني لمنسوبي البرنامج</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-3 mb-4"><span class="text-sm text-slate-400">التقييم:</span>
-                                <div class="flex gap-2">
-                                    <button onclick="setRating(5, 2, 1)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-red-500" data-rating="1">1</button>
-                                    <button onclick="setRating(5, 2, 2)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-orange-500" data-rating="2">2</button>
-                                    <button onclick="setRating(5, 2, 3)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-yellow-500" data-rating="3">3</button>
-                                    <button onclick="setRating(5, 2, 4)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-lime-500" data-rating="4">4</button>
-                                    <button onclick="setRating(5, 2, 5)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-emerald-500" data-rating="5">5</button>
-                                </div>
-                            </div>
-                            <div id="evidences-5-2" class="space-y-2 mb-3"></div>
-                            <button onclick="addEvidence(5, 2)" class="text-blue-400 text-sm flex items-center gap-2 hover:text-blue-300 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg> إرفاق دليل
-                            </button>
-                        </div>
-
-                        <!-- Indicator 5-3 -->
-                        <div class="indicator-row rounded-xl p-5 border border-slate-600 bg-slate-800/50" data-indicator="5-3">
-                            <div class="flex items-start justify-between mb-4">
-                                <div class="flex-1"><span class="text-xs text-blue-400 font-medium">مؤشر 5-3</span>
-                                    <p class="text-white mt-1">كفاية أعداد هيئة التدريس مقارنة بالطلاب</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-3 mb-4"><span class="text-sm text-slate-400">التقييم:</span>
-                                <div class="flex gap-2">
-                                    <button onclick="setRating(5, 3, 1)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-red-500" data-rating="1">1</button>
-                                    <button onclick="setRating(5, 3, 2)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-orange-500" data-rating="2">2</button>
-                                    <button onclick="setRating(5, 3, 3)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-yellow-500" data-rating="3">3</button>
-                                    <button onclick="setRating(5, 3, 4)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-lime-500" data-rating="4">4</button>
-                                    <button onclick="setRating(5, 3, 5)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-emerald-500" data-rating="5">5</button>
-                                </div>
-                            </div>
-                            <div id="evidences-5-3" class="space-y-2 mb-3"></div>
-                            <button onclick="addEvidence(5, 3)" class="text-blue-400 text-sm flex items-center gap-2 hover:text-blue-300 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg> إرفاق دليل
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Substandard 5.2 -->
-                <div class="bg-slate-800/80 rounded-2xl shadow-lg border border-slate-700/50 overflow-hidden">
-                    <div class="bg-slate-700/30 p-4 border-b border-slate-700/50 flex items-center gap-3">
-                        <span class="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-lg font-bold text-sm">5.2</span>
-                        <h3 class="font-bold text-lg text-white">حقوق وواجبات هيئة التدريس</h3>
-                    </div>
-                    <div class="p-6 space-y-4">
-                        
-                        <!-- Indicator 5-4 -->
-                        <div class="indicator-row rounded-xl p-5 border border-slate-600 bg-slate-800/50" data-indicator="5-4">
-                            <div class="flex items-start justify-between mb-4">
-                                <div class="flex-1"><span class="text-xs text-blue-400 font-medium">مؤشر 5-4</span>
-                                    <p class="text-white mt-1">وضوح سياسات التقييم والترقية</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-3 mb-4"><span class="text-sm text-slate-400">التقييم:</span>
-                                <div class="flex gap-2">
-                                    <button onclick="setRating(5, 4, 1)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-red-500" data-rating="1">1</button>
-                                    <button onclick="setRating(5, 4, 2)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-orange-500" data-rating="2">2</button>
-                                    <button onclick="setRating(5, 4, 3)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-yellow-500" data-rating="3">3</button>
-                                    <button onclick="setRating(5, 4, 4)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-lime-500" data-rating="4">4</button>
-                                    <button onclick="setRating(5, 4, 5)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-emerald-500" data-rating="5">5</button>
-                                </div>
-                            </div>
-                            <div id="evidences-5-4" class="space-y-2 mb-3"></div>
-                            <button onclick="addEvidence(5, 4)" class="text-blue-400 text-sm flex items-center gap-2 hover:text-blue-300 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg> إرفاق دليل
-                            </button>
-                        </div>
-
-                        <!-- Indicator 5-5 -->
-                        <div class="indicator-row rounded-xl p-5 border border-slate-600 bg-slate-800/50" data-indicator="5-5">
-                            <div class="flex items-start justify-between mb-4">
-                                <div class="flex-1"><span class="text-xs text-blue-400 font-medium">مؤشر 5-5</span>
-                                    <p class="text-white mt-1">التزام هيئة التدريس بأمانة العمل الأكاديمي</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-3 mb-4"><span class="text-sm text-slate-400">التقييم:</span>
-                                <div class="flex gap-2">
-                                    <button onclick="setRating(5, 5, 1)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-red-500" data-rating="1">1</button>
-                                    <button onclick="setRating(5, 5, 2)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-orange-500" data-rating="2">2</button>
-                                    <button onclick="setRating(5, 5, 3)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-yellow-500" data-rating="3">3</button>
-                                    <button onclick="setRating(5, 5, 4)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-lime-500" data-rating="4">4</button>
-                                    <button onclick="setRating(5, 5, 5)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-emerald-500" data-rating="5">5</button>
-                                </div>
-                            </div>
-                            <div id="evidences-5-5" class="space-y-2 mb-3"></div>
-                            <button onclick="addEvidence(5, 5)" class="text-blue-400 text-sm flex items-center gap-2 hover:text-blue-300 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg> إرفاق دليل
-                            </button>
-                        </div>
-
-                        <!-- Indicator 5-6 -->
-                        <div class="indicator-row rounded-xl p-5 border border-slate-600 bg-slate-800/50" data-indicator="5-6">
-                            <div class="flex items-start justify-between mb-4">
-                                <div class="flex-1"><span class="text-xs text-blue-400 font-medium">مؤشر 5-6</span>
-                                    <p class="text-white mt-1">مشاركة هيئة التدريس في اللجان والأنشطة</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-3 mb-4"><span class="text-sm text-slate-400">التقييم:</span>
-                                <div class="flex gap-2">
-                                    <button onclick="setRating(5, 6, 1)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-red-500" data-rating="1">1</button>
-                                    <button onclick="setRating(5, 6, 2)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-orange-500" data-rating="2">2</button>
-                                    <button onclick="setRating(5, 6, 3)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-yellow-500" data-rating="3">3</button>
-                                    <button onclick="setRating(5, 6, 4)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-lime-500" data-rating="4">4</button>
-                                    <button onclick="setRating(5, 6, 5)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-emerald-500" data-rating="5">5</button>
-                                </div>
-                            </div>
-                            <div id="evidences-5-6" class="space-y-2 mb-3"></div>
-                            <button onclick="addEvidence(5, 6)" class="text-blue-400 text-sm flex items-center gap-2 hover:text-blue-300 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg> إرفاق دليل
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Standard Comments -->
-            <div class="mt-8 bg-slate-800 rounded-2xl shadow-xl overflow-hidden border border-slate-700">
-                <div class="bg-slate-700/50 p-4 border-b border-slate-600">
-                    <h4 class="font-bold text-white flex items-center gap-2">
-                        <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
-                        </svg> التعليقات الختامية للمعيار
-                    </h4>
-                </div>
-                <div class="p-6 space-y-5">
-                    <div>
-                        <label class="block text-sm font-medium text-slate-300 mb-2">تعليق البرنامج</label> 
-                        <textarea rows="3" placeholder="أدخل تعليق البرنامج على هذا المعيار..." class="w-full px-4 py-3 rounded-xl resize-none bg-slate-900 border border-slate-600 focus:ring-2 focus:ring-blue-500 text-white" onchange="saveStandardComment(5, 'program_comment', this.value)"></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-emerald-400 mb-2">جوانب القوة</label> 
-                        <textarea rows="3" placeholder="• نقطة قوة 1" class="w-full px-4 py-3 rounded-xl resize-none bg-emerald-900/10 border border-emerald-800/50 focus:ring-2 focus:ring-emerald-500 text-white" onchange="saveStandardComment(5, 'strengths', this.value)"></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-red-400 mb-2">جوانب تحتاج تحسين</label> 
-                        <textarea rows="3" placeholder="• جانب للتحسين 1" class="w-full px-4 py-3 rounded-xl resize-none bg-red-900/10 border border-red-800/50 focus:ring-2 focus:ring-red-500 text-white" onchange="saveStandardComment(5, 'improvements', this.value)"></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-amber-400 mb-2">أولويات التحسين</label> 
-                        <textarea rows="3" placeholder="• أولوية 1" class="w-full px-4 py-3 rounded-xl resize-none bg-amber-900/10 border border-amber-800/50 focus:ring-2 focus:ring-amber-500 text-white" onchange="saveStandardComment(5, 'priorities', this.value)"></textarea>
-                    </div>
-                    <div class="pt-4 border-t border-slate-700">
-                        <label class="block text-sm font-medium text-blue-400 mb-2">الرأي المستقل</label> 
-                        <textarea rows="3" placeholder="أدخل الرأي المستقل..." class="w-full px-4 py-3 rounded-xl resize-none bg-blue-900/10 border border-blue-800/50 focus:ring-2 focus:ring-blue-500 text-white" onchange="saveStandardComment(5, 'independent_opinion', this.value)"></textarea>
-                    </div>
-                </div>
-            </div>
-          </div>
-
-          <!-- Standard 6 -->
-          <div id="standard-6-tab-content" class="std-content hidden fade-in">
-            <!-- Standard Header -->
-            <div class="bg-slate-800 rounded-2xl p-6 shadow-xl mb-8 border-r-4 border-emerald-500">
-              <div class="flex items-center justify-between">
-                <div>
-                  <h2 class="text-2xl font-bold text-white flex items-center gap-3">
-                    <div class="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center text-emerald-400 font-bold text-xl">6</div>
-                    المعيار السادس: مصادر التعلم والمرافق
-                  </h2>
-                  <p class="text-slate-400 text-sm mt-2">يحتوي على 5 مؤشرات موزعة على المعايير الفرعية</p>
-                </div>
-                <div class="text-left bg-slate-900/50 p-4 rounded-xl border border-slate-700">
-                  <span class="block text-xs text-slate-400 mb-1 text-center">التقييم</span>
-                  <div class="flex items-center justify-center gap-1">
-                      <span id="standard-6-score" class="text-3xl font-bold text-emerald-400">0.0</span>
-                      <span class="text-slate-500 text-lg">/5</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Substandards Container -->
-            <div class="space-y-8">
-                
-                <!-- Substandard 6.1 -->
-                <div class="bg-slate-800/80 rounded-2xl shadow-lg border border-slate-700/50 overflow-hidden">
-                    <div class="bg-slate-700/30 p-4 border-b border-slate-700/50 flex items-center gap-3">
-                        <span class="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-lg font-bold text-sm">6.1</span>
-                        <h3 class="font-bold text-lg text-white">مصادر التعلم</h3>
-                    </div>
-                    <div class="p-6 space-y-4">
-                        
-                        <!-- Indicator 6-1 -->
-                        <div class="indicator-row rounded-xl p-5 border border-slate-600 bg-slate-800/50" data-indicator="6-1">
-                            <div class="flex items-start justify-between mb-4">
-                                <div class="flex-1"><span class="text-xs text-blue-400 font-medium">مؤشر 6-1</span>
-                                    <p class="text-white mt-1">توفر المراجع والدوريات اللازمة للبرنامج</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-3 mb-4"><span class="text-sm text-slate-400">التقييم:</span>
-                                <div class="flex gap-2">
-                                    <button onclick="setRating(6, 1, 1)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-red-500" data-rating="1">1</button>
-                                    <button onclick="setRating(6, 1, 2)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-orange-500" data-rating="2">2</button>
-                                    <button onclick="setRating(6, 1, 3)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-yellow-500" data-rating="3">3</button>
-                                    <button onclick="setRating(6, 1, 4)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-lime-500" data-rating="4">4</button>
-                                    <button onclick="setRating(6, 1, 5)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-emerald-500" data-rating="5">5</button>
-                                </div>
-                            </div>
-                            <div id="evidences-6-1" class="space-y-2 mb-3"></div>
-                            <button onclick="addEvidence(6, 1)" class="text-blue-400 text-sm flex items-center gap-2 hover:text-blue-300 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg> إرفاق دليل
-                            </button>
-                        </div>
-
-                        <!-- Indicator 6-2 -->
-                        <div class="indicator-row rounded-xl p-5 border border-slate-600 bg-slate-800/50" data-indicator="6-2">
-                            <div class="flex items-start justify-between mb-4">
-                                <div class="flex-1"><span class="text-xs text-blue-400 font-medium">مؤشر 6-2</span>
-                                    <p class="text-white mt-1">سهولة وصول الطلاب للهيئات والبيانات</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-3 mb-4"><span class="text-sm text-slate-400">التقييم:</span>
-                                <div class="flex gap-2">
-                                    <button onclick="setRating(6, 2, 1)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-red-500" data-rating="1">1</button>
-                                    <button onclick="setRating(6, 2, 2)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-orange-500" data-rating="2">2</button>
-                                    <button onclick="setRating(6, 2, 3)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-yellow-500" data-rating="3">3</button>
-                                    <button onclick="setRating(6, 2, 4)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-lime-500" data-rating="4">4</button>
-                                    <button onclick="setRating(6, 2, 5)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-emerald-500" data-rating="5">5</button>
-                                </div>
-                            </div>
-                            <div id="evidences-6-2" class="space-y-2 mb-3"></div>
-                            <button onclick="addEvidence(6, 2)" class="text-blue-400 text-sm flex items-center gap-2 hover:text-blue-300 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg> إرفاق دليل
-                            </button>
-                        </div>
-
-                        <!-- Indicator 6-3 -->
-                        <div class="indicator-row rounded-xl p-5 border border-slate-600 bg-slate-800/50" data-indicator="6-3">
-                            <div class="flex items-start justify-between mb-4">
-                                <div class="flex-1"><span class="text-xs text-blue-400 font-medium">مؤشر 6-3</span>
-                                    <p class="text-white mt-1">تحديث المصادر التعليمية بانتظام</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-3 mb-4"><span class="text-sm text-slate-400">التقييم:</span>
-                                <div class="flex gap-2">
-                                    <button onclick="setRating(6, 3, 1)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-red-500" data-rating="1">1</button>
-                                    <button onclick="setRating(6, 3, 2)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-orange-500" data-rating="2">2</button>
-                                    <button onclick="setRating(6, 3, 3)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-yellow-500" data-rating="3">3</button>
-                                    <button onclick="setRating(6, 3, 4)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-lime-500" data-rating="4">4</button>
-                                    <button onclick="setRating(6, 3, 5)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-emerald-500" data-rating="5">5</button>
-                                </div>
-                            </div>
-                            <div id="evidences-6-3" class="space-y-2 mb-3"></div>
-                            <button onclick="addEvidence(6, 3)" class="text-blue-400 text-sm flex items-center gap-2 hover:text-blue-300 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg> إرفاق دليل
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Substandard 6.2 -->
-                <div class="bg-slate-800/80 rounded-2xl shadow-lg border border-slate-700/50 overflow-hidden">
-                    <div class="bg-slate-700/30 p-4 border-b border-slate-700/50 flex items-center gap-3">
-                        <span class="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-lg font-bold text-sm">6.2</span>
-                        <h3 class="font-bold text-lg text-white">المرافق والتجهيزات</h3>
-                    </div>
-                    <div class="p-6 space-y-4">
-                        
-                        <!-- Indicator 6-4 -->
-                        <div class="indicator-row rounded-xl p-5 border border-slate-600 bg-slate-800/50" data-indicator="6-4">
-                            <div class="flex items-start justify-between mb-4">
-                                <div class="flex-1"><span class="text-xs text-blue-400 font-medium">مؤشر 6-4</span>
-                                    <p class="text-white mt-1">جودة القاعات الدراسية والمعامل</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-3 mb-4"><span class="text-sm text-slate-400">التقييم:</span>
-                                <div class="flex gap-2">
-                                    <button onclick="setRating(6, 4, 1)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-red-500" data-rating="1">1</button>
-                                    <button onclick="setRating(6, 4, 2)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-orange-500" data-rating="2">2</button>
-                                    <button onclick="setRating(6, 4, 3)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-yellow-500" data-rating="3">3</button>
-                                    <button onclick="setRating(6, 4, 4)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-lime-500" data-rating="4">4</button>
-                                    <button onclick="setRating(6, 4, 5)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-emerald-500" data-rating="5">5</button>
-                                </div>
-                            </div>
-                            <div id="evidences-6-4" class="space-y-2 mb-3"></div>
-                            <button onclick="addEvidence(6, 4)" class="text-blue-400 text-sm flex items-center gap-2 hover:text-blue-300 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg> إرفاق دليل
-                            </button>
-                        </div>
-
-                        <!-- Indicator 6-5 -->
-                        <div class="indicator-row rounded-xl p-5 border border-slate-600 bg-slate-800/50" data-indicator="6-5">
-                            <div class="flex items-start justify-between mb-4">
-                                <div class="flex-1"><span class="text-xs text-blue-400 font-medium">مؤشر 6-5</span>
-                                    <p class="text-white mt-1">توفر معايير الأمن والسلامة في المرافق</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-3 mb-4"><span class="text-sm text-slate-400">التقييم:</span>
-                                <div class="flex gap-2">
-                                    <button onclick="setRating(6, 5, 1)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-red-500" data-rating="1">1</button>
-                                    <button onclick="setRating(6, 5, 2)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-orange-500" data-rating="2">2</button>
-                                    <button onclick="setRating(6, 5, 3)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-yellow-500" data-rating="3">3</button>
-                                    <button onclick="setRating(6, 5, 4)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-lime-500" data-rating="4">4</button>
-                                    <button onclick="setRating(6, 5, 5)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-emerald-500" data-rating="5">5</button>
-                                </div>
-                            </div>
-                            <div id="evidences-6-5" class="space-y-2 mb-3"></div>
-                            <button onclick="addEvidence(6, 5)" class="text-blue-400 text-sm flex items-center gap-2 hover:text-blue-300 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg> إرفاق دليل
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Standard Comments -->
-            <div class="mt-8 bg-slate-800 rounded-2xl shadow-xl overflow-hidden border border-slate-700">
-                <div class="bg-slate-700/50 p-4 border-b border-slate-600">
-                    <h4 class="font-bold text-white flex items-center gap-2">
-                        <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
-                        </svg> التعليقات الختامية للمعيار
-                    </h4>
-                </div>
-                <div class="p-6 space-y-5">
-                    <div>
-                        <label class="block text-sm font-medium text-slate-300 mb-2">تعليق البرنامج</label> 
-                        <textarea rows="3" placeholder="أدخل تعليق البرنامج على هذا المعيار..." class="w-full px-4 py-3 rounded-xl resize-none bg-slate-900 border border-slate-600 focus:ring-2 focus:ring-blue-500 text-white" onchange="saveStandardComment(6, 'program_comment', this.value)"></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-emerald-400 mb-2">جوانب القوة</label> 
-                        <textarea rows="3" placeholder="• نقطة قوة 1" class="w-full px-4 py-3 rounded-xl resize-none bg-emerald-900/10 border border-emerald-800/50 focus:ring-2 focus:ring-emerald-500 text-white" onchange="saveStandardComment(6, 'strengths', this.value)"></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-red-400 mb-2">جوانب تحتاج تحسين</label> 
-                        <textarea rows="3" placeholder="• جانب للتحسين 1" class="w-full px-4 py-3 rounded-xl resize-none bg-red-900/10 border border-red-800/50 focus:ring-2 focus:ring-red-500 text-white" onchange="saveStandardComment(6, 'improvements', this.value)"></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-amber-400 mb-2">أولويات التحسين</label> 
-                        <textarea rows="3" placeholder="• أولوية 1" class="w-full px-4 py-3 rounded-xl resize-none bg-amber-900/10 border border-amber-800/50 focus:ring-2 focus:ring-amber-500 text-white" onchange="saveStandardComment(6, 'priorities', this.value)"></textarea>
-                    </div>
-                    <div class="pt-4 border-t border-slate-700">
-                        <label class="block text-sm font-medium text-blue-400 mb-2">الرأي المستقل</label> 
-                        <textarea rows="3" placeholder="أدخل الرأي المستقل..." class="w-full px-4 py-3 rounded-xl resize-none bg-blue-900/10 border border-blue-800/50 focus:ring-2 focus:ring-blue-500 text-white" onchange="saveStandardComment(6, 'independent_opinion', this.value)"></textarea>
-                    </div>
-                </div>
-            </div>
-          </div>
-
-          <!-- Standard 6 -->
-          <div id="standard-6-tab-content" class="std-content hidden fade-in">
-            <!-- Standard Header -->
-            <div class="bg-slate-800 rounded-2xl p-6 shadow-xl mb-8 border-r-4 border-emerald-500">
-              <div class="flex items-center justify-between">
-                <div>
-                  <h2 class="text-2xl font-bold text-white flex items-center gap-3">
-                    <div class="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center text-emerald-400 font-bold text-xl">6</div>
-                    المعيار السادس: مصادر التعلم والمرافق
-                  </h2>
-                  <p class="text-slate-400 text-sm mt-2">يحتوي على 5 مؤشرات موزعة على المعايير الفرعية</p>
-                </div>
-                <div class="text-left bg-slate-900/50 p-4 rounded-xl border border-slate-700">
-                  <span class="block text-xs text-slate-400 mb-1 text-center">التقييم</span>
-                  <div class="flex items-center justify-center gap-1">
-                      <span id="standard-6-score" class="text-3xl font-bold text-emerald-400">0.0</span>
-                      <span class="text-slate-500 text-lg">/5</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Substandards Container -->
-            <div class="space-y-8">
-                
-                <!-- Substandard 6.1 -->
-                <div class="bg-slate-800/80 rounded-2xl shadow-lg border border-slate-700/50 overflow-hidden">
-                    <div class="bg-slate-700/30 p-4 border-b border-slate-700/50 flex items-center gap-3">
-                        <span class="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-lg font-bold text-sm">6.1</span>
-                        <h3 class="font-bold text-lg text-white">مصادر التعلم</h3>
-                    </div>
-                    <div class="p-6 space-y-4">
-                        
-                        <!-- Indicator 6-1 -->
-                        <div class="indicator-row rounded-xl p-5 border border-slate-600 bg-slate-800/50" data-indicator="6-1">
-                            <div class="flex items-start justify-between mb-4">
-                                <div class="flex-1"><span class="text-xs text-blue-400 font-medium">مؤشر 6-1</span>
-                                    <p class="text-white mt-1">توفر المراجع والدوريات اللازمة للبرنامج</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-3 mb-4"><span class="text-sm text-slate-400">التقييم:</span>
-                                <div class="flex gap-2">
-                                    <button onclick="setRating(6, 1, 1)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-red-500" data-rating="1">1</button>
-                                    <button onclick="setRating(6, 1, 2)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-orange-500" data-rating="2">2</button>
-                                    <button onclick="setRating(6, 1, 3)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-yellow-500" data-rating="3">3</button>
-                                    <button onclick="setRating(6, 1, 4)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-lime-500" data-rating="4">4</button>
-                                    <button onclick="setRating(6, 1, 5)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-emerald-500" data-rating="5">5</button>
-                                </div>
-                            </div>
-                            <div id="evidences-6-1" class="space-y-2 mb-3"></div>
-                            <button onclick="addEvidence(6, 1)" class="text-blue-400 text-sm flex items-center gap-2 hover:text-blue-300 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg> إرفاق دليل
-                            </button>
-                        </div>
-
-                        <!-- Indicator 6-2 -->
-                        <div class="indicator-row rounded-xl p-5 border border-slate-600 bg-slate-800/50" data-indicator="6-2">
-                            <div class="flex items-start justify-between mb-4">
-                                <div class="flex-1"><span class="text-xs text-blue-400 font-medium">مؤشر 6-2</span>
-                                    <p class="text-white mt-1">سهولة وصول الطلاب للهيئات والبيانات</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-3 mb-4"><span class="text-sm text-slate-400">التقييم:</span>
-                                <div class="flex gap-2">
-                                    <button onclick="setRating(6, 2, 1)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-red-500" data-rating="1">1</button>
-                                    <button onclick="setRating(6, 2, 2)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-orange-500" data-rating="2">2</button>
-                                    <button onclick="setRating(6, 2, 3)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-yellow-500" data-rating="3">3</button>
-                                    <button onclick="setRating(6, 2, 4)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-lime-500" data-rating="4">4</button>
-                                    <button onclick="setRating(6, 2, 5)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-emerald-500" data-rating="5">5</button>
-                                </div>
-                            </div>
-                            <div id="evidences-6-2" class="space-y-2 mb-3"></div>
-                            <button onclick="addEvidence(6, 2)" class="text-blue-400 text-sm flex items-center gap-2 hover:text-blue-300 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg> إرفاق دليل
-                            </button>
-                        </div>
-
-                        <!-- Indicator 6-3 -->
-                        <div class="indicator-row rounded-xl p-5 border border-slate-600 bg-slate-800/50" data-indicator="6-3">
-                            <div class="flex items-start justify-between mb-4">
-                                <div class="flex-1"><span class="text-xs text-blue-400 font-medium">مؤشر 6-3</span>
-                                    <p class="text-white mt-1">تحديث المصادر التعليمية بانتظام</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-3 mb-4"><span class="text-sm text-slate-400">التقييم:</span>
-                                <div class="flex gap-2">
-                                    <button onclick="setRating(6, 3, 1)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-red-500" data-rating="1">1</button>
-                                    <button onclick="setRating(6, 3, 2)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-orange-500" data-rating="2">2</button>
-                                    <button onclick="setRating(6, 3, 3)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-yellow-500" data-rating="3">3</button>
-                                    <button onclick="setRating(6, 3, 4)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-lime-500" data-rating="4">4</button>
-                                    <button onclick="setRating(6, 3, 5)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-emerald-500" data-rating="5">5</button>
-                                </div>
-                            </div>
-                            <div id="evidences-6-3" class="space-y-2 mb-3"></div>
-                            <button onclick="addEvidence(6, 3)" class="text-blue-400 text-sm flex items-center gap-2 hover:text-blue-300 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg> إرفاق دليل
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Substandard 6.2 -->
-                <div class="bg-slate-800/80 rounded-2xl shadow-lg border border-slate-700/50 overflow-hidden">
-                    <div class="bg-slate-700/30 p-4 border-b border-slate-700/50 flex items-center gap-3">
-                        <span class="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-lg font-bold text-sm">6.2</span>
-                        <h3 class="font-bold text-lg text-white">المرافق والتجهيزات</h3>
-                    </div>
-                    <div class="p-6 space-y-4">
-                        
-                        <!-- Indicator 6-4 -->
-                        <div class="indicator-row rounded-xl p-5 border border-slate-600 bg-slate-800/50" data-indicator="6-4">
-                            <div class="flex items-start justify-between mb-4">
-                                <div class="flex-1"><span class="text-xs text-blue-400 font-medium">مؤشر 6-4</span>
-                                    <p class="text-white mt-1">جودة القاعات الدراسية والمعامل</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-3 mb-4"><span class="text-sm text-slate-400">التقييم:</span>
-                                <div class="flex gap-2">
-                                    <button onclick="setRating(6, 4, 1)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-red-500" data-rating="1">1</button>
-                                    <button onclick="setRating(6, 4, 2)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-orange-500" data-rating="2">2</button>
-                                    <button onclick="setRating(6, 4, 3)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-yellow-500" data-rating="3">3</button>
-                                    <button onclick="setRating(6, 4, 4)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-lime-500" data-rating="4">4</button>
-                                    <button onclick="setRating(6, 4, 5)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-emerald-500" data-rating="5">5</button>
-                                </div>
-                            </div>
-                            <div id="evidences-6-4" class="space-y-2 mb-3"></div>
-                            <button onclick="addEvidence(6, 4)" class="text-blue-400 text-sm flex items-center gap-2 hover:text-blue-300 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg> إرفاق دليل
-                            </button>
-                        </div>
-
-                        <!-- Indicator 6-5 -->
-                        <div class="indicator-row rounded-xl p-5 border border-slate-600 bg-slate-800/50" data-indicator="6-5">
-                            <div class="flex items-start justify-between mb-4">
-                                <div class="flex-1"><span class="text-xs text-blue-400 font-medium">مؤشر 6-5</span>
-                                    <p class="text-white mt-1">توفر معايير الأمن والسلامة في المرافق</p>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-3 mb-4"><span class="text-sm text-slate-400">التقييم:</span>
-                                <div class="flex gap-2">
-                                    <button onclick="setRating(6, 5, 1)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-red-500" data-rating="1">1</button>
-                                    <button onclick="setRating(6, 5, 2)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-orange-500" data-rating="2">2</button>
-                                    <button onclick="setRating(6, 5, 3)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-yellow-500" data-rating="3">3</button>
-                                    <button onclick="setRating(6, 5, 4)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-lime-500" data-rating="4">4</button>
-                                    <button onclick="setRating(6, 5, 5)" class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-emerald-500" data-rating="5">5</button>
-                                </div>
-                            </div>
-                            <div id="evidences-6-5" class="space-y-2 mb-3"></div>
-                            <button onclick="addEvidence(6, 5)" class="text-blue-400 text-sm flex items-center gap-2 hover:text-blue-300 transition-colors">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg> إرفاق دليل
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Standard Comments -->
-            <div class="mt-8 bg-slate-800 rounded-2xl shadow-xl overflow-hidden border border-slate-700">
-                <div class="bg-slate-700/50 p-4 border-b border-slate-600">
-                    <h4 class="font-bold text-white flex items-center gap-2">
-                        <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
-                        </svg> التعليقات الختامية للمعيار
-                    </h4>
-                </div>
-                <div class="p-6 space-y-5">
-                    <div>
-                        <label class="block text-sm font-medium text-slate-300 mb-2">تعليق البرنامج</label> 
-                        <textarea rows="3" placeholder="أدخل تعليق البرنامج على هذا المعيار..." class="w-full px-4 py-3 rounded-xl resize-none bg-slate-900 border border-slate-600 focus:ring-2 focus:ring-blue-500 text-white" onchange="saveStandardComment(6, 'program_comment', this.value)"></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-emerald-400 mb-2">جوانب القوة</label> 
-                        <textarea rows="3" placeholder="• نقطة قوة 1" class="w-full px-4 py-3 rounded-xl resize-none bg-emerald-900/10 border border-emerald-800/50 focus:ring-2 focus:ring-emerald-500 text-white" onchange="saveStandardComment(6, 'strengths', this.value)"></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-red-400 mb-2">جوانب تحتاج تحسين</label> 
-                        <textarea rows="3" placeholder="• جانب للتحسين 1" class="w-full px-4 py-3 rounded-xl resize-none bg-red-900/10 border border-red-800/50 focus:ring-2 focus:ring-red-500 text-white" onchange="saveStandardComment(6, 'improvements', this.value)"></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-amber-400 mb-2">أولويات التحسين</label> 
-                        <textarea rows="3" placeholder="• أولوية 1" class="w-full px-4 py-3 rounded-xl resize-none bg-amber-900/10 border border-amber-800/50 focus:ring-2 focus:ring-amber-500 text-white" onchange="saveStandardComment(6, 'priorities', this.value)"></textarea>
-                    </div>
-                    <div class="pt-4 border-t border-slate-700">
-                        <label class="block text-sm font-medium text-blue-400 mb-2">الرأي المستقل</label> 
-                        <textarea rows="3" placeholder="أدخل الرأي المستقل..." class="w-full px-4 py-3 rounded-xl resize-none bg-blue-900/10 border border-blue-800/50 focus:ring-2 focus:ring-blue-500 text-white" onchange="saveStandardComment(6, 'independent_opinion', this.value)"></textarea>
-                    </div>
-                </div>
-            </div>
-          </div>
-                </div>
-      </div><!-- Section 3: Independent Evaluations -->
-      <div id="section-3" class="section-content hidden p-8 fade-in">
-        <div class="mb-8">
-          <div class="flex items-center gap-3 mb-2">
-            <div class="w-2 h-8 bg-purple-500 rounded-full"></div>
-            <h2 class="text-2xl font-bold text-white">الجزء الثالث: التقييمات المستقلة والنتائج</h2>
-          </div>
-          <p class="text-slate-400 mr-5">إدخال نتائج التقييم الخارجي والتوصيات وخطة الاستجابة</p>
-        </div>
-        <div class="space-y-6"><!-- Independent Evaluations -->
-          <div class="bg-slate-800 rounded-2xl p-6 shadow-xl">
-            <h3 class="text-lg font-bold text-white mb-6 flex items-center gap-2">
-              <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-              </svg> التقييمات المستقلة
-            </h3>
-            <div class="space-y-4">
-              <div><label class="block text-sm text-slate-400 mb-2">الإجراءات المتبعة للحصول على التقييم <span
-                    class="text-red-400">*</span></label> <textarea id="evaluation_procedures" rows="4"
-                  placeholder="صف الإجراءات المتبعة للحصول على التقييم المستقل..."
-                  class="w-full px-4 py-3 rounded-xl resize-none"
-                  onchange="saveField('evaluations', 'evaluation_procedures', this.value)"></textarea>
-              </div>
-              <div><label class="block text-sm text-slate-400 mb-2">توصيات المقيمين <span
-                    class="text-red-400">*</span></label> <textarea id="evaluator_recommendations" rows="4" placeholder="• التوصية الأولى
-• التوصية الثانية
-• التوصية الثالثة" class="w-full px-4 py-3 rounded-xl resize-none"
-                  onchange="saveField('evaluations', 'evaluator_recommendations', this.value)"></textarea>
-              </div>
-            </div>
-          </div><!-- Response to Recommendations -->
-          <div class="bg-slate-800 rounded-2xl p-6 shadow-xl">
-            <h3 class="text-lg font-bold text-white mb-6 flex items-center gap-2">
-              <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-              </svg> الاستجابة للتوصيات
-            </h3>
-            <div class="space-y-4">
-              <div><label class="block text-sm text-slate-400 mb-2">آلية الاستجابة</label> <textarea
-                  id="response_mechanism" rows="4" placeholder="صف آلية الاستجابة للتوصيات..."
-                  class="w-full px-4 py-3 rounded-xl resize-none"
-                  onchange="saveField('evaluations', 'response_mechanism', this.value)"></textarea>
-              </div>
-              <div><label class="block text-sm text-slate-400 mb-2">الإجراءات المتخذة</label> <textarea
-                  id="actions_taken" rows="4" placeholder="• الإجراء الأول
+                  <div><label class="block text-sm text-slate-400 mb-2">الإجراءات المتخذة</label> <textarea
+                      id="actions_taken" rows="4" placeholder="• الإجراء الأول
 • الإجراء الثاني" class="w-full px-4 py-3 rounded-xl resize-none"
-                  onchange="saveField('evaluations', 'actions_taken', this.value)"></textarea>
-              </div>
-            </div>
-          </div><!-- Results -->
-          <div class="bg-slate-800 rounded-2xl p-6 shadow-xl">
-            <h3 class="text-lg font-bold text-white mb-6 flex items-center gap-2">
-              <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg> النتائج
-            </h3>
-            <div class="space-y-4">
-              <div><label class="block text-sm text-slate-400 mb-2">جوانب النجاح</label> <textarea id="success_aspects"
-                  rows="4" placeholder="• جانب نجاح 1
+                      onchange="saveField('evaluations', 'actions_taken', this.value)"></textarea>
+                  </div>
+                </div>
+              </div>{{--! Results --}}
+              <div class="bg-slate-800 rounded-2xl p-6 shadow-xl">
+                <h3 class="text-lg font-bold text-white mb-6 flex items-center gap-2">
+                  <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg> النتائج
+                </h3>
+                <div class="space-y-4">
+                  <div><label class="block text-sm text-slate-400 mb-2">جوانب النجاح</label> <textarea
+                      id="success_aspects" rows="4" placeholder="• جانب نجاح 1
 • جانب نجاح 2" class="w-full px-4 py-3 rounded-xl resize-none"
-                  onchange="saveField('results', 'success_aspects', this.value)"></textarea>
-              </div>
-              <div><label class="block text-sm text-slate-400 mb-2">جوانب التحسين ذات الأولوية</label> <textarea
-                  id="priority_improvements" rows="4" placeholder="• جانب تحسين 1
+                      onchange="saveField('results', 'success_aspects', this.value)"></textarea>
+                  </div>
+                  <div><label class="block text-sm text-slate-400 mb-2">جوانب التحسين ذات الأولوية</label> <textarea
+                      id="priority_improvements" rows="4" placeholder="• جانب تحسين 1
 • جانب تحسين 2" class="w-full px-4 py-3 rounded-xl resize-none"
-                  onchange="saveField('results', 'priority_improvements', this.value)"></textarea>
+                      onchange="saveField('results', 'priority_improvements', this.value)"></textarea>
+                  </div>
+                </div>
+              </div>{{--! Executive Proposals Table --}}
+              <div class="bg-slate-800 rounded-2xl p-6 shadow-xl">
+                <div class="flex items-center justify-between mb-6">
+                  <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                    <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    </svg> المقترحات التنفيذية
+                  </h3><button onclick="addProposalRow()"
+                    class="btn-primary px-4 py-2 rounded-xl text-sm flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg> إضافة مقترح </button>
+                </div>
+                <div class="overflow-x-auto">
+                  <table class="w-full">
+                    <thead>
+                      <tr class="border-b border-slate-700">
+                        <th class="text-right py-3 px-4 text-slate-400 text-sm font-medium">التوصية</th>
+                        <th class="text-right py-3 px-4 text-slate-400 text-sm font-medium">مسؤول التنفيذ</th>
+                        <th class="text-right py-3 px-4 text-slate-400 text-sm font-medium">توقيت التنفيذ</th>
+                        <th class="text-right py-3 px-4 text-slate-400 text-sm font-medium">الموارد المطلوبة</th>
+                        <th class="py-3 px-4"></th>
+                      </tr>
+                    </thead>
+                    <tbody id="proposals-table">{{--! Dynamic rows --}}
+                    </tbody>
+                  </table>
+                </div>
+              </div>{{--! Attachments --}}
+              <div class="bg-slate-800 rounded-2xl p-6 shadow-xl">
+                <h3 class="text-lg font-bold text-white mb-6 flex items-center gap-2">
+                  <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                  </svg> المرفقات
+                </h3>
+                <div id="attachments-list" class="space-y-3 mb-4">{{--! Attachment items will be added here --}}
+                </div>
+                <div
+                  class="border-2 border-dashed border-slate-600 rounded-xl p-8 text-center hover:border-blue-500 transition-colors cursor-pointer"
+                  onclick="document.getElementById('file-upload').click()">
+                  <svg class="w-12 h-12 text-slate-500 mx-auto mb-3" fill="none" stroke="currentColor"
+                    viewbox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                  </svg>
+                  <p class="text-slate-400 mb-1">اسحب الملفات هنا أو انقر للتحميل</p>
+                  <p class="text-xs text-slate-500">PDF, DOC, DOCX, XLS, XLSX - حد أقصى 10 ميجابايت</p><input
+                    type="file" id="file-upload" class="hidden" multiple accept=".pdf,.doc,.docx,.xls,.xlsx"
+                    onchange="handleFileUpload(this.files)">
+                </div>
               </div>
-            </div>
-          </div><!-- Executive Proposals Table -->
-          <div class="bg-slate-800 rounded-2xl p-6 shadow-xl">
-            <div class="flex items-center justify-between mb-6">
-              <h3 class="text-lg font-bold text-white flex items-center gap-2">
-                <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                </svg> المقترحات التنفيذية
-              </h3><button onclick="addProposalRow()"
-                class="btn-primary px-4 py-2 rounded-xl text-sm flex items-center gap-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewbox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                </svg> إضافة مقترح </button>
-            </div>
-            <div class="overflow-x-auto">
-              <table class="w-full">
-                <thead>
-                  <tr class="border-b border-slate-700">
-                    <th class="text-right py-3 px-4 text-slate-400 text-sm font-medium">التوصية</th>
-                    <th class="text-right py-3 px-4 text-slate-400 text-sm font-medium">مسؤول التنفيذ</th>
-                    <th class="text-right py-3 px-4 text-slate-400 text-sm font-medium">توقيت التنفيذ</th>
-                    <th class="text-right py-3 px-4 text-slate-400 text-sm font-medium">الموارد المطلوبة</th>
-                    <th class="py-3 px-4"></th>
-                  </tr>
-                </thead>
-                <tbody id="proposals-table"><!-- Dynamic rows -->
-                </tbody>
-              </table>
-            </div>
-          </div><!-- Attachments -->
-          <div class="bg-slate-800 rounded-2xl p-6 shadow-xl">
-            <h3 class="text-lg font-bold text-white mb-6 flex items-center gap-2">
-              <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-              </svg> المرفقات
-            </h3>
-            <div id="attachments-list" class="space-y-3 mb-4"><!-- Attachment items will be added here -->
-            </div>
-            <div
-              class="border-2 border-dashed border-slate-600 rounded-xl p-8 text-center hover:border-blue-500 transition-colors cursor-pointer"
-              onclick="document.getElementById('file-upload').click()">
-              <svg class="w-12 h-12 text-slate-500 mx-auto mb-3" fill="none" stroke="currentColor" viewbox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-              </svg>
-              <p class="text-slate-400 mb-1">اسحب الملفات هنا أو انقر للتحميل</p>
-              <p class="text-xs text-slate-500">PDF, DOC, DOCX, XLS, XLSX - حد أقصى 10 ميجابايت</p><input type="file"
-                id="file-upload" class="hidden" multiple accept=".pdf,.doc,.docx,.xls,.xlsx"
-                onchange="handleFileUpload(this.files)">
             </div>
           </div>
-        </div>
-      </div>
     </main>
-  </div><!-- Toast Notification -->
+  </div>
+  {{-- Toast Notification --}}
   <div id="toast"
     class="fixed bottom-6 left-6 bg-slate-800 text-white px-6 py-4 rounded-xl shadow-2xl transform translate-y-20 opacity-0 transition-all duration-300 z-50 flex items-center gap-3">
     <svg id="toast-icon" class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
     </svg><span id="toast-message">تم الحفظ بنجاح</span>
-  </div><!-- Validation Modal -->
+  </div>
+  {{-- Validation Modal --}}
   <div id="validation-modal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
     <div class="bg-slate-800 rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl">
       <div class="flex items-center gap-3 mb-4">
@@ -2404,7 +1126,7 @@
         </div>
       </div>
       <div id="validation-list" class="space-y-2 mb-6 max-h-60 overflow-y-auto">
-        <!-- Missing fields will be listed here -->
+        {{--! Missing fields will be listed here --}}
       </div>
       <div class="flex gap-3"><button onclick="closeValidationModal()"
           class="flex-1 btn-secondary py-3 rounded-xl text-white"> إغلاق </button> <button id="go-to-field-btn"
@@ -2537,16 +1259,16 @@
 
     function switchStandardTab(standardNum) {
       selectedStandard = standardNum;
-      
+
       // Hide all standard contents
       document.querySelectorAll('.std-content').forEach(el => {
         el.classList.add('hidden');
       });
-      
+
       // Show selected standard
       const selectedContent = document.getElementById(`standard-${standardNum}-tab-content`);
       if (selectedContent) {
-          selectedContent.classList.remove('hidden');
+        selectedContent.classList.remove('hidden');
       }
 
       // Update Tab Styles
@@ -2557,8 +1279,8 @@
 
       const activeBtn = document.querySelector(`.std-tab-btn[data-std="${standardNum}"]`);
       if (activeBtn) {
-          activeBtn.classList.add('active', 'bg-emerald-600', 'text-white', 'shadow-md', 'shadow-emerald-500/20');
-          activeBtn.classList.remove('text-slate-500', 'dark:text-slate-400', 'hover:bg-slate-100', 'dark:hover:bg-slate-700/50');
+        activeBtn.classList.add('active', 'bg-emerald-600', 'text-white', 'shadow-md', 'shadow-emerald-500/20');
+        activeBtn.classList.remove('text-slate-500', 'dark:text-slate-400', 'hover:bg-slate-100', 'dark:hover:bg-slate-700/50');
       }
     }
 
@@ -2587,8 +1309,8 @@
 
       const activeBtn = document.querySelector(`[data-tab="${tabName}"]`);
       if (activeBtn) {
-          activeBtn.classList.add('active', 'bg-blue-600', 'text-white', 'shadow-md', 'shadow-blue-500/20');
-          activeBtn.classList.remove('text-slate-500', 'dark:text-slate-400', 'hover:bg-slate-100', 'dark:hover:bg-slate-700/50');
+        activeBtn.classList.add('active', 'bg-blue-600', 'text-white', 'shadow-md', 'shadow-blue-500/20');
+        activeBtn.classList.remove('text-slate-500', 'dark:text-slate-400', 'hover:bg-slate-100', 'dark:hover:bg-slate-700/50');
       }
 
       currentTab = tabName;
@@ -2794,7 +1516,7 @@
     function renderObjectives() {
       const container = document.getElementById('objectives-list-container');
       if (!container) return;
-      
+
       if (tableData.objectives.length === 0) {
         tableData.objectives.push('');
       }
@@ -2822,16 +1544,16 @@
     function updateFixedTable(tableName, rowKey, field, value) {
       if (!tableData[tableName]) tableData[tableName] = {};
       if (!tableData[tableName][rowKey]) tableData[tableName][rowKey] = {};
-      
+
       tableData[tableName][rowKey][field] = parseFloat(value) || 0;
 
       if (tableName === 'graduates') {
         const row = tableData.graduates[rowKey];
         const grades = ['excellent', 'very_good', 'good', 'pass', 'fail'];
-        
+
         // Calculate Total
         const total = grades.reduce((sum, g) => sum + (row[g] || 0), 0);
-        
+
         // Update Total Display
         const totalEl = document.getElementById(`grad-total-${rowKey}`);
         if (totalEl) totalEl.textContent = total;
