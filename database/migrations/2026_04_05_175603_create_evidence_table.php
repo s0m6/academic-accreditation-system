@@ -13,8 +13,7 @@ return new class extends Migration
     {
         Schema::create('evidences', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('form_submission_id')->constrained('form_submissions')->onDelete('cascade');
-            $table->foreignId('indicator_id')->constrained('indicators')->onDelete('cascade');
+            $table->foreignId('indicator_evaluation_id')->constrained('indicator_evaluations')->onDelete('cascade');
             $table->string('file_name');
             $table->string('file_path');
             $table->timestamps();

@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use Database\Factories\IndicatorEvaluationFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class IndicatorEvaluation extends Model
 {
-    /** @use HasFactory<\Database\Factories\IndicatorEvaluationFactory> */
+    /** @use HasFactory<IndicatorEvaluationFactory> */
     use HasFactory;
 
     protected $fillable = [
@@ -30,5 +31,13 @@ class IndicatorEvaluation extends Model
     public function indicator()
     {
         return $this->belongsTo(Indicator::class);
+    }
+
+    /**
+     * Get the evidences for the indicator evaluation.
+     */
+    public function evidences()
+    {
+        return $this->hasMany(Evidence::class);
     }
 }

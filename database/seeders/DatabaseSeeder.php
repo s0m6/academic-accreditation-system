@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             AdminUserSeeder::class,
             CitySeeder::class,
             UniversitySeeder::class,
+            AccreditationOfficerSeeder::class,
             StandardSeeder::class,
         ]);
     }
