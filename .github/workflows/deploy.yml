@@ -26,7 +26,7 @@ jobs:
             git pull origin main
             
             # تثبيت الملحقات (بدون إضافات التطوير لزيادة السرعة)
-            composer install --no-dev --optimize-autoloader
+            composer install  --optimize-autoloader
             
             # طلبك الخاص: إعادة بناء الجداول والسييدر من الصفر
             # تحذير: هذا سيمسح البيانات القديمة ويضع بيانات السيرفر الجديدة في كل مرة
