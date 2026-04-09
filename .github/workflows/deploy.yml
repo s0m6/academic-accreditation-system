@@ -20,7 +20,7 @@ jobs:
           port: ${{ secrets.REMOTE_PORT }}
           script: |
             # الانتقال لمجلد السب دومين
-            cd public_html/grad
+            cd /home/u870944235/domains/samcoder.com/public_html/grad
             
             # سحب الكود الجديد من جيت هب للسيرفر
             git pull origin main
