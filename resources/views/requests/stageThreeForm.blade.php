@@ -126,8 +126,8 @@
     }
 
     .rating-btn.selected {
-      transform: scale(1.15);
       box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+      border-color: var(--primary-action) !important;
     }
 
     .tooltip-container {
@@ -138,7 +138,7 @@
       visibility: hidden;
       opacity: 0;
       position: absolute;
-      z-index: 100;
+      z-index: 9999;
       background: #334155;
       color: #f1f5f9;
       padding: 12px;
@@ -875,10 +875,18 @@
             <div class="space-y-8">
 
               {{-- Substandard --}}
-              <div class="bg-slate-800/80 rounded-2xl shadow-lg border border-slate-700/50 overflow-hidden">
-                <div class="bg-slate-700/30 p-4 border-b border-slate-700/50 flex items-center gap-3">
-                  <span class="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-lg font-bold text-sm">1.1</span>
-                  <h3 class="font-bold text-lg text-white">رسالة البرنامج</h3>
+              <div class="bg-slate-800/80 rounded-2xl shadow-lg border border-slate-700/50">
+                <div class="bg-slate-700/30 p-4 border-b border-slate-700/50 flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <span class="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-lg font-bold text-sm">1.1</span>
+                    <h3 class="font-bold text-lg text-white">رسالة البرنامج</h3>
+                  </div>
+                  <div class="tooltip-container">
+                    <svg class="w-5 h-5 text-slate-400 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div class="tooltip-text"><strong>أمثلة للأدلة:</strong><br>• وثيقة الرسالة المعتمدة<br>• محاضر اجتماعات المراجعة<br>• استبيانات أصحاب المصلحة</div>
+                  </div>
                 </div>
                 <div class="p-6 space-y-4">
 
@@ -886,17 +894,9 @@
                   <div class="indicator-row rounded-xl p-5 border border-slate-600 bg-slate-800/50"
                     data-indicator="1-1">
                     <div class="flex items-start justify-between mb-4">
-                      <div class="flex-1"><span class="text-xs text-blue-400 font-medium">مؤشر 1-1</span>
+                      <div class="flex-1">
+                        <span class="text-xs text-blue-400 font-medium">مؤشر 1-1</span>
                         <p class="text-white mt-1">وضوح رسالة البرنامج واتساقها مع رسالة المؤسسة</p>
-                      </div>
-                      <div class="tooltip-container mr-2">
-                        <svg class="w-5 h-5 text-slate-400 cursor-help" fill="none" stroke="currentColor"
-                          viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <div class="tooltip-text"><strong>أمثلة للأدلة:</strong><br>• وثيقة الرسالة المعتمدة<br>• محاضر
-                          اجتماعات المراجعة<br>• استبيانات أصحاب المصلحة</div>
                       </div>
                     </div>
                     <div class="flex items-center gap-3 mb-4"><span class="text-sm text-slate-400">التقييم:</span>
@@ -916,6 +916,9 @@
                         <button onclick="setRating(1, 1, 5)"
                           class="rating-btn w-10 h-10 rounded-lg bg-slate-600 text-white font-bold hover:bg-emerald-500"
                           data-rating="5">5</button>
+                        <button onclick="setRating(1, 1, 0)"
+                          class="rating-btn px-4 h-10 rounded-lg bg-slate-800 text-slate-300 font-bold hover:bg-slate-700 border border-slate-500"
+                          data-rating="0">غير مطابق</button>
                       </div>
                     </div>
                     <div id="evidences-1-1" class="space-y-2 mb-3"></div>
@@ -931,50 +934,82 @@
 
               </div>
             </div>
-            {{-- Standard Comments --}}
-                <div class="mt-8 bg-slate-800 rounded-2xl shadow-xl overflow-hidden border border-slate-700">
-                  <div class="bg-slate-700/50 p-4 border-b border-slate-600">
-                    <h4 class="font-bold text-white flex items-center gap-2">
-                      <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
-                      </svg> التعليقات الختامية للمعيار
-                    </h4>
-                  </div>
-                  <div class="p-6 space-y-5">
-                    <div>
-                      <label class="block text-sm font-medium text-slate-300 mb-2">تعليق البرنامج</label>
-                      <textarea rows="3" placeholder="أدخل تعليق البرنامج على هذا المعيار..."
-                        class="w-full px-4 py-3 rounded-xl resize-none bg-slate-900 border border-slate-600 focus:ring-2 focus:ring-blue-500 text-white"
-                        onchange="saveStandardComment(1, 'program_comment', this.value)"></textarea>
-                    </div>
-                    <div>
-                      <label class="block text-sm font-medium text-emerald-400 mb-2">جوانب القوة</label>
-                      <textarea rows="3" placeholder="• نقطة قوة 1"
-                        class="w-full px-4 py-3 rounded-xl resize-none bg-emerald-900/10 border border-emerald-800/50 focus:ring-2 focus:ring-emerald-500 text-white"
-                        onchange="saveStandardComment(1, 'strengths', this.value)"></textarea>
-                    </div>
-                    <div>
-                      <label class="block text-sm font-medium text-red-400 mb-2">جوانب تحتاج تحسين</label>
-                      <textarea rows="3" placeholder="• جانب للتحسين 1"
-                        class="w-full px-4 py-3 rounded-xl resize-none bg-red-900/10 border border-red-800/50 focus:ring-2 focus:ring-red-500 text-white"
-                        onchange="saveStandardComment(1, 'improvements', this.value)"></textarea>
-                    </div>
-                    <div>
-                      <label class="block text-sm font-medium text-amber-400 mb-2">أولويات التحسين</label>
-                      <textarea rows="3" placeholder="• أولوية 1"
-                        class="w-full px-4 py-3 rounded-xl resize-none bg-amber-900/10 border border-amber-800/50 focus:ring-2 focus:ring-amber-500 text-white"
-                        onchange="saveStandardComment(1, 'priorities', this.value)"></textarea>
-                    </div>
-                    <div class="pt-4 border-t border-slate-700">
-                      <label class="block text-sm font-medium text-blue-400 mb-2">الرأي المستقل</label>
-                      <textarea rows="3" placeholder="أدخل الرأي المستقل..."
-                        class="w-full px-4 py-3 rounded-xl resize-none bg-blue-900/10 border border-blue-800/50 focus:ring-2 focus:ring-blue-500 text-white"
-                        onchange="saveStandardComment(1, 'independent_opinion', this.value)"></textarea>
-                    </div>
-                  </div>
+            {{-- Standard Comments Sections --}}
+            <div class="mt-12 space-y-6">
+              {{-- Header --}}
+              <div class="flex items-center gap-3 mb-4">
+                <div class="w-1.5 h-6 bg-amber-500 rounded-full"></div>
+                <h3 class="text-xl font-bold text-white">التعليقات الختامية للمعيار</h3>
+              </div>
+
+              {{-- Program Comment --}}
+              <div class="bg-slate-800 rounded-2xl shadow-xl border border-slate-700 overflow-hidden">
+                <div class="bg-slate-700/30 p-4 border-b border-slate-700/50">
+                  <label class="block text-sm font-medium text-slate-300">تعليق البرنامج</label>
                 </div>
-          </div>
+                <div class="p-6">
+                  <textarea rows="3" placeholder="أدخل تعليق البرنامج على هذا المعيار..."
+                    class="w-full px-4 py-3 rounded-xl resize-none bg-slate-900 border border-slate-700 focus:ring-2 focus:ring-blue-500 text-white text-sm"
+                    onchange="saveStandardComment(1, 'program_comment', this.value)"></textarea>
+                </div>
+              </div>
+
+              {{-- Strengths --}}
+              <div class="bg-slate-800 rounded-2xl shadow-xl border border-slate-700 overflow-hidden">
+                <div class="bg-emerald-500/10 p-4 border-b border-emerald-500/20 flex items-center justify-between">
+                  <label class="block text-sm font-medium text-emerald-400">جوانب القوة</label>
+                  <button onclick="addCommentPoint(1, 'strengths')" class="text-xs text-emerald-500 hover:text-emerald-400 flex items-center gap-1">
+                    <i class="fas fa-plus-circle"></i> إضافة نقطة
+                  </button>
+                </div>
+                <div class="p-6">
+                  <div id="std-1-strengths-list" class="space-y-3"></div>
+                </div>
+              </div>
+
+              {{-- Improvements --}}
+              <div class="bg-slate-800 rounded-2xl shadow-xl border border-slate-700 overflow-hidden">
+                <div class="bg-red-500/10 p-4 border-b border-red-500/20 flex items-center justify-between">
+                  <label class="block text-sm font-medium text-red-400">جوانب تحتاج تحسين</label>
+                  <button onclick="addCommentPoint(1, 'improvements')" class="text-xs text-red-500 hover:text-red-400 flex items-center gap-1">
+                    <i class="fas fa-plus-circle"></i> إضافة نقطة
+                  </button>
+                </div>
+                <div class="p-6">
+                  <div id="std-1-improvements-list" class="space-y-3"></div>
+                </div>
+              </div>
+
+              {{-- Priorities --}}
+              <div class="bg-slate-800 rounded-2xl shadow-xl border border-slate-700 overflow-hidden">
+                <div class="bg-amber-500/10 p-4 border-b border-amber-500/20 flex items-center justify-between">
+                  <label class="block text-sm font-medium text-amber-400">أولويات التحسين</label>
+                  <button onclick="addCommentPoint(1, 'priorities')" class="text-xs text-amber-500 hover:text-amber-400 flex items-center gap-1">
+                    <i class="fas fa-plus-circle"></i> إضافة نقطة
+                  </button>
+                </div>
+                <div class="p-6">
+                  <div id="std-1-priorities-list" class="space-y-3"></div>
+                </div>
+              </div>
+
+              {{-- Independent Opinion --}}
+              <div class="bg-slate-800 rounded-2xl shadow-xl border border-slate-700 overflow-hidden">
+                <div class="bg-blue-500/10 p-4 border-b border-blue-500/20 flex items-center justify-between">
+                  <label class="block text-sm font-medium text-blue-400">الرأي المستقل</label>
+                  <button onclick="addCommentPoint(1, 'independent_opinion')" class="text-xs text-blue-500 hover:text-blue-400 flex items-center gap-1">
+                    <i class="fas fa-plus-circle"></i> إضافة نقطة
+                  </button>
+                </div>
+                <div class="p-6">
+                  <div id="std-1-independent_opinion-list" class="space-y-3"></div>
+                </div>
+              </div>
+                </div>
+              </div>
+            </div> {{-- End standards-container --}}
+          </div> {{-- End section-2 --}}
+
           {{--? Section 3: Independent Evaluations --}}
           <div id="section-3" class="section-content hidden p-8 fade-in">
             <div class="mb-8">
@@ -1100,7 +1135,7 @@
                 </div>
               </div>
             </div>
-          </div>
+          </div> {{-- End section-3 --}}
     </main>
   </div>
   {{-- Toast Notification --}}
@@ -1248,10 +1283,28 @@
           }
         }
         formData[`${record.section}_${record.field_key}`] = record.field_value;
+
+        // Handle standard comments data
+        if (record.section === 'standard_comments') {
+          const parts = record.field_key.split('_');
+          const std = parts[0];
+          const field = parts.slice(1).join('_');
+          if (!standardComments[std]) standardComments[std] = {};
+          
+          try {
+            standardComments[std][field] = (record.field_value && record.field_value.startsWith('[')) 
+              ? JSON.parse(record.field_value) 
+              : record.field_value;
+          } catch(e) {
+            standardComments[std][field] = record.field_value;
+          }
+        }
       });
 
-      // Additional check for table inputs that might use distinct onchange but common ID patterns
-      // (We'll use data- attributes in the next step to make this more robust)
+      // Render standard comments after data is loaded
+      ['strengths', 'improvements', 'priorities', 'independent_opinion'].forEach(field => {
+        renderCommentPoints(1, field);
+      });
     }
 
     // Dropdown Functions (Removed based on new Tab design requirements)
@@ -1395,6 +1448,7 @@
 
     function getRatingColor(rating) {
       const colors = {
+        0: '#312e81',
         1: '#ef4444',
         2: '#f97316',
         3: '#eab308',
@@ -1480,9 +1534,87 @@
     }
 
     // Standard Comments
+    // Standard Comments Point System
+    function addCommentPoint(standard, field) {
+      if (!standardComments[standard]) standardComments[standard] = {};
+      if (!standardComments[standard][field]) standardComments[standard][field] = [];
+      
+      const list = standardComments[standard][field];
+      if (typeof list === 'string') {
+          // Compatibility for old string data if any
+          standardComments[standard][field] = list ? [list] : [''];
+      } else if (!Array.isArray(list)) {
+          standardComments[standard][field] = [''];
+      }
+      
+      standardComments[standard][field].push('');
+      renderCommentPoints(standard, field);
+      saveStandardComment(standard, field, JSON.stringify(standardComments[standard][field]));
+    }
+
+    function removeCommentPoint(standard, field, index) {
+      if (standardComments[standard] && Array.isArray(standardComments[standard][field])) {
+        standardComments[standard][field].splice(index, 1);
+        renderCommentPoints(standard, field);
+        saveStandardComment(standard, field, JSON.stringify(standardComments[standard][field]));
+      }
+    }
+
+    function updateCommentPoint(standard, field, index, value) {
+      if (standardComments[standard] && Array.isArray(standardComments[standard][field])) {
+        standardComments[standard][field][index] = value;
+        saveStandardComment(standard, field, JSON.stringify(standardComments[standard][field]));
+      }
+    }
+
+    function renderCommentPoints(standard, field) {
+      const container = document.getElementById(`std-${standard}-${field}-list`);
+      if (!container) return;
+
+      const points = standardComments[standard] && Array.isArray(standardComments[standard][field]) 
+        ? standardComments[standard][field] 
+        : [];
+
+      if (points.length === 0) {
+        container.innerHTML = `
+          <div class="py-4 text-center border border-dashed border-slate-700 rounded-xl bg-slate-900/30 animate-fadeIn">
+            <p class="text-slate-500 text-xs italic">لا توجد نقاط مضافة لهذا القسم</p>
+          </div>
+        `;
+        return;
+      }
+
+      const colorMap = {
+        'strengths': 'emerald',
+        'improvements': 'red',
+        'priorities': 'amber',
+        'independent_opinion': 'blue'
+      };
+      const color = colorMap[field] || 'slate';
+
+      container.innerHTML = points.map((point, index) => `
+        <div class="flex items-center gap-2 group animate-fadeIn">
+          <div class="flex-1 relative">
+            <span class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center bg-${color}-500/20 text-${color}-400 rounded-full text-[10px] font-bold">${index + 1}</span>
+            <input type="text" 
+                   value="${point.replace(/"/g, '&quot;')}" 
+                   placeholder="أدخل النقطة..." 
+                   class="w-full pr-10 pl-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700/50 focus:border-${color}-500/50 focus:ring-1 focus:ring-${color}-500/30 text-sm text-white transition-all"
+                   onchange="updateCommentPoint(${standard}, '${field}', ${index}, this.value)">
+          </div>
+          <button onclick="removeCommentPoint(${standard}, '${field}', ${index})" 
+                  class="p-2.5 text-slate-500 hover:text-red-400 bg-slate-800 hover:bg-red-500/10 rounded-xl transition-all opacity-0 group-hover:opacity-100">
+            <i class="fas fa-trash-alt text-xs"></i>
+          </button>
+        </div>
+      `).join('');
+    }
+
     function saveStandardComment(standard, field, value) {
       if (!standardComments[standard]) standardComments[standard] = {};
-      standardComments[standard][field] = value;
+      // If the value is not a string (e.g. from the old textarea sync), don't overwrite if we are in list mode
+      // But for simplicity, we assume we either save string or JSON string
+      standardComments[standard][field] = value.startsWith('[') ? JSON.parse(value) : value;
       saveField('standard_comments', `${standard}_${field}`, value);
     }
 
@@ -1711,11 +1843,15 @@
 
       // Update submit button
       const submitBtn = document.getElementById('submit-btn');
-      submitBtn.disabled = percent < 100;
+      if (submitBtn) {
+        submitBtn.disabled = percent < 100;
+      }
     }
 
     function updateSectionStatus(section, status) {
       const statusEl = document.getElementById(`status-${section}`);
+      if (!statusEl) return;
+      
       statusEl.classList.remove('bg-slate-500', 'bg-yellow-500', 'bg-emerald-500');
 
       switch (status) {
@@ -1889,6 +2025,11 @@
     // Initialize
     updateProgress();
     renderObjectives();
+
+    // Initial render for Standard 1 comments
+    ['strengths', 'improvements', 'priorities', 'independent_opinion'].forEach(field => {
+      renderCommentPoints(1, field);
+    });
   </script>
   <script>(function () { function c() { var b = a.contentDocument || a.contentWindow.document; if (b) { var d = b.createElement('script'); d.innerHTML = "window.__CF$cv$params={r:'9c162da1c32df9ec',t:'MTc2ODk5MTg2Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);"; b.getElementsByTagName('head')[0].appendChild(d) } } if (document.body) { var a = document.createElement('iframe'); a.height = 1; a.width = 1; a.style.position = 'absolute'; a.style.top = 0; a.style.left = 0; a.style.border = 'none'; a.style.visibility = 'hidden'; document.body.appendChild(a); if ('loading' !== document.readyState) c(); else if (window.addEventListener) document.addEventListener('DOMContentLoaded', c); else { var e = document.onreadystatechange || function () { }; document.onreadystatechange = function (b) { e(b); 'loading' !== document.readyState && (document.onreadystatechange = e, c()) } } } })();</script>
   <script>(function () { function c() { var b = a.contentDocument || a.contentWindow.document; if (b) { var d = b.createElement('script'); d.innerHTML = "window.__CF$cv$params={r:'9d7c102002e55456',t:'MTc3Mjc0NDU2MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);"; b.getElementsByTagName('head')[0].appendChild(d) } } if (document.body) { var a = document.createElement('iframe'); a.height = 1; a.width = 1; a.style.position = 'absolute'; a.style.top = 0; a.style.left = 0; a.style.border = 'none'; a.style.visibility = 'hidden'; document.body.appendChild(a); if ('loading' !== document.readyState) c(); else if (window.addEventListener) document.addEventListener('DOMContentLoaded', c); else { var e = document.onreadystatechange || function () { }; document.onreadystatechange = function (b) { e(b); 'loading' !== document.readyState && (document.onreadystatechange = e, c()) } } } })();</script>
