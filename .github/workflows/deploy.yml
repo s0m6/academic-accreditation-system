@@ -27,8 +27,7 @@ jobs:
             
             # تثبيت الملحقات (بدون إضافات التطوير لزيادة السرعة)
             composer install  --optimize-autoloader
-            npm install
-            npm run build
+
             # طلبك الخاص: إعادة بناء الجداول والسييدر من الصفر
             # تحذير: هذا سيمسح البيانات القديمة ويضع بيانات السيرفر الجديدة في كل مرة
             php artisan migrate:fresh --seed --force
