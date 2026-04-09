@@ -1,0 +1,42 @@
+name: Deploy Laravel Project
+
+on:
+  push:
+    branches: [ main ] # سيتم التنفيذ فقط عند الرفع لفرع main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Deploy to Hostinger via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.REMOTE_HOST }}
+          username: ${{ secrets.REMOTE_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.REMOTE_PORT }}
+          script: |
+            # الانتقال لمجلد السب دومين
+            cd public_html/grad
+            
+            # سحب الكود الجديد من جيت هب للسيرفر
+            git pull origin main
+            
+            # تثبيت الملحقات (بدون إضافات التطوير لزيادة السرعة)
+            composer install --no-dev --optimize-autoloader
+            
+            # طلبك الخاص: إعادة بناء الجداول والسييدر من الصفر
+            # تحذير: هذا سيمسح البيانات القديمة ويضع بيانات السيرفر الجديدة في كل مرة
+            php artisan migrate:fresh --seed --force
+            
+            # تحسين الأداء ومسح الكاش
+            php artisan optimize:clear
+            php artisan config:cache
+            php artisan route:cache
+            php artisan view:cache
+            
+            # ربط مجلد التخزين
+            php artisan storage:link
