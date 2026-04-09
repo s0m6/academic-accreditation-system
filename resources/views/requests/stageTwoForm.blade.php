@@ -7,10 +7,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>نظام إدارة بيانات البرنامج الأكاديمي</title>
 
-    {{-- Google Fonts: Cairo --}}
-    <link href="https://fonts.googleapis.com" rel="preconnect" />
-    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet" />
+
 
     {{-- Font Awesome 6.4.0 --}}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />

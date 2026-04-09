@@ -39,6 +39,7 @@ require __DIR__.'/auth.php';
 // ------------------------------------------------------------------
 use App\Http\Controllers\RequestDashboardController;
 use App\Http\Controllers\stages\StageOneController;
+use App\Http\Controllers\stages\StageThreeController;
 use App\Http\Controllers\stages\StageTwoController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -88,4 +89,12 @@ Route::middleware('auth')->group(function () {
         ->name('requests.stage_two.reject');
     Route::patch('/requests/{accreditationRequest}/stage-two/{formSubmission}/approve', [StageTwoController::class, 'approve'])
         ->name('requests.stage_two.approve');
+
+    // Stage Three actions
+    Route::post('/requests/{accreditationRequest}/stage-three/draft', [StageThreeController::class, 'createDraft'])
+        ->name('requests.stage_three.draft');
+
+    // Direct route to the stage three form view
+
 });
+    Route::view('test3', 'requests.stageThreeForm')->name('requests.stage_three.form_preview');

@@ -51,4 +51,20 @@ class FormSubmission extends Model
     {
         return $this->belongsTo(User::class, 'decided_by');
     }
+
+    /**
+     * Get the indicator evaluations for this submission.
+     */
+    public function indicatorEvaluations()
+    {
+        return $this->hasMany(IndicatorEvaluation::class);
+    }
+
+    /**
+     * Get the evidences for this submission.
+     */
+    public function evidences()
+    {
+        return $this->hasMany(Evidence::class);
+    }
 }
