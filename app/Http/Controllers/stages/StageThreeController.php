@@ -5,7 +5,9 @@ namespace App\Http\Controllers\stages;
 use App\Http\Controllers\Controller;
 use App\Models\AccreditationRequest;
 use App\Models\FormSubmission;
+use App\Models\IndicatorEvaluation;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Controller for handling Accreditation Stage Three (Self-Study Report).
@@ -13,7 +15,7 @@ use Illuminate\Http\Request;
 class StageThreeController extends Controller
 {
     /**
-     * Create a new draft form submission for stage three.
+     * Create a new draft form submission for stage three with 50 indicator evaluations.
      */
     public function createDraft(Request $request, AccreditationRequest $accreditationRequest)
     {
@@ -23,7 +25,7 @@ class StageThreeController extends Controller
         }
         $this->ensureAuthorized($request, $accreditationRequest);
 
-        // Ensure there are no active (pending) submissions
+        // Ensure there are no active (pending or approved) submissions
         $hasActive = $accreditationRequest->formSubmissions()
             ->where('stage', 'stage_three')
             ->whereIn('status', ['pending', 'approved'])
@@ -50,17 +52,36 @@ class StageThreeController extends Controller
             ->latest('id')
             ->first();
 
-        $formSubmission = FormSubmission::create([
-            'accreditation_request_id' => $accreditationRequest->id,
-            'stage' => 'stage_three',
-            'status' => 'draft',
-            'form_data' => null,
-            'submitted_by' => $user->id,
-            'submitted_at' => null,
-            'decided_by' => null,
-            'decision_at' => null,
-            'decision_reasons' => null,
-        ]);
+        // Create draft and 50 indicator evaluations atomically
+        $formSubmission = DB::transaction(function () use ($accreditationRequest, $user) {
+            // Create the stage three draft submission
+            $formSubmission = FormSubmission::create([
+                'accreditation_request_id' => $accreditationRequest->id,
+                'stage' => 'stage_three',
+                'status' => 'draft',
+                'form_data' => null,
+                'submitted_by' => $user->id,
+                'submitted_at' => null,
+                'decided_by' => null,
+                'decision_at' => null,
+                'decision_reasons' => null,
+            ]);
+
+            // Create 50 indicator evaluation rows linked to this draft
+            $evaluations = [];
+            for ($i = 1; $i <= 50; $i++) {
+                $evaluations[] = [
+                    'form_submission_id' => $formSubmission->id,
+                    'indicator_id' => $i,
+                    'score' => null,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+            }
+            IndicatorEvaluation::insert($evaluations);
+
+            return $formSubmission;
+        });
 
         return back()->with('success', 'تم إنشاء مسودة جديدة بنجاح.');
     }
