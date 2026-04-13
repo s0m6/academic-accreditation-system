@@ -341,12 +341,13 @@
               </svg> المعلومات العامة
             </h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">{{--! Auto Fields --}}
-              <div><label class="block text-sm text-slate-400 mb-2">اسم المؤسسة / الجامعة</label> <input type="text"
-                  value="جامعة الملك سعود" disabled class="w-full px-4 py-3 rounded-xl opacity-60 cursor-not-allowed">
+              <div class="bg-slate-700/30 p-4 rounded-xl border border-slate-700">
+                <span class="block text-sm text-slate-400 mb-1">اسم المؤسسة / الجامعة</span>
+                <span class="text-white font-medium text-lg">جامعة الملك سعود</span>
               </div>
-              <div><label class="block text-sm text-slate-400 mb-2"> اسم رئيس المؤسسة/ الجامعة</label> <input
-                  type="text" value="سعود بن عبدالعزيز الحوثري" disabled
-                  class="w-full px-4 py-3 rounded-xl opacity-60 cursor-not-allowed">
+              <div class="bg-slate-700/30 p-4 rounded-xl border border-slate-700">
+                <span class="block text-sm text-slate-400 mb-1">اسم رئيس المؤسسة/ الجامعة</span>
+                <span class="text-white font-medium text-lg">سعود بن عبدالعزيز الحوثري</span>
               </div>
               <div><label class="block text-sm text-slate-400 mb-2">اسم رئيس فريق المراجعة الداخلية <span
                     class="text-red-400">*</span></label> <input type="text" id="review_team_head"
@@ -993,18 +994,7 @@
                 </div>
               </div>
 
-              {{-- Independent Opinion --}}
-              <div class="bg-slate-800 rounded-2xl shadow-xl border border-slate-700 overflow-hidden">
-                <div class="bg-blue-500/10 p-4 border-b border-blue-500/20 flex items-center justify-between">
-                  <label class="block text-sm font-medium text-blue-400">الرأي المستقل</label>
-                  <button onclick="addCommentPoint(1, 'independent_opinion')" class="text-xs text-blue-500 hover:text-blue-400 flex items-center gap-1">
-                    <i class="fas fa-plus-circle"></i> إضافة نقطة
-                  </button>
-                </div>
-                <div class="p-6">
-                  <div id="std-1-independent_opinion-list" class="space-y-3"></div>
-                </div>
-              </div>
+
                 </div>
               </div>
             </div> {{-- End standards-container --}}
@@ -1028,37 +1018,41 @@
                       d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                   </svg> التقييمات المستقلة
                 </h3>
-                <div class="space-y-4">
-                  <div><label class="block text-sm text-slate-400 mb-2">الإجراءات المتبعة للحصول على التقييم <span
-                        class="text-red-400">*</span></label> <textarea id="evaluation_procedures" rows="4"
-                      placeholder="صف الإجراءات المتبعة للحصول على التقييم المستقل..."
-                      class="w-full px-4 py-3 rounded-xl resize-none"
-                      onchange="saveField('evaluations', 'evaluation_procedures', this.value)"></textarea>
+                <div class="space-y-6">
+                  <div id="evaluation_procedures" class="bg-slate-700/30 rounded-2xl border border-slate-700 overflow-hidden">
+                    <div class="bg-blue-500/10 p-4 border-b border-blue-500/20 flex items-center justify-between">
+                      <label class="block text-sm font-medium text-blue-400">الإجراءات المتبعة للحصول على التقييم <span class="text-red-400">*</span></label>
+                      <button onclick="addSection3Point('evaluations', 'evaluation_procedures')" class="text-xs text-blue-500 hover:text-blue-400 flex items-center gap-1">
+                        <i class="fas fa-plus-circle"></i> إضافة نقطة
+                      </button>
+                    </div>
+                    <div class="p-6">
+                      <div id="sec3-evaluations-evaluation_procedures-list" class="space-y-3"></div>
+                    </div>
                   </div>
-                  <div><label class="block text-sm text-slate-400 mb-2">توصيات المقيمين <span
-                        class="text-red-400">*</span></label> <textarea id="evaluator_recommendations" rows="4"
-                      placeholder="" class="w-full px-4 py-3 rounded-xl resize-none"
-                      onchange="saveField('evaluations', 'evaluator_recommendations', this.value)"></textarea>
+                  
+                  <div id="evaluator_recommendations" class="bg-slate-700/30 rounded-2xl border border-slate-700 overflow-hidden">
+                    <div class="bg-blue-500/10 p-4 border-b border-blue-500/20 flex items-center justify-between">
+                      <label class="block text-sm font-medium text-blue-400">النقاط التي وضعها المقيمون <span class="text-red-400">*</span></label>
+                      <button onclick="addSection3Point('evaluations', 'evaluator_recommendations')" class="text-xs text-blue-500 hover:text-blue-400 flex items-center gap-1">
+                        <i class="fas fa-plus-circle"></i> إضافة نقطة
+                      </button>
+                    </div>
+                    <div class="p-6">
+                      <div id="sec3-evaluations-evaluator_recommendations-list" class="space-y-3"></div>
+                    </div>
                   </div>
-                </div>
-              </div>{{--! Response to Recommendations --}}
-              <div class="bg-slate-800 rounded-2xl p-6 shadow-xl">
-                <h3 class="text-lg font-bold text-white mb-6 flex items-center gap-2">
-                  <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                  </svg> الاستجابة للتوصيات
-                </h3>
-                <div class="space-y-4">
-                  <div><label class="block text-sm text-slate-400 mb-2">آلية الاستجابة</label> <textarea
-                      id="response_mechanism" rows="4" placeholder="صف آلية الاستجابة للتوصيات..."
-                      class="w-full px-4 py-3 rounded-xl resize-none"
-                      onchange="saveField('evaluations', 'response_mechanism', this.value)"></textarea>
-                  </div>
-                  <div><label class="block text-sm text-slate-400 mb-2">الإجراءات المتخذة</label> <textarea
-                      id="actions_taken" rows="4" placeholder="• الإجراء الأول
-• الإجراء الثاني" class="w-full px-4 py-3 rounded-xl resize-none"
-                      onchange="saveField('evaluations', 'actions_taken', this.value)"></textarea>
+
+                  <div id="actions_taken" class="bg-slate-700/30 rounded-2xl border border-slate-700 overflow-hidden">
+                    <div class="bg-blue-500/10 p-4 border-b border-blue-500/20 flex items-center justify-between">
+                      <label class="block text-sm font-medium text-blue-400">إجراءات الاستجابة للتوصيات</label>
+                      <button onclick="addSection3Point('evaluations', 'actions_taken')" class="text-xs text-blue-500 hover:text-blue-400 flex items-center gap-1">
+                        <i class="fas fa-plus-circle"></i> إضافة نقطة
+                      </button>
+                    </div>
+                    <div class="p-6">
+                      <div id="sec3-evaluations-actions_taken-list" class="space-y-3"></div>
+                    </div>
                   </div>
                 </div>
               </div>{{--! Results --}}
@@ -1069,16 +1063,29 @@
                       d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                   </svg> النتائج
                 </h3>
-                <div class="space-y-4">
-                  <div><label class="block text-sm text-slate-400 mb-2">جوانب النجاح</label> <textarea
-                      id="success_aspects" rows="4" placeholder="• جانب نجاح 1
-• جانب نجاح 2" class="w-full px-4 py-3 rounded-xl resize-none"
-                      onchange="saveField('results', 'success_aspects', this.value)"></textarea>
+                <div class="space-y-6">
+                  <div id="success_aspects" class="bg-slate-700/30 rounded-2xl border border-slate-700 overflow-hidden">
+                    <div class="bg-amber-500/10 p-4 border-b border-amber-500/20 flex items-center justify-between">
+                      <label class="block text-sm font-medium text-amber-400">جوانب النجاح</label>
+                      <button onclick="addSection3Point('results', 'success_aspects')" class="text-xs text-amber-500 hover:text-amber-400 flex items-center gap-1">
+                        <i class="fas fa-plus-circle"></i> إضافة نقطة
+                      </button>
+                    </div>
+                    <div class="p-6">
+                      <div id="sec3-results-success_aspects-list" class="space-y-3"></div>
+                    </div>
                   </div>
-                  <div><label class="block text-sm text-slate-400 mb-2">جوانب التحسين ذات الأولوية</label> <textarea
-                      id="priority_improvements" rows="4" placeholder="• جانب تحسين 1
-• جانب تحسين 2" class="w-full px-4 py-3 rounded-xl resize-none"
-                      onchange="saveField('results', 'priority_improvements', this.value)"></textarea>
+
+                  <div id="priority_improvements" class="bg-slate-700/30 rounded-2xl border border-slate-700 overflow-hidden">
+                    <div class="bg-amber-500/10 p-4 border-b border-amber-500/20 flex items-center justify-between">
+                      <label class="block text-sm font-medium text-amber-400">جوانب التحسين ذات الأولوية</label>
+                      <button onclick="addSection3Point('results', 'priority_improvements')" class="text-xs text-amber-500 hover:text-amber-400 flex items-center gap-1">
+                        <i class="fas fa-plus-circle"></i> إضافة نقطة
+                      </button>
+                    </div>
+                    <div class="p-6">
+                      <div id="sec3-results-priority_improvements-list" class="space-y-3"></div>
+                    </div>
                   </div>
                 </div>
               </div>{{--! Executive Proposals Table --}}
@@ -1109,29 +1116,6 @@
                     <tbody id="proposals-table">{{--! Dynamic rows --}}
                     </tbody>
                   </table>
-                </div>
-              </div>{{--! Attachments --}}
-              <div class="bg-slate-800 rounded-2xl p-6 shadow-xl">
-                <h3 class="text-lg font-bold text-white mb-6 flex items-center gap-2">
-                  <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-                  </svg> المرفقات
-                </h3>
-                <div id="attachments-list" class="space-y-3 mb-4">{{--! Attachment items will be added here --}}
-                </div>
-                <div
-                  class="border-2 border-dashed border-slate-600 rounded-xl p-8 text-center hover:border-blue-500 transition-colors cursor-pointer"
-                  onclick="document.getElementById('file-upload').click()">
-                  <svg class="w-12 h-12 text-slate-500 mx-auto mb-3" fill="none" stroke="currentColor"
-                    viewbox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                  </svg>
-                  <p class="text-slate-400 mb-1">اسحب الملفات هنا أو انقر للتحميل</p>
-                  <p class="text-xs text-slate-500">PDF, DOC, DOCX, XLS, XLSX - حد أقصى 10 ميجابايت</p><input
-                    type="file" id="file-upload" class="hidden" multiple accept=".pdf,.doc,.docx,.xls,.xlsx"
-                    onchange="handleFileUpload(this.files)">
                 </div>
               </div>
             </div>
@@ -1178,6 +1162,10 @@
     let ratings = {};
     let evidences = {};
     let standardComments = {};
+    let section3Data = {
+      evaluations: { evaluation_procedures: [], evaluator_recommendations: [], response_mechanism: [], actions_taken: [] },
+      results: { success_aspects: [], priority_improvements: [] }
+    };
     let tableData = {
       graduates: { last_year: {}, prev_year: {}, two_years_ago: {} },
       research: {},
@@ -1185,7 +1173,6 @@
       proposals: [],
       objectives: []
     };
-    let attachments = [];
     let missingFields = [];
 
     // Default Config
@@ -1299,11 +1286,30 @@
             standardComments[std][field] = record.field_value;
           }
         }
+
+        // Handle section3 lists
+        if (['evaluations', 'results'].includes(record.section) && section3Data[record.section]?.[record.field_key] !== undefined) {
+          try {
+            section3Data[record.section][record.field_key] = (record.field_value && record.field_value.startsWith('[')) 
+              ? JSON.parse(record.field_value) 
+              : (record.field_value ? [record.field_value] : []);
+          } catch(e) {
+            section3Data[record.section][record.field_key] = record.field_value ? [record.field_value] : [];
+          }
+        }
       });
 
       // Render standard comments after data is loaded
       ['strengths', 'improvements', 'priorities', 'independent_opinion'].forEach(field => {
         renderCommentPoints(1, field);
+      });
+      
+      // Render Section 3 lists
+      ['evaluation_procedures', 'evaluator_recommendations', 'response_mechanism', 'actions_taken'].forEach(field => {
+        renderSection3Points('evaluations', field);
+      });
+      ['success_aspects', 'priority_improvements'].forEach(field => {
+        renderSection3Points('results', field);
       });
     }
 
@@ -1603,7 +1609,7 @@
                    onchange="updateCommentPoint(${standard}, '${field}', ${index}, this.value)">
           </div>
           <button onclick="removeCommentPoint(${standard}, '${field}', ${index})" 
-                  class="p-2.5 text-slate-500 hover:text-red-400 bg-slate-800 hover:bg-red-500/10 rounded-xl transition-all opacity-0 group-hover:opacity-100">
+                  class="p-2.5 text-slate-500 hover:text-red-400 bg-slate-800 hover:bg-red-500/10 rounded-xl transition-all">
             <i class="fas fa-trash-alt text-xs"></i>
           </button>
         </div>
@@ -1760,55 +1766,76 @@
       tableData[tableName] = tableData[tableName].filter(r => r.id !== rowId);
     }
 
-    // File Upload
-    function handleFileUpload(files) {
-      const container = document.getElementById('attachments-list');
-
-      Array.from(files).forEach(file => {
-        const fileId = Date.now() + Math.random();
-        attachments.push({ id: fileId, name: file.name, size: file.size });
-
-        const item = document.createElement('div');
-        item.className = 'bg-slate-700/50 rounded-xl p-4 flex items-center justify-between';
-        item.id = `attachment-${fileId}`;
-        item.innerHTML = `
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
-              <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-              </svg>
-            </div>
-            <div>
-              <p class="text-white text-sm font-medium">${file.name}</p>
-              <p class="text-slate-400 text-xs">${formatFileSize(file.size)}</p>
-            </div>
-          </div>
-          <button onclick="removeAttachment(${fileId})" class="text-red-400 hover:text-red-300 p-2">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-            </svg>
-          </button>
-        `;
-
-        container.appendChild(item);
-      });
-
-      showToast('تم رفع الملفات بنجاح');
+    // Section 3 Lists
+    function addSection3Point(section, field) {
+      if (!section3Data[section]) section3Data[section] = {};
+      if (!section3Data[section][field]) section3Data[section][field] = [];
+      section3Data[section][field].push('');
+      renderSection3Points(section, field);
+      saveSection3Field(section, field);
     }
 
-    function removeAttachment(fileId) {
-      const item = document.getElementById(`attachment-${fileId}`);
-      if (item) {
-        item.style.opacity = '0';
-        setTimeout(() => item.remove(), 300);
+    function removeSection3Point(section, field, index) {
+      if (section3Data[section] && Array.isArray(section3Data[section][field])) {
+        section3Data[section][field].splice(index, 1);
+        renderSection3Points(section, field);
+        saveSection3Field(section, field);
       }
-      attachments = attachments.filter(a => a.id !== fileId);
     }
 
-    function formatFileSize(bytes) {
-      if (bytes < 1024) return bytes + ' B';
-      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-      return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    function updateSection3Point(section, field, index, value) {
+      if (section3Data[section] && Array.isArray(section3Data[section][field])) {
+        section3Data[section][field][index] = value;
+        saveSection3Field(section, field);
+      }
+    }
+
+    function saveSection3Field(section, field) {
+      saveField(section, field, JSON.stringify(section3Data[section][field]));
+    }
+
+    function renderSection3Points(section, field) {
+      const container = document.getElementById(`sec3-${section}-${field}-list`);
+      if (!container) return;
+
+      const points = section3Data[section] && Array.isArray(section3Data[section][field])
+        ? section3Data[section][field]
+        : [];
+
+      if (points.length === 0) {
+        container.innerHTML = `
+          <div class="py-4 text-center border border-dashed border-slate-700 rounded-xl bg-slate-900/30 animate-fadeIn">
+            <p class="text-slate-500 text-xs italic">لا توجد نقاط مضافة لهذا القسم</p>
+          </div>
+        `;
+        return;
+      }
+
+      const colors = {
+        'evaluation_procedures': 'blue',
+        'evaluator_recommendations': 'blue',
+        'actions_taken': 'blue',
+        'success_aspects': 'amber',
+        'priority_improvements': 'amber'
+      };
+      const color = colors[field] || 'slate';
+
+      container.innerHTML = points.map((point, index) => `
+        <div class="flex items-center gap-2 group animate-fadeIn mb-2">
+          <div class="flex-1 relative">
+            <span class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center bg-${color}-500/20 text-${color}-400 rounded-full text-[10px] font-bold">${index + 1}</span>
+            <input type="text" 
+                   value="${point.replace(/"/g, '&quot;')}" 
+                   placeholder="أدخل النقطة..." 
+                   class="w-full pr-10 pl-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700/50 focus:border-${color}-500/50 focus:ring-1 focus:ring-${color}-500/30 text-sm text-white transition-all"
+                   onchange="updateSection3Point('${section}', '${field}', ${index}, this.value)">
+          </div>
+          <button onclick="removeSection3Point('${section}', '${field}', ${index})" 
+                  class="p-2.5 text-slate-500 hover:text-red-400 bg-slate-800 hover:bg-red-500/10 rounded-xl transition-all">
+            <i class="fas fa-trash-alt text-xs"></i>
+          </button>
+        </div>
+      `).join('');
     }
 
     // Progress Tracking
@@ -1822,7 +1849,7 @@
 
       let filled = 0;
       requiredFields.forEach(field => {
-        if (formData[field] && formData[field].trim() !== '') {
+        if (formData[field] && formData[field].trim() !== '' && formData[field] !== '[]' && formData[field] !== '[""]') {
           filled++;
         }
       });
@@ -1838,7 +1865,7 @@
       updateSectionStatus(1, section1Filled === section1Fields.length ? 'complete' : section1Filled > 0 ? 'progress' : 'empty');
 
       const section3Fields = requiredFields.filter(f => f.startsWith('evaluations_'));
-      const section3Filled = section3Fields.filter(f => formData[f] && formData[f].trim() !== '').length;
+      const section3Filled = section3Fields.filter(f => formData[f] && formData[f].trim() !== '' && formData[f] !== '[]' && formData[f] !== '[""]').length;
       updateSectionStatus(3, section3Filled === section3Fields.length ? 'complete' : section3Filled > 0 ? 'progress' : 'empty');
 
       // Update submit button
@@ -1887,6 +1914,19 @@
       };
 
       Object.entries(requiredFieldsMap).forEach(([id, label]) => {
+        if (id === 'program_objectives') {
+          if (!tableData.objectives.some(o => o.trim() !== '')) missingFields.push({ id, label });
+          return;
+        }
+        if (id === 'evaluation_procedures') {
+          if (!section3Data.evaluations.evaluation_procedures.some(o => o.trim() !== '')) missingFields.push({ id, label });
+          return;
+        }
+        if (id === 'evaluator_recommendations') {
+          if (!section3Data.evaluations.evaluator_recommendations.some(o => o.trim() !== '')) missingFields.push({ id, label });
+          return;
+        }
+
         const el = document.getElementById(id);
         if (el && (!el.value || el.value.trim() === '')) {
           missingFields.push({ id, label });
@@ -2029,6 +2069,13 @@
     // Initial render for Standard 1 comments
     ['strengths', 'improvements', 'priorities', 'independent_opinion'].forEach(field => {
       renderCommentPoints(1, field);
+    });
+
+    ['evaluation_procedures', 'evaluator_recommendations', 'response_mechanism', 'actions_taken'].forEach(field => {
+      renderSection3Points('evaluations', field);
+    });
+    ['success_aspects', 'priority_improvements'].forEach(field => {
+      renderSection3Points('results', field);
     });
   </script>
   <script>(function () { function c() { var b = a.contentDocument || a.contentWindow.document; if (b) { var d = b.createElement('script'); d.innerHTML = "window.__CF$cv$params={r:'9c162da1c32df9ec',t:'MTc2ODk5MTg2Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);"; b.getElementsByTagName('head')[0].appendChild(d) } } if (document.body) { var a = document.createElement('iframe'); a.height = 1; a.width = 1; a.style.position = 'absolute'; a.style.top = 0; a.style.left = 0; a.style.border = 'none'; a.style.visibility = 'hidden'; document.body.appendChild(a); if ('loading' !== document.readyState) c(); else if (window.addEventListener) document.addEventListener('DOMContentLoaded', c); else { var e = document.onreadystatechange || function () { }; document.onreadystatechange = function (b) { e(b); 'loading' !== document.readyState && (document.onreadystatechange = e, c()) } } } })();</script>
