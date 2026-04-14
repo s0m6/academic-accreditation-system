@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Storage;
 class StageThreeController extends Controller
 {
     // Create a new draft form submission for stage three with all indicator evaluations.
+    // If a previously rejected submission exists, clone its form_data, indicator scores, and evidences.
     public function createDraft(Request $request, AccreditationRequest $accreditationRequest)
     {
         $user = $request->user();
@@ -28,7 +29,7 @@ class StageThreeController extends Controller
         }
         $this->ensureAuthorized($request, $accreditationRequest);
 
-        // Ensure there are no active (pending or approved) submissions
+        // Prevent creating a draft when a pending or approved submission already exists
         $hasActive = $accreditationRequest->formSubmissions()
             ->where('stage', 'stage_three')
             ->whereIn('status', ['pending', 'approved'])
@@ -38,7 +39,7 @@ class StageThreeController extends Controller
             return back()->with('error', 'يوجد طلب نشط المراجعة أو معتمد مسبقاً.');
         }
 
-        // Check if there is an existing draft
+        // Prevent duplicate drafts
         $draftExists = $accreditationRequest->formSubmissions()
             ->where('stage', 'stage_three')
             ->where('status', 'draft')
@@ -48,14 +49,24 @@ class StageThreeController extends Controller
             return back()->with('error', 'يوجد مسودة بالفعل يمكنك التعديل عليها.');
         }
 
-        // Create draft and indicator evaluations atomically
-        DB::transaction(function () use ($accreditationRequest, $user) {
-            // Create the stage three draft submission
+        // Look for the most recent rejected submission to clone its data
+        $lastRejected = $accreditationRequest->formSubmissions()
+            ->where('stage', 'stage_three')
+            ->where('status', 'rejected')
+            ->latest('id')
+            ->first();
+
+        DB::transaction(function () use ($accreditationRequest, $user, $lastRejected) {
+
+            // ──────────────────────────────────────────────────────────
+            // Step 1: Create the new draft, copying form_data JSON from
+            //         the rejected submission if one exists.
+            // ──────────────────────────────────────────────────────────
             $formSubmission = FormSubmission::create([
                 'accreditation_request_id' => $accreditationRequest->id,
                 'stage' => 'stage_three',
                 'status' => 'draft',
-                'form_data' => null,
+                'form_data' => $lastRejected?->form_data,
                 'submitted_by' => $user->id,
                 'submitted_at' => null,
                 'decided_by' => null,
@@ -63,21 +74,58 @@ class StageThreeController extends Controller
                 'decision_reasons' => null,
             ]);
 
-            // Create indicator evaluation rows linked to this draft for all existing indicators
-            $indicatorIds = Indicator::pluck('id');
-            $evaluations = [];
-            foreach ($indicatorIds as $indicatorId) {
-                $evaluations[] = [
-                    'form_submission_id' => $formSubmission->id,
-                    'indicator_id' => $indicatorId,
-                    'score' => null,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ];
-            }
+            if ($lastRejected) {
+                // ──────────────────────────────────────────────────────
+                // Step 2: Clone indicator evaluations WITH their scores
+                //         from the rejected submission.
+                // ──────────────────────────────────────────────────────
+                $oldEvaluations = IndicatorEvaluation::where('form_submission_id', $lastRejected->id)
+                    ->with('evidences')
+                    ->get();
 
-            if (! empty($evaluations)) {
-                IndicatorEvaluation::insert($evaluations);
+                foreach ($oldEvaluations as $oldEval) {
+                    // Create a new evaluation row copying the indicator_id and score
+                    $newEval = IndicatorEvaluation::create([
+                        'form_submission_id' => $formSubmission->id,
+                        'indicator_id' => $oldEval->indicator_id,
+                        'score' => $oldEval->score,
+                    ]);
+
+                    // ──────────────────────────────────────────────────
+                    // Step 3: Clone evidence records for this indicator.
+                    //         The file_path points to the same physical
+                    //         file — no file duplication is needed.
+                    //         The saveDraft deletion logic already checks
+                    //         if other records reference the same file
+                    //         before physically deleting it.
+                    // ──────────────────────────────────────────────────
+                    foreach ($oldEval->evidences as $oldEvidence) {
+                        Evidence::create([
+                            'indicator_evaluation_id' => $newEval->id,
+                            'file_name' => $oldEvidence->file_name,
+                            'file_path' => $oldEvidence->file_path,
+                        ]);
+                    }
+                }
+            } else {
+                // ──────────────────────────────────────────────────────
+                // No rejected submission: fresh draft with blank scores
+                // ──────────────────────────────────────────────────────
+                $indicatorIds = Indicator::pluck('id');
+                $evaluations = [];
+                foreach ($indicatorIds as $indicatorId) {
+                    $evaluations[] = [
+                        'form_submission_id' => $formSubmission->id,
+                        'indicator_id' => $indicatorId,
+                        'score' => null,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ];
+                }
+
+                if (! empty($evaluations)) {
+                    IndicatorEvaluation::insert($evaluations);
+                }
             }
         });
 
@@ -253,6 +301,11 @@ class StageThreeController extends Controller
                             ->first();
                         if ($existing) {
                             $submittedEvidenceIds[] = $existing->id;
+                            
+                            // Update the file_name if it was modified in the UI
+                            if (!empty($evData['file_name']) && $existing->file_name !== $evData['file_name']) {
+                                $existing->update(['file_name' => $evData['file_name']]);
+                            }
                         }
                     } elseif (! empty($evData['temp_path']) && ! empty($evData['file_name'])) {
                         // New evidence from temp - Use 'local' disk explicitly

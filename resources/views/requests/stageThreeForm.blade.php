@@ -139,20 +139,41 @@ function ratingColor($rating) {
     }
 
 
+    .ev-name-input {
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      border-width: 1.5px !important;
+      border-style: solid !important;
+    }
+    /* Locked state (Readonly) - Clean and integrated */
     .ev-name-input[readonly] {
-      background-color: transparent !important;
-      border-color: transparent !important;
+      background-color: #f8fafc !important;
+      border-color: #f1f5f9 !important;
+      color: #64748b !important;
       cursor: default;
+      box-shadow: none !important;
+      opacity: 0.8;
+    }
+    .dark .ev-name-input[readonly] {
+      background-color: #0f172a !important;
+      border-color: #1e293b !important;
+      color: #94a3b8 !important;
+    }
+    /* Editable / Active state - Focused and vibrant */
+    .ev-name-input:not([readonly]) {
+      background-color: #ffffff !important;
+      border-color: #2563eb !important;
+      color: #1e293b !important;
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1) !important;
+      transform: translateY(-1px);
+    }
+    .dark .ev-name-input:not([readonly]) {
+      background-color: #020617 !important;
+      border-color: #3b82f6 !important;
+      color: #f8fafc !important;
+      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15) !important;
     }
     .ev-name-input:not([readonly]):hover {
-      border-color: #cbd5e1;
-      background-color: #f8fafc;
-    }
-    .ev-name-input:not([readonly]):focus {
-      border-color: #3b82f6;
-      background-color: #fff;
-      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
-      outline: none;
+      border-color: #1d4ed8 !important;
     }
   </style>
 
@@ -956,7 +977,7 @@ function ratingColor($rating) {
                                       value="{{ $ev->file_name }}" 
                                       placeholder="ادخل اسم الدليل"
                                       readonly
-                                      class="ev-name-input flex-1 text-sm font-medium text-slate-800 dark:text-slate-200 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 px-3 py-1.5 rounded-lg focus:ring-1 focus:ring-blue-500/30 outline-none truncate" 
+                                      class="ev-name-input flex-1 text-sm font-medium px-3 py-1.5 rounded-lg truncate" 
                                       oninput="hasChanges = true"
                                       onblur="this.readOnly = true"
                                       title="{{ $ev->file_name }}">
@@ -2262,7 +2283,7 @@ function ratingColor($rating) {
       row.className = 'evidence-pending bg-blue-50/50 dark:bg-blue-900/10 border-2 border-dashed border-blue-300 dark:border-blue-700/50 rounded-xl p-3 flex flex-col sm:flex-row items-center gap-3 fade-in mb-2';
       row.innerHTML = `
         <div class="flex-1 w-full relative">
-            <input type="text" placeholder="اسم الدليل (مثال: محضر اجتماع 1)" class="ev-name-input w-full px-4 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 outline-none transition-all">
+            <input type="text" placeholder="اسم الدليل (مثال: محضر اجتماع 1)" class="ev-name-input w-full px-4 py-2 rounded-lg outline-none">
         </div>
         <div class="flex items-center gap-2 w-full sm:w-auto">
             <input type="file" class="hidden ev-file-input" accept=".pdf" onchange="handleEvidenceFileSelection(this, ${indicatorId}, ${evalId}, '${pendingId}')">
@@ -2368,7 +2389,7 @@ function ratingColor($rating) {
                  value="${evidence.file_name}" 
                  placeholder="ادخل اسم الدليل"
                  readonly
-                 class="ev-name-input w-full text-sm font-medium text-slate-800 dark:text-slate-200 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 px-3 py-1.5 rounded-lg focus:ring-1 focus:ring-blue-500/30 outline-none truncate" 
+                 class="ev-name-input w-full text-sm font-medium px-3 py-1.5 rounded-lg truncate" 
                  oninput="hasChanges = true"
                  onblur="this.readOnly = true">
           ${!window.IS_READONLY ? `
