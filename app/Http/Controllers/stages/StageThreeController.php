@@ -270,6 +270,29 @@ class StageThreeController extends Controller
         ]);
     }
 
+    // View a temporary or saved evidence file securely
+    public function viewFile(Request $request)
+    {
+        $path = $request->query('path');
+        
+        if (! $path || ! Storage::disk('local')->exists($path)) {
+            abort(404, 'الملف غير موجود');
+        }
+
+        // Basic sanity check: only allow 'temp_files/' or 'req_*/stagethree/' paths
+        if (! str_starts_with($path, 'temp_files/') && ! preg_match('/^req_\d+\/stagethree\//', $path)) {
+            abort(403, 'غير مصرح للوصول إلى هذا المسار');
+        }
+
+        $user = $request->user();
+        // Here we could add deeper authorization, but checking role is a good start
+        if (! in_array($user->role, ['program_coordinator', 'accreditation_officer', 'council_secretariat'])) {
+            abort(403);
+        }
+
+        return response()->file(Storage::disk('local')->path($path));
+    }
+
     // Ensure the submission belongs to the correct request and the user is authorized.
     private function ensureAuthorized(Request $request, AccreditationRequest $accreditationRequest, ?FormSubmission $formSubmission = null): void
     {

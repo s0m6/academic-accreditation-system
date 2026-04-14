@@ -99,6 +99,8 @@ Route::middleware('auth')->group(function () {
         ->name('requests.stage_three.save');
     Route::post('/requests/{accreditationRequest}/stage-three/{formSubmission}/upload-evidence-temp', [StageThreeController::class, 'uploadEvidenceTemp'])
         ->name('requests.stage_three.upload_evidence_temp');
+    Route::get('/stage-three/view-file', [StageThreeController::class, 'viewFile'])
+        ->name('requests.stage_three.view_file');
 
 });
 Route::view('test3', 'requests.stageThreeForm')->name('requests.stage_three.form_preview');

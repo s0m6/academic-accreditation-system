@@ -178,34 +178,7 @@ function ratingColor($rating) {
       border-color: var(--primary-action) !important;
     }
 
-    .tooltip-container {
-      position: relative;
-    }
 
-    .tooltip-text {
-      visibility: hidden;
-      opacity: 0;
-      position: absolute;
-      z-index: 9999;
-      background: var(--secondary-surface);
-      color: var(--text-main);
-      border: 1px solid var(--border-base);
-      padding: 12px;
-      border-radius: 8px;
-      font-size: 12px;
-      width: 250px;
-      bottom: 100%;
-      right: 50%;
-      transform: translateX(50%);
-      margin-bottom: 8px;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
-    }
-
-    .tooltip-container:hover .tooltip-text {
-      visibility: visible;
-      opacity: 1;
-    }
 
     input,
     textarea,
@@ -920,90 +893,117 @@ function ratingColor($rating) {
                 @foreach($std->subStandards as $sub)
                   <div class="bg-white/80 dark:bg-slate-800/80 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700/50">
                     <div class="bg-slate-100 dark:bg-slate-700/30 p-4 border-b border-slate-200 dark:border-slate-700/50 flex items-center justify-between">
-                      <div class="flex items-center gap-3">
-                        <span class="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-lg font-bold text-sm">{{ $sub->number }}</span>
-                        <h3 class="font-bold text-lg text-slate-700 dark:text-slate-300">{{ $sub->name }}</h3>
-                      </div>
-                      @php $examples = $sub->examples_of_evidence ?? []; @endphp
-                      @if(count($examples) > 0)
-                        <div class="tooltip-container">
-                          <svg class="w-5 h-5 text-slate-700 dark:text-slate-300 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                          <div class="tooltip-text">
-                            <strong>أمثلة للأدلة:</strong><br>
-                            @foreach($examples as $ex)• {{ $ex }}<br>@endforeach
+                      <div class="flex items-center gap-3 flex-1 min-w-0 pr-2">
+                        <span class="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-lg font-bold text-sm whitespace-nowrap">{{ $sub->number }}</span>
+                        <h3 class="font-bold text-lg text-slate-700 dark:text-slate-300 truncate">{{ $sub->name }}</h3>
+                        
+                        @php $examples = $sub->examples_of_evidence ?? []; @endphp
+                        @if(count($examples) > 0)
+                          <div class="relative group flex-shrink-0">
+                            <svg class="w-5 h-5 text-slate-400 dark:text-slate-500 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <div class="absolute bottom-full right-1/2 translate-x-1/2 mb-2 w-64 p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl text-xs text-slate-800 dark:text-slate-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-[9999] pointer-events-none">
+                              <strong>أمثلة للأدلة:</strong><br>
+                              @foreach($examples as $ex)• {{ $ex }}<br>@endforeach
+                            </div>
                           </div>
-                        </div>
-                      @endif
+                        @endif
+                      </div>
+
+                      {{-- Collapse Chevron --}}
+                      <button type="button" onclick="toggleSubStandard({{ $sub->id }}, this)" class="w-8 h-8 flex items-center justify-center rounded-full text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all duration-200">
+                        <svg class="w-5 h-5 transform rotate-180 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                      </button>
                     </div>
-                    <div class="p-6 space-y-4">
+                    
+                    <div id="sub-{{ $sub->id }}-content" class="p-6 space-y-4">
                       @foreach($sub->indicators as $ind)
                         @php
                           $evalId = $evalIdByIndicatorId[$ind->id] ?? null;
                           $savedScore = $indicatorScores[$ind->id] ?? null;
                           $indEvidences = $evalId ? ($evidencesByEvalId[$evalId] ?? collect()) : collect();
                         @endphp
-                        <div class="indicator-row rounded-xl p-5 border border-slate-300 dark:border-slate-600 bg-white/50 dark:bg-slate-800/50"
+                        <div class="indicator-row rounded-2xl p-6 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm transition-all hover:shadow-md"
                           data-indicator-id="{{ $ind->id }}"
                           data-eval-id="{{ $evalId }}">
-                          <div class="flex items-start justify-between mb-4">
-                            <div class="flex-1">
-                              <span class="text-xs text-blue-400 font-medium">مؤشر {{ $sub->number }}-{{ $loop->iteration }}</span>
-                              <p class="text-slate-900 dark:text-white mt-1">{{ $ind->name }}</p>
+                          <div class="flex items-start justify-between mb-5">
+                            <div class="flex-1 border-r-4 border-blue-500 pr-3">
+                              <span class="text-xs text-blue-500 font-bold tracking-wider">مؤشر {{ $sub->number }}-{{ $loop->iteration }}</span>
+                              <p class="text-slate-800 dark:text-slate-100 mt-2 font-medium leading-relaxed">{{ $ind->name }}</p>
                             </div>
                           </div>
+                          
                           {{-- Rating Buttons --}}
-                          <div class="flex items-center gap-3 mb-4">
-                            <span class="text-sm text-slate-700 dark:text-slate-300">التقييم:</span>
-                            <div class="flex gap-2">
+                          <div class="flex flex-wrap items-center gap-4 mb-6 bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-100 dark:border-slate-700/50">
+                            <span class="text-sm font-semibold text-slate-700 dark:text-slate-300">درجة التقييم:</span>
+                            <div class="flex flex-wrap gap-2">
                               @foreach([1,2,3,4,5] as $r)
                                 <button
                                   onclick="setRatingById({{ $ind->id }}, {{ $std->id }}, {{ $r }})"
-                                  class="rating-btn w-10 h-10 rounded-lg bg-slate-200 dark:bg-slate-600 text-slate-900 dark:text-white font-bold"
+                                  class="rating-btn w-10 h-10 rounded-lg bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors shadow-sm"
                                   data-indicator-id="{{ $ind->id }}"
                                   data-rating="{{ $r }}"
-                                  style="{{ $savedScore == $r ? 'background-color:'.ratingColor($r).';color:#fff;' : '' }}">{{ $r }}</button>
+                                  style="{{ $savedScore == $r ? 'background-color:'.ratingColor($r).';color:#fff; transform: scale(1.05);' : '' }}">{{ $r }}</button>
                               @endforeach
+                              <div class="w-px h-8 bg-slate-300 dark:bg-slate-600 mx-2 hidden sm:block"></div>
                               <button
                                 onclick="setRatingById({{ $ind->id }}, {{ $std->id }}, 0)"
-                                class="rating-btn px-4 h-10 rounded-lg bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-bold border border-slate-500"
+                                class="rating-btn px-5 h-10 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold border-2 border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all shadow-sm whitespace-nowrap"
                                 data-indicator-id="{{ $ind->id }}"
                                 data-rating="0"
-                                style="{{ $savedScore === 0 ? 'background-color:#312e81;color:#fff;' : '' }}">غير مطابق</button>
+                                style="{{ $savedScore === 0 ? 'background-color:#475569;border-color:#475569;color:#fff; transform: scale(1.05);' : '' }}">غير مطابق</button>
                             </div>
                           </div>
-                          {{-- Saved Evidences --}}
-                          <div id="evidences-ind-{{ $ind->id }}" class="space-y-2 mb-3">
-                            @foreach($indEvidences as $ev)
-                              <div class="evidence-item bg-slate-100 dark:bg-slate-700 rounded-lg p-3 flex items-center gap-3" 
-                                id="evidence-saved-{{ $ev->id }}"
-                                data-id="{{ $ev->id }}"
-                                data-name="{{ $ev->file_name }}">
-                                <i class="fas fa-file-pdf text-red-500"></i>
-                                <span class="flex-1 text-sm text-slate-800 dark:text-white truncate">{{ $ev->file_name }}</span>
-                                <button onclick="removeEvidenceRow('evidence-saved-{{ $ev->id }}')"
-                                  class="text-red-600 dark:text-red-400 hover:text-red-300 p-1" title="حذف">
-                                  <i class="fas fa-trash-alt text-xs"></i>
+
+                          {{-- Evidences Container --}}
+                          <div class="evidence-section bg-slate-50 dark:bg-slate-900/30 rounded-xl border border-slate-100 dark:border-slate-700/50 p-4">
+                            <div class="flex items-center justify-between mb-3">
+                              <label class="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                                <i class="fas fa-paperclip text-slate-400"></i> الأدلة المرفقة
+                              </label>
+                              {{-- Upload new evidence trigger --}}
+                              @if($evalId)
+                                <button onclick="prepareEvidenceRow({{ $ind->id }}, {{ $evalId }})" class="text-blue-600 dark:text-blue-400 text-xs font-bold flex items-center gap-1.5 hover:text-blue-700 dark:hover:text-blue-300 bg-blue-50 dark:bg-blue-900/20 py-1.5 px-3 rounded-lg transition-colors">
+                                  <i class="fas fa-plus"></i> إرفاق دليل جديد
                                 </button>
-                              </div>
-                            @endforeach
+                              @endif
+                            </div>
+
+                            {{-- Saved Evidences --}}
+                            <div id="evidences-ind-{{ $ind->id }}" class="space-y-2">
+                              @if($indEvidences->isEmpty())
+                                <p class="text-xs text-slate-400 dark:text-slate-500 italic px-2 no-evidence-msg">لا توجد أدلة مرفقة لهذا المؤشر.</p>
+                              @endif
+                              @foreach($indEvidences as $ev)
+                                <div class="evidence-item bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 flex items-center gap-3 shadow-sm group transition-all hover:border-blue-300" 
+                                  id="evidence-saved-{{ $ev->id }}"
+                                  data-id="{{ $ev->id }}"
+                                  data-name="{{ $ev->file_name }}">
+                                  
+                                  <div class="w-8 h-8 rounded-lg bg-red-50 dark:bg-red-500/10 flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-file-pdf text-red-500"></i>
+                                  </div>
+                                  <span class="flex-1 text-sm font-medium text-slate-800 dark:text-slate-200 truncate" title="{{ $ev->file_name }}">{{ $ev->file_name }}</span>
+                                  
+                                  <div class="flex items-center gap-1">
+                                    <a href="/stage-three/view-file?path={{ urlencode($ev->file_path) }}" target="_blank" class="text-blue-500 hover:text-blue-700 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 w-8 h-8 flex items-center justify-center rounded-lg transition-colors" title="عرض الدليل">
+                                      <i class="fas fa-external-link-alt text-xs"></i>
+                                    </a>
+                                    <button onclick="removeEvidenceRow('evidence-saved-{{ $ev->id }}')"
+                                      class="text-red-500 hover:text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 w-8 h-8 flex items-center justify-center rounded-lg transition-colors" title="حذف">
+                                      <i class="fas fa-trash-alt text-xs"></i>
+                                    </button>
+                                  </div>
+                                </div>
+                              @endforeach
+                            </div>
                           </div>
-                          {{-- Upload new evidence --}}
-                          @if($evalId)
-                            <label class="cursor-pointer text-blue-400 text-sm flex items-center gap-2 hover:text-blue-300 transition-colors">
-                              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                              </svg>
-                              إرفاق دليل
-                              <input type="file" class="hidden" accept=".pdf"
-                                onchange="uploadEvidence(this, {{ $ind->id }}, {{ $evalId }})">
-                            </label>
-                          @endif
                         </div>
                       @endforeach
                     </div>
                   </div>
+
                 @endforeach
               </div>
 
@@ -2097,22 +2097,33 @@ function ratingColor($rating) {
 
     // ── Rating by Indicator ID (DB-based) ────────────────────────────
     function setRatingById(indicatorId, standardId, rating) {
-      scores[indicatorId] = rating;
+      if (scores[indicatorId] === rating) {
+        // Toggle off
+        scores[indicatorId] = null;
+        rating = null;
+      } else {
+        scores[indicatorId] = rating;
+      }
 
       // Visual update
       document.querySelectorAll(`[data-indicator-id="${indicatorId}"] .rating-btn`).forEach(btn => {
         const btnRating = parseInt(btn.dataset.rating);
         if (btnRating === rating) {
           btn.style.backgroundColor = getRatingColor(rating);
+          btn.style.borderColor = getRatingColor(rating);
           btn.style.color = '#fff';
+          btn.style.transform = 'scale(1.05)';
         } else {
           btn.style.backgroundColor = '';
+          btn.style.borderColor = '';
           btn.style.color = '';
+          btn.style.transform = '';
         }
       });
 
       // Recalculate standard average from this standard's indicators
       updateStandardScoreById(standardId);
+      hasChanges = true;
     }
 
     function updateStandardScoreById(standardId) {
@@ -2123,7 +2134,10 @@ function ratingColor($rating) {
       const vals = [];
       indicatorEls.forEach(el => {
         const id = el.dataset.indicatorId;
-        if (scores[id] !== undefined) vals.push(scores[id]);
+        // Include non-compliant (0) or skip it? Usually '0' implies 0 in avg for non-compliant. If you skip, it's not penalized. Let's include it if defined.
+        if (scores[id] !== undefined && scores[id] !== null && scores[id] !== '') {
+          vals.push(scores[id]);
+        }
       });
       const scoreEl = document.getElementById(`standard-${standardId}-score`);
       if (scoreEl && vals.length > 0) {
@@ -2136,64 +2150,147 @@ function ratingColor($rating) {
     }
 
     // ── Evidence Upload ───────────────────────────────────────────────
-    async function uploadEvidence(input, indicatorId, evalId) {
-      const file = input.files[0];
+    function toggleSubStandard(id, btn) {
+      const content = document.getElementById(`sub-${id}-content`);
+      const svg = btn.querySelector('svg');
+      if (content.classList.contains('hidden')) {
+        content.classList.remove('hidden');
+        svg.classList.add('rotate-180');
+      } else {
+        content.classList.add('hidden');
+        svg.classList.remove('rotate-180');
+      }
+    }
+
+    function viewEvidenceTemp(btn) {
+      const tempPath = btn.dataset.path;
+      const savedUrl = btn.dataset.savedUrl;
+      
+      if (savedUrl) {
+        window.open('/stage-three/view-file?path=' + encodeURIComponent(savedUrl), '_blank');
+      } else if (tempPath) {
+        window.open('/stage-three/view-file?path=' + encodeURIComponent(tempPath), '_blank');
+      } else {
+        alert('مسار الملف غير متوفر.');
+      }
+    }
+
+    function prepareEvidenceRow(indicatorId, evalId) {
+      const container = document.getElementById(`evidences-ind-${indicatorId}`);
+      if (!container) return;
+
+      // Hide "No evidence" message if exists
+      const msg = container.querySelector('.no-evidence-msg');
+      if (msg) msg.style.display = 'none';
+      
+      const pendingId = `pending-${Date.now()}`;
+      const row = document.createElement('div');
+      row.id = pendingId;
+      row.className = 'evidence-pending bg-blue-50/50 dark:bg-blue-900/10 border-2 border-dashed border-blue-300 dark:border-blue-700/50 rounded-xl p-3 flex flex-col sm:flex-row items-center gap-3 animate-fadeIn mb-2';
+      row.innerHTML = `
+        <div class="flex-1 w-full relative">
+            <input type="text" placeholder="اسم الدليل (مثال: محضر اجتماع 1)" class="ev-name-input w-full px-4 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 outline-none transition-all">
+        </div>
+        <div class="flex items-center gap-2 w-full sm:w-auto">
+            <input type="file" class="hidden ev-file-input" accept=".pdf" onchange="handleEvidenceFileSelection(this, ${indicatorId}, ${evalId}, '${pendingId}')">
+            <button onclick="this.previousElementSibling.click()" class="flex-1 sm:flex-none justify-center bg-slate-800 hover:bg-slate-700 dark:bg-blue-600 dark:hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 shadow-sm">
+                <i class="fas fa-file-upload"></i> إرفاق الدليل
+            </button>
+            <button onclick="
+              this.closest('.evidence-pending').remove(); 
+              if(document.getElementById('evidences-ind-${indicatorId}').children.length === 1 && document.getElementById('evidences-ind-${indicatorId}').querySelector('.no-evidence-msg')) {
+                document.getElementById('evidences-ind-${indicatorId}').querySelector('.no-evidence-msg').style.display = 'block';
+              }
+            " class="text-slate-400 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 w-9 h-9 rounded-lg flex items-center justify-center transition-all shadow-sm">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+      `;
+      container.appendChild(row);
+      setTimeout(() => { row.querySelector('.ev-name-input').focus(); }, 100);
+    }
+
+    async function handleEvidenceFileSelection(fileInput, indicatorId, evalId, pendingRowId) {
+      const file = fileInput.files[0];
       if (!file) return;
 
-      const fileName = prompt('أدخل اسم الدليل (وصف الملف):');
-      if (!fileName) { input.value = ''; return; }
+      const row = document.getElementById(pendingRowId);
+      if (!row) return;
+
+      const nameInput = row.querySelector('.ev-name-input');
+      if (!nameInput.value.trim()) {
+        nameInput.value = file.name.replace(/\.[^/.]+$/, "");
+      }
+      const finalName = nameInput.value.trim();
+
+      row.className = 'evidence-item bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/30 rounded-xl p-3 flex items-center gap-3 shadow-sm animate-pulse';
+      row.innerHTML = `
+          <i class="fas fa-circle-notch fa-spin text-amber-500"></i>
+          <span class="flex-1 text-sm font-medium text-amber-800 dark:text-amber-200 truncate">جاري الرفع: ${finalName}</span>
+      `;
 
       const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
       const fd = new FormData();
       fd.append('file', file);
-      fd.append('file_name', fileName);
+      fd.append('file_name', finalName);
       fd.append('_token', csrfToken);
-
-      showToast('جاري رفع الملف في الخلفية...');
 
       try {
         const resp = await fetch(window.UPLOAD_BASE, {
           method: 'POST',
-          headers: { 'X-CSRF-TOKEN': csrfToken },
           body: fd,
         });
         const json = await resp.json();
+        
         if (json.success) {
+          row.remove();
           appendEvidenceRow(indicatorId, { temp_path: json.temp_path, file_name: json.file_name });
           hasChanges = true;
-          showToast('تم الرفع للذاكرة المؤقتة!', 'success');
+          showToast('تم الرفع!', 'success');
         } else {
-          showToast('فشل رفع الملف', 'error');
+          showToast('فشل الرفع', 'error');
+          row.remove();
         }
       } catch (e) {
         showToast('تعذر الاتصال بالخادم', 'error');
+        row.remove();
       }
-      input.value = '';
     }
 
     function appendEvidenceRow(indicatorId, evidence) {
       const container = document.getElementById(`evidences-ind-${indicatorId}`);
       if (!container) return;
       
+      const msg = container.querySelector('.no-evidence-msg');
+      if (msg) msg.style.display = 'none';
+      
       const rowId = evidence.id ? `evidence-saved-${evidence.id}` : `evidence-temp-${Date.now()}`;
       
       const row = document.createElement('div');
-      row.className = 'evidence-item bg-slate-100 dark:bg-slate-700 rounded-lg p-3 flex items-center gap-3';
+      row.className = 'evidence-item bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 flex items-center gap-3 shadow-sm group transition-all hover:border-blue-300';
       row.id = rowId;
+      row.dataset.name = evidence.file_name;
       
       if (evidence.id) {
         row.dataset.id = evidence.id;
       } else {
         row.dataset.tempPath = evidence.temp_path;
       }
-      row.dataset.name = evidence.file_name;
       
       row.innerHTML = `
-        <i class="fas fa-file-pdf text-red-500"></i>
-        <span class="flex-1 text-sm text-slate-800 dark:text-white truncate">${evidence.file_name}</span>
-        <button onclick="removeEvidenceRow('${rowId}')" class="text-red-600 dark:text-red-400 hover:text-red-300 p-1" title="حذف">
-          <i class="fas fa-trash-alt text-xs"></i>
-        </button>
+        <div class="w-8 h-8 rounded-lg bg-red-50 dark:bg-red-500/10 flex items-center justify-center flex-shrink-0">
+          <i class="fas fa-file-pdf text-red-500"></i>
+        </div>
+        <span class="flex-1 text-sm font-medium text-slate-800 dark:text-slate-200 truncate" title="${evidence.file_name}">${evidence.file_name}</span>
+        
+        <div class="flex items-center gap-1">
+          <button onclick="viewEvidenceTemp(this)" data-path="${evidence.temp_path || ''}" data-saved-url="${evidence.file_path || ''}" class="text-blue-500 hover:text-blue-700 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 w-8 h-8 flex items-center justify-center rounded-lg transition-colors" title="عرض الدليل">
+            <i class="fas fa-external-link-alt text-xs"></i>
+          </button>
+          <button onclick="removeEvidenceRow('${rowId}')" class="text-red-500 hover:text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 w-8 h-8 flex items-center justify-center rounded-lg transition-colors" title="حذف">
+            <i class="fas fa-trash-alt text-xs"></i>
+          </button>
+        </div>
       `;
       container.appendChild(row);
     }
