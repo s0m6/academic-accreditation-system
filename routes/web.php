@@ -103,6 +103,12 @@ Route::middleware('auth')->group(function () {
         ->name('requests.stage_three.upload_evidence_temp');
     Route::get('/stage-three/view-file', [StageThreeController::class, 'viewFile'])
         ->name('requests.stage_three.view_file');
+    Route::patch('/requests/{accreditationRequest}/stage-three/{formSubmission}/submit', [StageThreeController::class, 'submit'])
+        ->name('requests.stage_three.submit');
+    Route::patch('/requests/{accreditationRequest}/stage-three/{formSubmission}/reject', [StageThreeController::class, 'reject'])
+        ->name('requests.stage_three.reject');
+    Route::patch('/requests/{accreditationRequest}/stage-three/{formSubmission}/approve', [StageThreeController::class, 'approve'])
+        ->name('requests.stage_three.approve');
 
 });
 Route::view('test3', 'requests.stageThreeForm')->name('requests.stage_three.form_preview');

@@ -10,6 +10,7 @@ use App\Models\Indicator;
 use App\Models\IndicatorEvaluation;
 use App\Models\Standard;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
@@ -350,6 +351,75 @@ class StageThreeController extends Controller
         }
 
         return response()->file(Storage::disk('local')->path($path));
+    }
+
+    // Submit the stage three draft to the council.
+    public function submit(Request $request, AccreditationRequest $accreditationRequest, FormSubmission $formSubmission)
+    {
+        $user = $request->user();
+        if ($user->role !== 'program_coordinator') {
+            abort(403);
+        }
+        $this->ensureAuthorized($request, $accreditationRequest, $formSubmission);
+
+        if ($formSubmission->status !== 'draft') {
+            return back()->with('error', 'لا يمكن رفع طلب ليس كمسودة.');
+        }
+
+        $formSubmission->update([
+            'status' => 'pending',
+            'submitted_by' => $user->id,
+            'submitted_at' => Carbon::now(),
+        ]);
+
+        return back()->with('success', 'تم رفع تقرير الدراسة الذاتية للأمانة بنجاح.');
+    }
+
+    // Reject the stage three submission with reasons.
+    public function reject(Request $request, AccreditationRequest $accreditationRequest, FormSubmission $formSubmission)
+    {
+        $user = $request->user();
+        if ($user->role !== 'council_secretariat') {
+            abort(403);
+        }
+        $this->ensureAuthorized($request, $accreditationRequest, $formSubmission);
+
+        $validated = $request->validate([
+            'reasons' => 'required|array|min:1',
+            'reasons.*' => 'required|string|max:500',
+        ]);
+
+        $formSubmission->update([
+            'status' => 'rejected',
+            'decision_reasons' => $validated['reasons'],
+            'decided_by' => $user->id,
+            'decision_at' => Carbon::now(),
+        ]);
+
+        return back()->with('success', 'تم رفض التقرير وإعادته للمنسق للتعديل.');
+    }
+
+    // Approve the stage three submission and advance to stage four.
+    public function approve(Request $request, AccreditationRequest $accreditationRequest, FormSubmission $formSubmission)
+    {
+        $user = $request->user();
+        if ($user->role !== 'council_secretariat') {
+            abort(403);
+        }
+        $this->ensureAuthorized($request, $accreditationRequest, $formSubmission);
+
+        $formSubmission->update([
+            'status' => 'approved',
+            'decided_by' => $user->id,
+            'decision_at' => Carbon::now(),
+        ]);
+
+        // Advance the request to stage four
+        $accreditationRequest->update([
+            'current_stage' => 'stage_four',
+        ]);
+
+        return back()->with('success', 'تمت الموافقة على التقرير بنجاح. الطلب الآن في المرحلة الرابعة.');
     }
 
     // Ensure the submission belongs to the correct request and the user is authorized.

@@ -10,9 +10,9 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password','role', 'mobile', 'phone'])]
+#[Fillable(['name', 'email', 'password', 'role', 'mobile', 'phone'])]
 #[Hidden(['password', 'remember_token'])]
-class User extends Authenticatable  implements MustVerifyEmail
+class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
@@ -29,7 +29,7 @@ class User extends Authenticatable  implements MustVerifyEmail
             'password' => 'hashed',
         ];
     }
-    
+
     public function university(): HasOne
     {
         return $this->hasOne(University::class, 'accreditation_officer_id');

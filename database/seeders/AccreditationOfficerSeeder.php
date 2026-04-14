@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 use App\Models\University;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -11,7 +11,7 @@ class AccreditationOfficerSeeder extends Seeder
 {
     /**
      * Run the database seeds.
-     * 
+     *
      * Creates an Accreditation Officer account linked to a university.
      */
     public function run(): void

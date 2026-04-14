@@ -3,22 +3,23 @@
 namespace App\Http\Controllers\CouncilSecretariat;
 
 use App\Http\Controllers\Controller;
+use App\Mail\AccreditationOfficerCreated;
 use App\Models\University;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Config;
-use App\Mail\AccreditationOfficerCreated;
+use Illuminate\Support\Str;
 
 class UniversityController extends Controller
 {
     public function index()
     {
         $universities = University::with('officer')->get();
+
         return view('council_secretariat.universities', compact('universities'));
     }
 
@@ -47,7 +48,7 @@ class UniversityController extends Controller
         ]);
 
         $university->update([
-            'accreditation_officer_id' => $user->id
+            'accreditation_officer_id' => $user->id,
         ]);
 
         $verificationUrl = URL::temporarySignedRoute(
