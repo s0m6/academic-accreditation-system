@@ -284,12 +284,14 @@ class StageThreeController extends Controller
 
             if (! empty($toDeleteIds)) {
                 $toDelete = Evidence::whereIn('id', $toDeleteIds)->get();
-                foreach ($toDelete as $ev) {
+
+                // Process each evidence record for physical and database deletion
+                $toDelete->each(function (Evidence $ev) {
                     if (! Evidence::where('id', '!=', $ev->id)->where('file_path', $ev->file_path)->exists()) {
                         Storage::disk('local')->delete($ev->file_path);
                     }
                     $ev->delete();
-                }
+                });
             }
 
             // Persist the form_data
