@@ -95,6 +95,8 @@ Route::middleware('auth')->group(function () {
         ->name('requests.stage_three.draft');
     Route::get('/requests/{accreditationRequest}/stage-three/{formSubmission}/edit', [StageThreeController::class, 'edit'])
         ->name('requests.stage_three.edit');
+    Route::get('/requests/{accreditationRequest}/stage-three/{formSubmission}/show', [StageThreeController::class, 'show'])
+        ->name('requests.stage_three.show');
     Route::post('/requests/{accreditationRequest}/stage-three/{formSubmission}/save', [StageThreeController::class, 'saveDraft'])
         ->name('requests.stage_three.save');
     Route::post('/requests/{accreditationRequest}/stage-three/{formSubmission}/upload-evidence-temp', [StageThreeController::class, 'uploadEvidenceTemp'])

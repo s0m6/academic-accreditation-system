@@ -41,6 +41,7 @@ function ratingColor($rating) {
 
     window.SAVED_EVIDENCES = @json($mappedEvidences);
     window.EVAL_ID_MAP = @json($evalIdByIndicatorId);
+    window.IS_READONLY = {{ (isset($readonly) && $readonly) ? 'true' : 'false' }};
   </script>
 
 
@@ -185,7 +186,7 @@ function ratingColor($rating) {
         <div class="px-3 mb-2"><span class="text-xs text-slate-500 font-medium px-3">أقسام الدراسة الذاتية</span>
         </div>
         {{-- Part 1 --}}
-        <button onclick="switchSection(1)" id="nav-1"
+        <button onclick="switchSection(1)" id="nav-1" data-keep
           class="sidebar-item active w-full text-right px-6 py-4 flex items-center gap-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all group">
           <div class="w-10 h-10 bg-blue-50 dark:bg-blue-500/20 rounded-xl flex items-center justify-center"><span
               class="text-blue-600 dark:text-blue-400 font-bold">١</span>
@@ -195,7 +196,7 @@ function ratingColor($rating) {
           </div>
         </button>
         {{-- Part 2 --}}
-        <button onclick="switchSection(2); switchStandardTab(1)" id="nav-2"
+        <button onclick="switchSection(2); switchStandardTab(1)" id="nav-2" data-keep
           class="sidebar-item w-full text-right px-6 py-4 flex items-center gap-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all group">
           <div class="w-10 h-10 bg-emerald-50 dark:bg-emerald-500/20 rounded-xl flex items-center justify-center"><span
               class="text-emerald-600 dark:text-emerald-400 font-bold">٢</span>
@@ -205,7 +206,7 @@ function ratingColor($rating) {
           </div>
         </button>
         {{-- Part 3 --}}
-        <button onclick="switchSection(3)" id="nav-3"
+        <button onclick="switchSection(3)" id="nav-3" data-keep
           class="sidebar-item w-full text-right px-6 py-4 flex items-center gap-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all group">
           <div
             class="w-10 h-10 bg-purple-50 dark:bg-purple-500/10 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
@@ -220,12 +221,14 @@ function ratingColor($rating) {
       </nav>
       {{-- Sidebar Footer --}}
       <div class="p-4 border-t border-slate-100 dark:border-slate-800 mt-auto flex flex-col gap-3">
+        @if(!isset($readonly) || !$readonly)
         <button id="save-draft-btn" onclick="saveDraft()"
           class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-500/30 transition-all cursor-pointer">
           <i id="save-draft-icon" class="fa-solid fa-floppy-disk"></i>
           <span id="save-draft-text">حفظ كمسودة</span>
         </button>
-        <a href="{{ route('requests.show', $accreditationRequest->id) }}" 
+        @endif
+        <a href="{{ route('requests.show', $accreditationRequest->id) }}" data-keep
            class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold transition-all border border-slate-200 dark:border-slate-700">
           <i class="fa-solid fa-arrow-right"></i>
           <span> لوحة الطلب</span>
@@ -236,6 +239,21 @@ function ratingColor($rating) {
     </aside>
     {{--! Main Content --}}
     <main class="flex-1 mr-72 h-full overflow-y-auto custom-scrollbar bg-slate-100 dark:bg-slate-900">
+      
+      @if(isset($readonly) && $readonly)
+      <div class="px-8 pt-8">
+          <div class="bg-blue-50 dark:bg-blue-500/5 border border-blue-200 dark:border-blue-500/20 rounded-2xl p-4 flex items-center gap-4">
+              <div class="w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0">
+                  <i class="fa-solid fa-eye text-xl"></i>
+              </div>
+              <div class="flex-1">
+                  <h4 class="font-bold text-blue-900 dark:text-blue-300">وضع الاستعراض فقط</h4>
+                  <p class="text-sm text-blue-700 dark:text-blue-400 font-medium">يمكنك مشاهدة البيانات والمرفقات ولكن لا يمكن إجراء أي تعديلات.</p>
+              </div>
+          </div>
+      </div>
+      @endif
+
       {{--? Section 1: program data --}}
       <div id="section-1" class="section-content p-8 fade-in">
         {{--! Header --}}
@@ -250,13 +268,13 @@ function ratingColor($rating) {
         {{--! Tabs Navigation --}}
         <div
           class="bg-white dark:bg-slate-800 p-1.5 rounded-2xl mb-8 flex flex-wrap gap-1.5 shadow-sm border border-slate-100 dark:border-slate-700/50">
-          <button onclick="switchTab('general')"
+          <button onclick="switchTab('general')" data-keep
             class="tab-btn active px-6 py-2.5 rounded-xl text-sm font-semibold transition-all bg-blue-600 text-white shadow-md shadow-blue-500/20"
-            data-tab="general"> معلومات عامة </button> <button onclick="switchTab('program')"
+            data-tab="general"> معلومات عامة </button> <button onclick="switchTab('program')" data-keep
             class="tab-btn px-6 py-2.5 rounded-xl text-sm font-semibold transition-all text-slate-700 dark:text-slate-300  hover:bg-slate-100 dark:hover:bg-slate-700/50"
-            data-tab="program"> بيانات تعريفية بالبرنامج </button> <button onclick="switchTab('profile')"
+            data-tab="program"> بيانات تعريفية بالبرنامج </button> <button onclick="switchTab('profile')" data-keep
             class="tab-btn px-6 py-2.5 rounded-xl text-sm font-semibold transition-all text-slate-700 dark:text-slate-300  hover:bg-slate-100 dark:hover:bg-slate-700/50"
-            data-tab="profile"> ملف البرنامج </button> <button onclick="switchTab('tables')"
+            data-tab="profile"> ملف البرنامج </button> <button onclick="switchTab('tables')" data-keep
             class="tab-btn px-6 py-2.5 rounded-xl text-sm font-semibold transition-all text-slate-700 dark:text-slate-300  hover:bg-slate-100 dark:hover:bg-slate-700/50"
             data-tab="tables"> الجداول والبيانات </button>
         </div>
@@ -749,7 +767,7 @@ function ratingColor($rating) {
         {{-- Standard Tabs Navigation (dynamic) --}}
         <div class="bg-white dark:bg-slate-800 p-1.5 rounded-2xl mb-8 flex flex-wrap gap-1.5 shadow-sm border border-slate-100 dark:border-slate-700/50">
           @foreach($standards as $stdIndex => $std)
-            <button onclick="switchStandardTab({{ $std->id }})"
+            <button onclick="switchStandardTab({{ $std->id }})" data-keep
               class="std-tab-btn {{ $stdIndex === 0 ? 'active bg-emerald-600 text-white shadow-md shadow-emerald-500/20' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50' }} px-4 py-2.5 rounded-xl text-sm font-semibold transition-all"
               data-std="{{ $std->id }}">{{ $std->number }}. {{ $std->name }}</button>
           @endforeach
@@ -777,11 +795,39 @@ function ratingColor($rating) {
                     @endif
                   </div>
                   
-                  <div class="flex-shrink-0 w-full md:w-auto bg-slate-50 dark:bg-slate-900/50 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
-                    <span class="block text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2 text-center">متوسط تقييم المعيار</span>
-                    <div class="flex items-center justify-center gap-2">
-                      <span id="standard-{{ $std->id }}-score" class="text-4xl font-black text-emerald-500 dark:text-emerald-400">—</span>
-                      <span class="text-slate-400 dark:text-slate-600 font-bold text-xl">/5</span>
+                  <div class="flex-shrink-0 w-full md:w-auto bg-slate-50 dark:bg-slate-900/50 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm min-w-[280px]">
+                    <div class="flex flex-col gap-4">
+                      {{-- Average Score --}}
+                      <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-3">
+                        <span class="text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">متوسط تقييم المعيار</span>
+                        <div class="flex items-center gap-1.5">
+                          <span id="standard-{{ $std->id }}-score" class="text-3xl font-black text-emerald-500 dark:text-emerald-400">—</span>
+                          <span class="text-slate-400 dark:text-slate-600 font-bold text-lg">/5</span>
+                        </div>
+                      </div>
+                      
+                      {{-- Detailed Stats --}}
+                      <div class="grid grid-cols-2 gap-x-6 gap-y-2">
+                        @php
+                          $totalInds = $std->subStandards->sum(fn($ss) => $ss->indicators->count());
+                        @endphp
+                        <div class="flex items-center justify-between gap-4">
+                          <span class="text-xs text-slate-500 font-medium">إجمالي المؤشرات:</span>
+                          <span id="std-{{ $std->id }}-count-total" class="text-sm font-bold text-slate-700 dark:text-slate-300">{{ $totalInds }}</span>
+                        </div>
+                        <div class="flex items-center justify-between gap-4">
+                          <span class="text-xs text-emerald-600 dark:text-emerald-400 font-medium">المؤشرات المقيمة:</span>
+                          <span id="std-{{ $std->id }}-count-rated" class="text-sm font-bold text-emerald-600 dark:text-emerald-400">0</span>
+                        </div>
+                        <div class="flex items-center justify-between gap-4">
+                          <span class="text-xs text-slate-400 font-medium">غير مقيمة:</span>
+                          <span id="std-{{ $std->id }}-count-unrated" class="text-sm font-bold text-slate-500 dark:text-slate-400">0</span>
+                        </div>
+                        <div class="flex items-center justify-between gap-4">
+                          <span class="text-xs text-amber-600 dark:text-amber-400 font-medium">غير متطابقة:</span>
+                          <span id="std-{{ $std->id }}-count-nc" class="text-sm font-bold text-amber-600 dark:text-amber-400">0</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -809,6 +855,26 @@ function ratingColor($rating) {
                           </div>
                         @endif
                       </div>
+                      
+                      {{-- Substandard Stats --}}
+                      <div id="sub-{{ $sub->id }}-stats" class="hidden md:flex items-center gap-4 px-4 border-r border-slate-200 dark:border-slate-700/50">
+                        <div class="flex items-center gap-1.5" title="إجمالي المؤشرات">
+                          <span class="text-[10px] text-slate-500 font-bold uppercase">الإجمالي:</span>
+                          <span class="text-xs font-bold text-slate-700 dark:text-slate-300">{{ $sub->indicators->count() }}</span>
+                        </div>
+                        <div class="flex items-center gap-1.5" title="المؤشرات المقيمة">
+                          <div class="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+                          <span id="sub-{{ $sub->id }}-count-rated" class="text-xs font-bold text-emerald-600 dark:text-emerald-400">0</span>
+                        </div>
+                        <div class="flex items-center gap-1.5" title="غير مقيمة">
+                          <div class="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600"></div>
+                          <span id="sub-{{ $sub->id }}-count-unrated" class="text-xs font-bold text-slate-500 dark:text-slate-400">0</span>
+                        </div>
+                        <div class="flex items-center gap-1.5" title="غير متطابقة">
+                          <div class="w-1.5 h-1.5 rounded-full bg-amber-500"></div>
+                          <span id="sub-{{ $sub->id }}-count-nc" class="text-xs font-bold text-amber-600 dark:text-amber-400">0</span>
+                        </div>
+                      </div>
 
                       {{-- Collapse Chevron --}}
                       <button type="button" onclick="toggleSubStandard({{ $sub->id }}, this)" class="w-8 h-8 flex items-center justify-center rounded-full text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all duration-200">
@@ -816,7 +882,7 @@ function ratingColor($rating) {
                       </button>
                     </div>
                     
-                    <div id="sub-{{ $sub->id }}-content" class="p-6 space-y-4">
+                    <div id="sub-{{ $sub->id }}-content" class="p-6 space-y-4" data-sub-id="{{ $sub->id }}">
                       @foreach($sub->indicators as $ind)
                         @php
                           $evalId = $evalIdByIndicatorId[$ind->id] ?? null;
@@ -862,7 +928,7 @@ function ratingColor($rating) {
                                 <i class="fas fa-paperclip text-slate-400"></i> الأدلة المرفقة
                               </label>
                               {{-- Upload new evidence trigger --}}
-                              @if($evalId)
+                              @if($evalId && (!isset($readonly) || !$readonly))
                                 <button id="upload-btn-{{ $ind->id }}" onclick="prepareEvidenceRow({{ $ind->id }}, {{ $evalId }})" class="text-blue-600 dark:text-blue-400 text-xs font-bold flex items-center gap-1.5 hover:text-blue-700 dark:hover:text-blue-300 bg-blue-50 dark:bg-blue-900/20 py-1.5 px-3 rounded-lg transition-colors {{ $savedScore === 0 ? 'hidden' : '' }}">
                                   <i class="fas fa-plus"></i> إرفاق دليل جديد
                                 </button>
@@ -896,16 +962,20 @@ function ratingColor($rating) {
                                       title="{{ $ev->file_name }}">
                                   
                                   <div class="flex items-center gap-2">
+                                    @if(!isset($readonly) || !$readonly)
                                     <button onclick="let inp = this.closest('.evidence-item').querySelector('.ev-name-input'); inp.readOnly = false; inp.focus();" class="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/40 rounded-lg transition-all border border-amber-200/50 dark:border-amber-800/30" title="تعديل الاسم">
                                       <i class="fas fa-pen-to-square"></i> تعديل الاسم
                                     </button>
+                                    @endif
                                     <a href="/stage-three/view-file?path={{ urlencode($ev->file_path) }}" target="_blank" class="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40 rounded-lg transition-all border border-blue-200/50 dark:border-blue-800/30" title="عرض الدليل">
                                       <i class="fas fa-eye"></i> عرض
                                     </a>
+                                    @if(!isset($readonly) || !$readonly)
                                     <button onclick="removeEvidenceRow('evidence-saved-{{ $ev->id }}')"
                                       class="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 rounded-lg transition-all border border-red-200/50 dark:border-red-800/30" title="حذف">
                                       <i class="fas fa-trash-alt"></i> حذف
                                     </button>
+                                    @endif
                                   </div>
                                 </div>
                               @endforeach
@@ -1006,10 +1076,12 @@ function ratingColor($rating) {
                         <span class="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-500 text-xs"><i class="fas fa-list-ul"></i></span>
                         الإجراءات المتبعة للحصول على التقييم <span class="text-red-500">*</span>
                       </label>
+                      @if(!isset($readonly) || !$readonly)
                       <button onclick="addSection3Point('evaluations', 'evaluation_procedures')"
                         class="flex items-center gap-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200 bg-blue-500/10 hover:bg-blue-500/20 px-3 py-1.5 rounded-xl transition-all">
                         <i class="fas fa-plus text-[10px]"></i> إضافة نقطة
                       </button>
+                      @endif
                     </div>
                     <div class="p-5">
                       <div id="sec3-evaluations-evaluation_procedures-list" class="space-y-3"></div>
@@ -1023,10 +1095,12 @@ function ratingColor($rating) {
                         <span class="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-500 text-xs"><i class="fas fa-clipboard-check"></i></span>
                         النقاط التي وضعها المقيمون <span class="text-red-500">*</span>
                       </label>
+                      @if(!isset($readonly) || !$readonly)
                       <button onclick="addSection3Point('evaluations', 'evaluator_recommendations')"
                         class="flex items-center gap-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200 bg-blue-500/10 hover:bg-blue-500/20 px-3 py-1.5 rounded-xl transition-all">
                         <i class="fas fa-plus text-[10px]"></i> إضافة نقطة
                       </button>
+                      @endif
                     </div>
                     <div class="p-5">
                       <div id="sec3-evaluations-evaluator_recommendations-list" class="space-y-3"></div>
@@ -1040,10 +1114,12 @@ function ratingColor($rating) {
                         <span class="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-500 text-xs"><i class="fas fa-reply"></i></span>
                         إجراءات الاستجابة للتوصيات
                       </label>
+                      @if(!isset($readonly) || !$readonly)
                       <button onclick="addSection3Point('evaluations', 'actions_taken')"
                         class="flex items-center gap-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200 bg-blue-500/10 hover:bg-blue-500/20 px-3 py-1.5 rounded-xl transition-all">
                         <i class="fas fa-plus text-[10px]"></i> إضافة نقطة
                       </button>
+                      @endif
                     </div>
                     <div class="p-5">
                       <div id="sec3-evaluations-actions_taken-list" class="space-y-3"></div>
@@ -1070,10 +1146,12 @@ function ratingColor($rating) {
                         <span class="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-500 text-xs"><i class="fas fa-check"></i></span>
                         جوانب النجاح
                       </label>
+                      @if(!isset($readonly) || !$readonly)
                       <button onclick="addSection3Point('results', 'success_aspects')"
                         class="flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-200 bg-emerald-500/10 hover:bg-emerald-500/20 px-3 py-1.5 rounded-xl transition-all">
                         <i class="fas fa-plus text-[10px]"></i> إضافة نقطة
                       </button>
+                      @endif
                     </div>
                     <div class="p-5">
                       <div id="sec3-results-success_aspects-list" class="space-y-3"></div>
@@ -1087,10 +1165,12 @@ function ratingColor($rating) {
                         <span class="w-5 h-5 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-500 text-xs"><i class="fas fa-arrow-up"></i></span>
                         جوانب التحسين ذات الأولوية
                       </label>
+                      @if(!isset($readonly) || !$readonly)
                       <button onclick="addSection3Point('results', 'priority_improvements')"
                         class="flex items-center gap-1.5 text-xs font-semibold text-amber-600 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-200 bg-amber-500/10 hover:bg-amber-500/20 px-3 py-1.5 rounded-xl transition-all">
                         <i class="fas fa-plus text-[10px]"></i> إضافة نقطة
                       </button>
+                      @endif
                     </div>
                     <div class="p-5">
                       <div id="sec3-results-priority_improvements-list" class="space-y-3"></div>
@@ -1412,7 +1492,7 @@ function ratingColor($rating) {
         container.innerHTML = `
           <div class="py-5 text-center border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900/20">
             <i class="fas fa-inbox text-slate-300 dark:text-slate-600 text-2xl mb-2 block"></i>
-            <p class="text-slate-400 dark:text-slate-500 text-sm">لا توجد نقاط مضافة — اضغط &laquo;إضافة نقطة&raquo; للبدء</p>
+            <p class="text-slate-400 dark:text-slate-500 text-sm">${window.IS_READONLY ? 'لا توجد بيانات' : 'لا توجد نقاط مضافة — اضغط &laquo;إضافة نقطة&raquo; للبدء'}</p>
           </div>
         `;
         return;
@@ -1435,12 +1515,15 @@ function ratingColor($rating) {
                    class="w-full pr-10 pl-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/50 focus:border-${color}-500/50 focus:ring-1 focus:ring-${color}-500/30 text-sm text-slate-900 dark:text-white transition-all resize-none overflow-hidden"
                    rows="1"
                    oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'; updateCommentPoint(${standard}, '${field}', ${index}, this.value)"
+                   ${window.IS_READONLY ? 'readonly disabled' : ''}
                    onfocus="this.style.height = ''; this.style.height = this.scrollHeight + 'px'">${point.replace(/"/g, '&quot;')}</textarea>
           </div>
+          ${!window.IS_READONLY ? `
           <button onclick="removeCommentPoint(${standard}, '${field}', ${index})" 
                   class="p-2.5 text-slate-500 hover:text-red-600 dark:text-red-400 bg-slate-100 dark:bg-slate-800 hover:bg-red-500/10 rounded-xl transition-all mt-1">
             <i class="fas fa-trash-alt text-xs"></i>
           </button>
+          ` : ''}
         </div>
       `).join('');
     }
@@ -1504,14 +1587,17 @@ function ratingColor($rating) {
           <textarea placeholder="أدخل الهدف هنا..."
                  class="flex-1 px-4 py-3 rounded-xl bg-white dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-blue-500/50 focus:outline-none text-slate-900 dark:text-white text-sm transition-all resize-none overflow-hidden"
                  rows="1"
+                 ${window.IS_READONLY ? 'readonly disabled' : ''}
                  oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'; updateObjective(${index}, this.value)"
                  onfocus="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"> ${(obj || '').replace(/"/g, '&quot;')}</textarea>
+          ${!window.IS_READONLY ? `
           <button onclick="removeObjective(${index})" title="حذف الهدف"
                   class="flex-shrink-0 p-2.5 text-slate-400 hover:text-red-500 dark:text-slate-500 dark:hover:text-red-400 bg-slate-100 dark:bg-slate-700/30 rounded-xl hover:bg-red-50 dark:hover:bg-red-500/10 transition-all mt-1">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
             </svg>
           </button>
+          ` : ''}
         </div>
       `).join('');
 
@@ -1578,11 +1664,13 @@ function ratingColor($rating) {
         <td class="py-3 px-4"><textarea placeholder="المسؤول" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm resize-none overflow-hidden" rows="1" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'; updateProposalRow(${rowId}, 'responsible', this.value)"></textarea></td>
         <td class="py-3 px-4"><input type="date" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm" onchange="updateProposalRow(${rowId}, 'timeline', this.value)"></td>
         <td class="py-3 px-4"><textarea placeholder="الموارد" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm resize-none overflow-hidden" rows="1" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'; updateProposalRow(${rowId}, 'resources', this.value)"></textarea></td>
+        ${!window.IS_READONLY ? `
         <td class="py-3 px-4 text-center">
           <button onclick="removeTableRow('proposals', ${rowId})" class="text-red-600 dark:text-red-400 hover:text-red-300">
             <i class="fas fa-trash-alt"></i>
           </button>
         </td>
+        ` : ''}
       `;
 
       tbody.appendChild(row);
@@ -1668,7 +1756,7 @@ function ratingColor($rating) {
         container.innerHTML = `
           <div class="py-5 text-center border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900/20">
             <i class="fas fa-inbox text-slate-300 dark:text-slate-600 text-2xl mb-2 block"></i>
-            <p class="text-slate-400 dark:text-slate-500 text-sm">لا توجد نقاط مضافة بعد — اضغط &laquo;إضافة نقطة&raquo; للبدء</p>
+            <p class="text-slate-400 dark:text-slate-500 text-sm">${window.IS_READONLY ? 'لا توجد بيانات' : 'لا توجد نقاط مضافة بعد — اضغط &laquo;إضافة نقطة&raquo; للبدء'}</p>
           </div>
         `;
         return;
@@ -1689,13 +1777,16 @@ function ratingColor($rating) {
           <textarea placeholder="أدخل النقطة..."
                  class="flex-1 px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/50 focus:border-${color}-500/50 focus:ring-1 focus:ring-${color}-500/30 text-sm text-slate-900 dark:text-white transition-all focus:outline-none resize-none overflow-hidden"
                  rows="1"
+                 ${window.IS_READONLY ? 'readonly disabled' : ''}
                  oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'; updateSection3Point('${section}', '${field}', ${index}, this.value)"
                  onfocus="this.style.height = ''; this.style.height = this.scrollHeight + 'px'">${(point || '').replace(/"/g, '&quot;')}</textarea>
+          ${!window.IS_READONLY ? `
           <button onclick="removeSection3Point('${section}', '${field}', ${index})"
                   title="حذف"
                   class="flex-shrink-0 p-2.5 text-slate-400 hover:text-red-500 dark:text-slate-500 dark:hover:text-red-400 bg-slate-100 dark:bg-slate-800 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl transition-all mt-1">
             <i class="fas fa-trash-alt text-xs"></i>
           </button>
+          ` : ''}
         </div>
       `).join('');
     }
@@ -1837,10 +1928,67 @@ function ratingColor($rating) {
 
     // Capture changes on any input
     document.addEventListener('input', (e) => {
+      if (window.IS_READONLY) return;
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') {
         hasChanges = true;
       }
     });
+
+    // Handle Readonly initialization
+    if (window.IS_READONLY) {
+        document.addEventListener('DOMContentLoaded', () => {
+            // Disable all primary inputs and rating buttons
+            document.querySelectorAll('input, select, textarea, .rating-btn').forEach(el => {
+                el.readOnly = true;
+                el.disabled = true;
+                if (!el.classList.contains('active') && !el.style.backgroundColor) {
+                    el.classList.add('cursor-not-allowed', 'opacity-80');
+                } else {
+                    el.classList.add('cursor-not-allowed');
+                }
+            });
+
+            // Hide action buttons
+            document.querySelectorAll(`
+                [id^="upload-btn-"], 
+                [id^="add-note-"], 
+                [id^="submit-btn"], 
+                [id^="save-draft-btn"],
+                button[onclick^="prepareEvidenceRow"],
+                button[onclick^="addSection3Point"],
+                button[onclick^="addProposalRow"],
+                button[onclick^="addObjective"]
+            `).forEach(el => {
+                el.style.display = 'none';
+            });
+
+            // CRITICAL: Ensure navigation is NOT blocked
+            document.querySelectorAll('.sidebar-item, .tab-btn, .std-tab-btn, [data-keep]').forEach(el => {
+                el.disabled = false;
+                el.style.pointerEvents = 'auto';
+                el.style.cursor = 'pointer';
+                el.style.opacity = '1';
+            });
+
+            // NUCLEAR FAIL-SAFE: Hide any remaining "Add" or "Delete" buttons by text/action
+            document.querySelectorAll('button').forEach(btn => {
+                const text = btn.innerText || '';
+                const action = btn.getAttribute('onclick') || '';
+                if (text.includes('إضافة') || action.includes('add') || action.includes('prepareEvidence') || action.includes('remove')) {
+                    if (!btn.hasAttribute('data-keep') && !btn.classList.contains('sidebar-item') && !btn.classList.contains('tab-btn')) {
+                        btn.style.display = 'none';
+                    }
+                }
+            });
+
+            // Recalculate all standard scores on load
+            setTimeout(() => {
+                @foreach($standards as $std)
+                    updateStandardScoreById({{ $std->id }});
+                @endforeach
+            }, 100);
+        });
+    }
 
     async function saveDraft() {
       const btn = document.getElementById('save-draft-btn');
@@ -1938,6 +2086,7 @@ function ratingColor($rating) {
 
     // ── Rating by Indicator ID (DB-based) ────────────────────────────
     function setRatingById(indicatorId, standardId, rating) {
+      if (window.IS_READONLY) return;
       if (scores[indicatorId] === rating) {
         // Toggle off
         scores[indicatorId] = null;
@@ -1986,26 +2135,84 @@ function ratingColor($rating) {
     }
 
     function updateStandardScoreById(standardId) {
-      // Collect all indicator IDs that belong to this standard's tab
-      const container = document.getElementById(`standard-${standardId}-tab-content`);
-      if (!container) return;
-      const indicatorEls = container.querySelectorAll('[data-indicator-id]');
-      const vals = [];
-      indicatorEls.forEach(el => {
-        const id = el.dataset.indicatorId;
-        // Include non-compliant (0) or skip it? Usually '0' implies 0 in avg for non-compliant. If you skip, it's not penalized. Let's include it if defined.
-        if (scores[id] !== undefined && scores[id] !== null && scores[id] !== '') {
-          vals.push(scores[id]);
-        }
-      });
-      const scoreEl = document.getElementById(`standard-${standardId}-score`);
-      if (scoreEl && vals.length > 0) {
-        const avg = (vals.reduce((a, b) => a + b, 0) / vals.length).toFixed(1);
-        scoreEl.textContent = avg;
-        scoreEl.className = `text-3xl font-bold ${avg >= 4 ? 'text-emerald-400' : avg >= 3 ? 'text-yellow-400' : 'text-red-400'}`;
-      } else if (scoreEl) {
-        scoreEl.textContent = '—';
-      }
+       // Collect all indicator IDs that belong to this standard's tab
+       const container = document.getElementById(`standard-${standardId}-tab-content`);
+       if (!container) return;
+       
+       let stdTotal = 0;
+       let stdRated = 0;
+       let stdUnrated = 0;
+       let stdNC = 0;
+       let stdSum = 0;
+
+       // Loop through each sub-standard container
+       container.querySelectorAll('[data-sub-id]').forEach(subContainer => {
+          const subId = subContainer.dataset.subId;
+          const indicatorRows = subContainer.querySelectorAll('.indicator-row[data-indicator-id]');
+          
+          let subRated = 0;
+          let subUnrated = 0;
+          let subNC = 0;
+          let subSum = 0;
+
+          indicatorRows.forEach(row => {
+            const id = row.dataset.indicatorId;
+            const val = scores[id];
+
+            if (val === undefined || val === null || val === '') {
+              subUnrated++;
+            } else if (val === 0) {
+              subNC++;
+            } else {
+              subRated++;
+              subSum += val;
+            }
+          });
+
+          // Update Sub-standard Counters
+          const elSubRated = document.getElementById(`sub-${subId}-count-rated`);
+          const elSubUnrated = document.getElementById(`sub-${subId}-count-unrated`);
+          const elSubNC = document.getElementById(`sub-${subId}-count-nc`);
+          if (elSubRated) elSubRated.textContent = subRated;
+          if (elSubUnrated) elSubUnrated.textContent = subUnrated;
+          if (elSubNC) elSubNC.textContent = subNC;
+
+          // Add to Standard Totals
+          stdTotal += indicatorRows.length;
+          stdRated += subRated;
+          stdUnrated += subUnrated;
+          stdNC += subNC;
+          stdSum += subSum;
+       });
+
+       // Update Standard Counters in UI
+       const elTotal = document.getElementById(`std-${standardId}-count-total`);
+       const elRated = document.getElementById(`std-${standardId}-count-rated`);
+       const elUnrated = document.getElementById(`std-${standardId}-count-unrated`);
+       const elNC = document.getElementById(`std-${standardId}-count-nc`);
+
+       if (elTotal) elTotal.textContent = stdTotal;
+       if (elRated) elRated.textContent = stdRated;
+       if (elUnrated) elUnrated.textContent = stdUnrated;
+       if (elNC) elNC.textContent = stdNC;
+
+       const scoreEl = document.getElementById(`standard-${standardId}-score`);
+       if (scoreEl) {
+         // The requirement: Unrated items count as 0 in the average.
+         // Non-Compliant (0) items are excluded completely from the calculation.
+         const divisor = stdTotal - stdNC;
+         
+         if (divisor > 0) {
+           // Sum already includes scores 1-5. Unrated items are 0 so they don't add to sum, 
+           // but they ARE included in the divisor (stdTotal - stdNC).
+           const avg = (stdSum / divisor).toFixed(1);
+           scoreEl.textContent = avg;
+           scoreEl.className = `text-3xl font-black ${avg >= 4 ? 'text-emerald-500' : avg >= 3 ? 'text-yellow-500' : 'text-red-500'}`;
+         } else {
+           scoreEl.textContent = '—';
+           scoreEl.className = `text-3xl font-black text-slate-400`;
+         }
+       }
     }
 
     // ── Evidence Upload ───────────────────────────────────────────────
@@ -2157,21 +2364,27 @@ function ratingColor($rating) {
                  class="ev-name-input w-full text-sm font-medium text-slate-800 dark:text-slate-200 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 px-3 py-1.5 rounded-lg focus:ring-1 focus:ring-blue-500/30 outline-none truncate" 
                  oninput="hasChanges = true"
                  onblur="this.readOnly = true">
+          ${!window.IS_READONLY ? `
           <span class="file-status-temp text-xs font-semibold text-amber-600 dark:text-amber-400 mt-1 flex items-center gap-1.5 px-1">
             <i class="fas fa-clock text-[10px]"></i> ملف مؤقت (اضبط المسمى ثم احفظ المسودة)
           </span>
+          ` : ''}
         </div>
         
         <div class="flex items-center gap-2">
+          ${!window.IS_READONLY ? `
           <button onclick="let inp = this.closest('.evidence-item').querySelector('.ev-name-input'); inp.readOnly = false; inp.focus();" class="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/40 rounded-lg transition-all border border-amber-200/50 dark:border-amber-800/30">
             <i class="fas fa-pen-to-square"></i> تعديل الاسم
           </button>
+          ` : ''}
           <button onclick="viewEvidenceTemp(this)" data-path="${evidence.temp_path || ''}" data-saved-url="${evidence.file_path || ''}" class="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40 rounded-lg transition-all border border-blue-200/50 dark:border-blue-800/30">
             <i class="fas fa-eye"></i> عرض
           </button>
+          ${!window.IS_READONLY ? `
           <button onclick="removeEvidenceRow('${rowId}')" class="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 rounded-lg transition-all border border-red-200/50 dark:border-red-800/30">
             <i class="fas fa-trash-alt"></i> حذف
           </button>
+          ` : ''}
         </div>
       `;
       container.appendChild(row);
@@ -2500,6 +2713,7 @@ function ratingColor($rating) {
               <td class="py-3 px-4"><input type="text" placeholder="المسؤول" class="w-full px-3 py-2 rounded-lg" value="${(proposal.responsible || '').replace(/"/g,'&quot;')}" oninput="updateProposalRow(${rowId}, 'responsible', this.value)"></td>
               <td class="py-3 px-4"><input type="date" class="w-full px-3 py-2 rounded-lg" value="${proposal.timeline || ''}" oninput="updateProposalRow(${rowId}, 'timeline', this.value)"></td>
               <td class="py-3 px-4"><input type="text" placeholder="الموارد" class="w-full px-3 py-2 rounded-lg" value="${(proposal.resources || '').replace(/"/g,'&quot;')}" oninput="updateProposalRow(${rowId}, 'resources', this.value)"></td>
+              ${!window.IS_READONLY ? `
               <td class="py-3 px-4">
                 <button onclick="removeTableRow('proposals', ${rowId})" class="text-red-600 dark:text-red-400 hover:text-red-300">
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2507,6 +2721,7 @@ function ratingColor($rating) {
                   </svg>
                 </button>
               </td>
+              ` : ''}
             `;
             tbody.appendChild(row);
           });

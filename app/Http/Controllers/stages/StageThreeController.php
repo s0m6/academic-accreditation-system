@@ -145,6 +145,63 @@ class StageThreeController extends Controller
         ));
     }
 
+    // Show the stage three data (view only).
+    public function show(Request $request, AccreditationRequest $accreditationRequest, FormSubmission $formSubmission)
+    {
+        $this->ensureAuthorized($request, $accreditationRequest, $formSubmission);
+
+        // Load the accreditation request hierarchy for program info
+        $accreditationRequest->loadMissing('program.department.college.university');
+        $program = $accreditationRequest->program;
+        $dept = $program->department;
+        $college = $dept->college;
+        $univ = $college->university;
+        $details = $program->program_details ?? [];
+
+        $programInfo = [
+            'university_name' => $univ->name,
+            'university_president' => $univ->president_name,
+            'college_name' => $college->name,
+            'department_name' => $dept->name,
+            'program_name' => $program->program_name,
+            'degree_level' => $program->degree_level,
+            'website_url' => $details['website_url'] ?? '',
+            'establishment_date' => $details['establishment_date'] ?? '',
+        ];
+
+        // Load all 7 standards with their sub-standards and indicators
+        $standards = Standard::with(['subStandards.indicators'])
+            ->orderBy('id')
+            ->get();
+
+        // Load all indicator evaluations for this submission
+        $indicatorEvaluations = $formSubmission->indicatorEvaluations()
+            ->with('evidences')
+            ->get()
+            ->keyBy('indicator_id');
+
+        $indicatorScores = $indicatorEvaluations->map(fn ($ie) => $ie->score);
+        $evidencesByEvalId = $indicatorEvaluations->mapWithKeys(function ($ie) {
+            return [$ie->id => $ie->evidences];
+        });
+        $evalIdByIndicatorId = $indicatorEvaluations->map(fn ($ie) => $ie->id);
+
+        $formData = $formSubmission->form_data ?? [];
+        $readonly = true;
+
+        return view('requests.stageThreeForm', compact(
+            'accreditationRequest',
+            'formSubmission',
+            'programInfo',
+            'standards',
+            'indicatorScores',
+            'evidencesByEvalId',
+            'evalIdByIndicatorId',
+            'formData',
+            'readonly'
+        ));
+    }
+
     // Save the stage three draft: form_data JSON + indicator scores.
     public function saveDraft(Request $request, AccreditationRequest $accreditationRequest, FormSubmission $formSubmission)
     {
@@ -274,7 +331,7 @@ class StageThreeController extends Controller
     public function viewFile(Request $request)
     {
         $path = $request->query('path');
-        
+
         if (! $path || ! Storage::disk('local')->exists($path)) {
             abort(404, 'الملف غير موجود');
         }
