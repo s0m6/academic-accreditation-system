@@ -205,7 +205,7 @@ class StageThreeController extends Controller
 
                             // Ensure destination directory exists on local disk
                             Storage::disk('local')->makeDirectory("req_{$accreditationRequest->id}/stagethree");
-                            Storage::disk('local')->move($evData['temp_path'], $newPath);
+                            Storage::disk('local')->copy($evData['temp_path'], $newPath);
 
                             $newEv = Evidence::create([
                                 'indicator_evaluation_id' => $ie->id,

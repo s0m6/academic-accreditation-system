@@ -138,6 +138,21 @@ function ratingColor($rating) {
     }
 
 
+    .ev-name-input[readonly] {
+      background-color: transparent !important;
+      border-color: transparent !important;
+      cursor: default;
+    }
+    .ev-name-input:not([readonly]):hover {
+      border-color: #cbd5e1;
+      background-color: #f8fafc;
+    }
+    .ev-name-input:not([readonly]):focus {
+      border-color: #3b82f6;
+      background-color: #fff;
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+      outline: none;
+    }
   </style>
 
 
@@ -204,12 +219,17 @@ function ratingColor($rating) {
         </button>
       </nav>
       {{-- Sidebar Footer --}}
-      <div class="p-4 border-t border-slate-100 dark:border-slate-800 mt-auto">
+      <div class="p-4 border-t border-slate-100 dark:border-slate-800 mt-auto flex flex-col gap-3">
         <button id="save-draft-btn" onclick="saveDraft()"
           class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-500/30 transition-all cursor-pointer">
           <i id="save-draft-icon" class="fa-solid fa-floppy-disk"></i>
           <span id="save-draft-text">حفظ كمسودة</span>
         </button>
+        <a href="{{ route('requests.show', $accreditationRequest->id) }}" 
+           class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold transition-all border border-slate-200 dark:border-slate-700">
+          <i class="fa-solid fa-arrow-right"></i>
+          <span> لوحة الطلب</span>
+        </a>
       </div>
 
 
@@ -866,9 +886,19 @@ function ratingColor($rating) {
                                   <div class="w-8 h-8 rounded-lg bg-red-50 dark:bg-red-500/10 flex items-center justify-center flex-shrink-0">
                                     <i class="fas fa-file-pdf text-red-500"></i>
                                   </div>
-                                  <span class="flex-1 text-sm font-medium text-slate-800 dark:text-slate-200 truncate" title="{{ $ev->file_name }}">{{ $ev->file_name }}</span>
+                                    <input type="text" 
+                                      value="{{ $ev->file_name }}" 
+                                      placeholder="ادخل اسم الدليل"
+                                      readonly
+                                      class="ev-name-input flex-1 text-sm font-medium text-slate-800 dark:text-slate-200 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 px-3 py-1.5 rounded-lg focus:ring-1 focus:ring-blue-500/30 outline-none truncate" 
+                                      oninput="hasChanges = true"
+                                      onblur="this.readOnly = true"
+                                      title="{{ $ev->file_name }}">
                                   
                                   <div class="flex items-center gap-2">
+                                    <button onclick="let inp = this.closest('.evidence-item').querySelector('.ev-name-input'); inp.readOnly = false; inp.focus();" class="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/40 rounded-lg transition-all border border-amber-200/50 dark:border-amber-800/30" title="تعديل الاسم">
+                                      <i class="fas fa-pen-to-square"></i> تعديل الاسم
+                                    </button>
                                     <a href="/stage-three/view-file?path={{ urlencode($ev->file_path) }}" target="_blank" class="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40 rounded-lg transition-all border border-blue-200/50 dark:border-blue-800/30" title="عرض الدليل">
                                       <i class="fas fa-eye"></i> عرض
                                     </a>
@@ -1739,15 +1769,20 @@ function ratingColor($rating) {
       modal.classList.remove('hidden');
 
       document.getElementById('unsaved-save-btn').onclick = async () => {
-        closeUnsavedModal();
-        await saveDraft();
-        if (_pendingNavigationHref) window.location.href = _pendingNavigationHref;
+        const targetHref = _pendingNavigationHref;
+        const success = await saveDraft();
+        if (success) {
+            hasChanges = false;
+            closeUnsavedModal();
+            if (targetHref) window.location.href = targetHref;
+        }
       };
 
       document.getElementById('unsaved-leave-btn').onclick = () => {
+        const targetHref = _pendingNavigationHref;
         hasChanges = false;
         closeUnsavedModal();
-        if (_pendingNavigationHref) window.location.href = _pendingNavigationHref;
+        if (targetHref) window.location.href = targetHref;
       };
     }
 
@@ -1773,12 +1808,12 @@ function ratingColor($rating) {
       }
     });
 
-    // Trap browser-level navigation (reload/tab close) — show custom modal via keyboard interception
-    // We still keep a minimal beforeunload, but also intercept F5/Ctrl+R to show our custom modal
+    // Trap browser-level navigation (reload/tab close)
     window.addEventListener('beforeunload', (e) => {
       if (hasChanges) {
+        // We cannot show custom modal here (browser security), but we can trigger native prompt
         e.preventDefault();
-        e.returnValue = '';
+        e.returnValue = 'لديك تغييرات غير محفوظة، هل أنت متأكد من المغادرة؟';
       }
     });
 
@@ -1826,10 +1861,13 @@ function ratingColor($rating) {
         const indId = row.dataset.indicatorId;
         const evs = [];
         row.querySelectorAll('.evidence-item').forEach(evLine => {
+          const nameInput = evLine.querySelector('.ev-name-input');
+          const fileName = nameInput ? nameInput.value.trim() : (evLine.dataset.name || '');
+          
           if (evLine.dataset.id) {
-            evs.push({ id: evLine.dataset.id, file_name: evLine.dataset.name });
+            evs.push({ id: evLine.dataset.id, file_name: fileName });
           } else if (evLine.dataset.tempPath) {
-            evs.push({ temp_path: evLine.dataset.tempPath, file_name: evLine.dataset.name });
+            evs.push({ temp_path: evLine.dataset.tempPath, file_name: fileName });
           }
         });
         if (evs.length > 0) {
@@ -1863,11 +1901,19 @@ function ratingColor($rating) {
         if (json.success) {
           hasChanges = false;
           showToast('تم حفظ المسودة بنجاح', 'success');
+          
+          // Clear temporary indicators since they are now saved/copied
+          document.querySelectorAll('.file-status-temp').forEach(badge => {
+            badge.style.display = 'none';
+          });
+          return true;
         } else {
           showToast('حدث خطأ أثناء الحفظ', 'error');
+          return false;
         }
       } catch (e) {
         showToast('تعذر الاتصال بالخادم', 'error');
+        return false;
       } finally {
         if (btn) {
           btn.disabled = false;
@@ -2060,6 +2106,15 @@ function ratingColor($rating) {
           appendEvidenceRow(indicatorId, { temp_path: json.temp_path, file_name: json.file_name });
           hasChanges = true;
           showToast('تم الرفع!', 'success');
+          
+          // Auto-focus the name input of the newly added row
+          setTimeout(() => {
+            const newRow = document.querySelector(`#evidences-ind-${indicatorId} .evidence-item:last-child .ev-name-input`);
+            if (newRow) {
+                newRow.readOnly = false;
+                newRow.focus();
+            }
+          }, 100);
         } else {
           showToast('فشل الرفع', 'error');
           row.remove();
@@ -2094,9 +2149,23 @@ function ratingColor($rating) {
         <div class="w-8 h-8 rounded-lg bg-red-50 dark:bg-red-500/10 flex items-center justify-center flex-shrink-0">
           <i class="fas fa-file-pdf text-red-500"></i>
         </div>
-        <span class="flex-1 text-sm font-medium text-slate-800 dark:text-slate-200 truncate" title="${evidence.file_name}">${evidence.file_name}</span>
+        <div class="flex-1 flex flex-col min-w-0">
+          <input type="text" 
+                 value="${evidence.file_name}" 
+                 placeholder="ادخل اسم الدليل"
+                 readonly
+                 class="ev-name-input w-full text-sm font-medium text-slate-800 dark:text-slate-200 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 px-3 py-1.5 rounded-lg focus:ring-1 focus:ring-blue-500/30 outline-none truncate" 
+                 oninput="hasChanges = true"
+                 onblur="this.readOnly = true">
+          <span class="file-status-temp text-xs font-semibold text-amber-600 dark:text-amber-400 mt-1 flex items-center gap-1.5 px-1">
+            <i class="fas fa-clock text-[10px]"></i> ملف مؤقت (اضبط المسمى ثم احفظ المسودة)
+          </span>
+        </div>
         
         <div class="flex items-center gap-2">
+          <button onclick="let inp = this.closest('.evidence-item').querySelector('.ev-name-input'); inp.readOnly = false; inp.focus();" class="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/40 rounded-lg transition-all border border-amber-200/50 dark:border-amber-800/30">
+            <i class="fas fa-pen-to-square"></i> تعديل الاسم
+          </button>
           <button onclick="viewEvidenceTemp(this)" data-path="${evidence.temp_path || ''}" data-saved-url="${evidence.file_path || ''}" class="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40 rounded-lg transition-all border border-blue-200/50 dark:border-blue-800/30">
             <i class="fas fa-eye"></i> عرض
           </button>
@@ -2449,6 +2518,38 @@ function ratingColor($rating) {
   </script>
   <script>(function () { function c() { var b = a.contentDocument || a.contentWindow.document; if (b) { var d = b.createElement('script'); d.innerHTML = "window.__CF$cv$params={r:'9c162da1c32df9ec',t:'MTc2ODk5MTg2Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);"; b.getElementsByTagName('head')[0].appendChild(d) } } if (document.body) { var a = document.createElement('iframe'); a.height = 1; a.width = 1; a.style.position = 'absolute'; a.style.top = 0; a.style.left = 0; a.style.border = 'none'; a.style.visibility = 'hidden'; document.body.appendChild(a); if ('loading' !== document.readyState) c(); else if (window.addEventListener) document.addEventListener('DOMContentLoaded', c); else { var e = document.onreadystatechange || function () { }; document.onreadystatechange = function (b) { e(b); 'loading' !== document.readyState && (document.onreadystatechange = e, c()) } } } })();</script>
   <script>(function () { function c() { var b = a.contentDocument || a.contentWindow.document; if (b) { var d = b.createElement('script'); d.innerHTML = "window.__CF$cv$params={r:'9d7c102002e55456',t:'MTc3Mjc0NDU2MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);"; b.getElementsByTagName('head')[0].appendChild(d) } } if (document.body) { var a = document.createElement('iframe'); a.height = 1; a.width = 1; a.style.position = 'absolute'; a.style.top = 0; a.style.left = 0; a.style.border = 'none'; a.style.visibility = 'hidden'; document.body.appendChild(a); if ('loading' !== document.readyState) c(); else if (window.addEventListener) document.addEventListener('DOMContentLoaded', c); else { var e = document.onreadystatechange || function () { }; document.onreadystatechange = function (b) { e(b); 'loading' !== document.readyState && (document.onreadystatechange = e, c()) } } } })();</script>
+  <!-- Unsaved Changes Modal -->
+  <div id="unsaved-modal" class="hidden fixed inset-0 z-[200] overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+      <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+          <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" aria-hidden="true" onclick="closeUnsavedModal()"></div>
+          <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+          <div class="inline-block align-bottom bg-white dark:bg-slate-800 rounded-2xl text-right overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-slate-200 dark:border-slate-700">
+              <div class="p-6">
+                  <div class="flex items-center gap-4 mb-4">
+                      <div class="w-12 h-12 bg-amber-50 dark:bg-amber-900/40 rounded-full flex items-center justify-center flex-shrink-0 border border-amber-200 dark:border-amber-700">
+                          <i class="fas fa-exclamation-triangle text-amber-500 text-xl"></i>
+                      </div>
+                      <div class="flex-1">
+                          <h3 class="text-xl font-bold text-slate-900 dark:text-white" id="modal-title">تغييرات غير محفوظة!</h3>
+                          <p class="text-sm text-slate-600 dark:text-slate-400 mt-1">لقد قمت بإجراء تعديلات على التقرير. هل تريد حفظ العمل قبل المغادرة؟</p>
+                      </div>
+                  </div>
+
+                  <div class="flex flex-col gap-3 mt-6">
+                      <button id="unsaved-save-btn" class="w-full py-3.5 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold transition-all shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2">
+                          <i class="fas fa-save"></i> حفظ التغييرات والذهاب
+                      </button>
+                      <button id="unsaved-leave-btn" class="w-full py-3.5 px-4 bg-slate-100 dark:bg-slate-700 hover:bg-red-50 dark:hover:bg-red-900/20 text-slate-700 dark:text-slate-200 hover:text-red-600 dark:hover:text-red-400 rounded-xl font-bold transition-all flex items-center justify-center gap-2 border border-slate-200 dark:border-slate-600 hover:border-red-200 transition-colors">
+                          <i class="fas fa-sign-out-alt"></i> مغادرة بدون حفظ
+                      </button>
+                      <button onclick="closeUnsavedModal()" class="w-full py-3 px-4 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 font-medium transition-all">
+                          إلغاء (البقاء والمتابعة)
+                      </button>
+                  </div>
+              </div>
+          </div>
+      </div>
+  </div>
 </body>
 
 </html>
