@@ -800,9 +800,9 @@ function ratingColor($rating) {
                       {{-- Average Score --}}
                       <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-3">
                         <span class="text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">متوسط تقييم المعيار</span>
-                        <div class="flex items-center gap-1.5">
-                          <span id="standard-{{ $std->id }}-score" class="text-3xl font-black text-emerald-500 dark:text-emerald-400">—</span>
-                          <span class="text-slate-400 dark:text-slate-600 font-bold text-lg">/5</span>
+                        <div class="flex items-center gap-1.5" id="standard-{{ $std->id }}-score-container">
+                          <span id="standard-{{ $std->id }}-score" class="text-3xl font-black text-slate-400 dark:text-slate-500">—</span>
+                          <span id="standard-{{ $std->id }}-score-slash" class="text-slate-400 dark:text-slate-600 font-bold text-lg hidden">/5</span>
                         </div>
                       </div>
                       
@@ -1980,15 +1980,17 @@ function ratingColor($rating) {
                     }
                 }
             });
-
-            // Recalculate all standard scores on load
-            setTimeout(() => {
-                @foreach($standards as $std)
-                    updateStandardScoreById({{ $std->id }});
-                @endforeach
-            }, 100);
         });
     }
+
+    // Always recalculate all standard scores on load independently of READONLY status
+    document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(() => {
+            @foreach($standards as $std)
+                updateStandardScoreById({{ $std->id }});
+            @endforeach
+        }, 100);
+    });
 
     async function saveDraft() {
       const btn = document.getElementById('save-draft-btn');
@@ -2197,20 +2199,25 @@ function ratingColor($rating) {
        if (elNC) elNC.textContent = stdNC;
 
        const scoreEl = document.getElementById(`standard-${standardId}-score`);
+       const slashEl = document.getElementById(`standard-${standardId}-score-slash`);
        if (scoreEl) {
-         // The requirement: Unrated items count as 0 in the average.
-         // Non-Compliant (0) items are excluded completely from the calculation.
-         const divisor = stdTotal - stdNC;
-         
-         if (divisor > 0) {
-           // Sum already includes scores 1-5. Unrated items are 0 so they don't add to sum, 
-           // but they ARE included in the divisor (stdTotal - stdNC).
-           const avg = (stdSum / divisor).toFixed(1);
-           scoreEl.textContent = avg;
-           scoreEl.className = `text-3xl font-black ${avg >= 4 ? 'text-emerald-500' : avg >= 3 ? 'text-yellow-500' : 'text-red-500'}`;
-         } else {
+         if (stdRated === 0 && stdNC === 0) {
            scoreEl.textContent = '—';
-           scoreEl.className = `text-3xl font-black text-slate-400`;
+           scoreEl.className = `text-3xl font-black text-slate-400 dark:text-slate-500`;
+           if (slashEl) slashEl.classList.add('hidden');
+         } else {
+           const divisor = stdTotal - stdNC;
+           
+           if (divisor > 0) {
+             const avg = (stdSum / divisor).toFixed(1);
+             scoreEl.textContent = avg;
+             scoreEl.className = `text-3xl font-black ${avg >= 4 ? 'text-emerald-500' : avg >= 3 ? 'text-yellow-500' : 'text-red-500'}`;
+             if (slashEl) slashEl.classList.remove('hidden');
+           } else {
+             scoreEl.textContent = '—';
+             scoreEl.className = `text-3xl font-black text-slate-400 dark:text-slate-500`;
+             if (slashEl) slashEl.classList.add('hidden');
+           }
          }
        }
     }
