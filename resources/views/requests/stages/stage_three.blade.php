@@ -108,9 +108,15 @@
                                 <td class="px-6 py-5">
                                     <div class="flex items-center justify-center gap-2 flex-wrap">
                                         {{-- Dummy Action Buttons as requested --}}
-                                        <button type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20 text-xs font-bold transition-colors cursor-pointer" onclick="alert('تحت التطوير')">
-                                            <i class="fa-solid fa-edit"></i> تعديل
-                                        </button>
+                                        @if($sub->status === 'draft' && $userRole === 'program_coordinator')
+                                            <a href="{{ route('requests.stage_three.edit', [$accreditationRequest->id, $sub->id]) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20 text-xs font-bold transition-colors cursor-pointer">
+                                                <i class="fa-solid fa-edit"></i> تعديل
+                                            </a>
+                                        @else
+                                            <button type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20 text-xs font-bold transition-colors cursor-pointer opacity-50 cursor-not-allowed" disabled>
+                                                <i class="fa-solid fa-edit"></i> تعديل
+                                            </button>
+                                        @endif
                                         
                                         <button type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-50 text-slate-700 border border-slate-200 hover:bg-slate-100 dark:bg-slate-500/10 dark:text-slate-400 dark:border-slate-500/20 text-xs font-bold transition-colors cursor-pointer" onclick="alert('تحت التطوير')">
                                             <i class="fa-solid fa-eye"></i> عرض

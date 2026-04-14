@@ -1,10 +1,47 @@
 <!doctype html>
+@php
+function ratingColor($rating) {
+    return match((int)$rating) {
+        1 => '#ef4444',
+        2 => '#f97316',
+        3 => '#eab308',
+        4 => '#84cc16',
+        5 => '#10b981',
+        0 => '#312e81',
+        default => ''
+    };
+}
+@endphp
 <html lang="ar" dir="rtl" class="h-full">
 
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>نظام الدراسة الذاتية للبرنامج</title>
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <title>الدراسة الذاتية — {{ $programInfo['program_name'] }}</title>
+
+  {{-- Pass Laravel route data and PHP variables to JS --}}
+  <script>
+    window.SAVE_URL = '{{ route('requests.stage_three.save', [$accreditationRequest, $formSubmission]) }}';
+    window.UPLOAD_BASE = '{{ url("/requests/{$accreditationRequest->id}/stage-three/{$formSubmission->id}/upload-evidence") }}';
+    window.DELETE_BASE = '{{ url("/requests/{$accreditationRequest->id}/stage-three/{$formSubmission->id}/evidence") }}';
+    window.SAVED_FORM_DATA = @json($formData);
+    window.SAVED_SCORES = @json($indicatorScores);
+    @php
+        $mappedEvidences = $evidencesByEvalId->map(function($evs) {
+            return $evs->map(function($e) {
+                return [
+                    'id' => $e->id,
+                    'file_name' => $e->file_name,
+                    'eval_id' => $e->indicator_evaluation_id,
+                ];
+            });
+        })->values();
+    @endphp
+
+    window.SAVED_EVIDENCES = @json($mappedEvidences);
+    window.EVAL_ID_MAP = @json($evalIdByIndicatorId);
+  </script>
 
 
   {{-- Font Awesome 6.4.0 --}}
@@ -323,12 +360,10 @@
       </nav>
       {{-- Sidebar Footer --}}
       <div class="p-4 border-t border-slate-100 dark:border-slate-800 mt-auto">
-        <button onclick="saveDraft()"
-          class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all font-medium border border-slate-200 dark:border-slate-700">
-          <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
-          </svg>
-          حفظ كمسودة
+        <button id="save-draft-btn" onclick="saveDraft()"
+          class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-500/30 transition-all cursor-pointer">
+          <i id="save-draft-icon" class="fa-solid fa-floppy-disk"></i>
+          <span id="save-draft-text">حفظ كمسودة</span>
         </button>
       </div>
 
@@ -372,20 +407,23 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">{{--! Auto Fields --}}
               <div class="bg-slate-50 dark:bg-slate-700/30 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
                 <span class="block text-sm text-slate-700 dark:text-slate-300 mb-1">اسم المؤسسة / الجامعة</span>
-                <span class="text-slate-900 dark:text-white font-medium text-lg">جامعة الملك سعود</span>
+                <span class="text-slate-900 dark:text-white font-medium text-lg">{{ $programInfo['university_name'] }}</span>
               </div>
               <div class="bg-slate-50 dark:bg-slate-700/30 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
                 <span class="block text-sm text-slate-700 dark:text-slate-300 mb-1">اسم رئيس المؤسسة/ الجامعة</span>
-                <span class="text-slate-900 dark:text-white font-medium text-lg">سعود بن عبدالعزيز الحوثري</span>
+                <span class="text-slate-900 dark:text-white font-medium text-lg">{{ $programInfo['university_president'] }}</span>
               </div>
-              <div><label class="block text-sm text-slate-700 dark:text-slate-300 mb-2">اسم رئيس فريق المراجعة الداخلية <span
-                    class="text-red-600 dark:text-red-400">*</span></label> <input type="text" id="review_team_head"
-                  placeholder="أدخل الاسم" class="w-full px-4 py-3 rounded-xl"
-                  onchange="saveField('general', 'review_team_head', this.value)">
+              <div>
+                <label class="block text-sm text-slate-700 dark:text-slate-300 mb-2">اسم رئيس فريق المراجعة الداخلية <span class="text-red-600 dark:text-red-400">*</span></label>
+                <input type="text" id="review_team_head" placeholder="أدخل الاسم" class="w-full px-4 py-3 rounded-xl"
+                  value="{{ $formData['general']['review_team_head'] ?? '' }}"
+                  onchange="setField('general', 'review_team_head', this.value)">
               </div>
-              <div><label class="block text-sm text-slate-700 dark:text-slate-300 mb-2">تاريخ التقييم / المراجعة <span
-                    class="text-red-600 dark:text-red-400">*</span></label> <input type="date" id="review_date"
-                  class="w-full px-4 py-3 rounded-xl" onchange="saveField('general', 'review_date', this.value)">
+              <div>
+                <label class="block text-sm text-slate-700 dark:text-slate-300 mb-2">تاريخ التقييم / المراجعة <span class="text-red-600 dark:text-red-400">*</span></label>
+                <input type="date" id="review_date" class="w-full px-4 py-3 rounded-xl"
+                  value="{{ $formData['general']['review_date'] ?? '' }}"
+                  onchange="setField('general', 'review_date', this.value)">
               </div>
             </div>
           </div>
@@ -400,33 +438,37 @@
             </h3>{{--! Auto-filled Institution Info --}}
             <div class="bg-slate-100 dark:bg-slate-700/50 rounded-xl p-5 mb-6">
               <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-6">
-                <div><span class="text-xs text-slate-700 dark:text-slate-300 block mb-1">الجامعة</span> <span
-                    class="text-slate-900 dark:text-white font-medium">جامعة الملك سعود</span>
+                <div><span class="text-xs text-slate-700 dark:text-slate-300 block mb-1">الجامعة</span>
+                  <span class="text-slate-900 dark:text-white font-medium">{{ $programInfo['university_name'] }}</span>
                 </div>
-                <div><span class="text-xs text-slate-700 dark:text-slate-300 block mb-1">الكلية</span> <span
-                    class="text-slate-900 dark:text-white font-medium">كلية الهندسة</span>
+                <div><span class="text-xs text-slate-700 dark:text-slate-300 block mb-1">الكلية</span>
+                  <span class="text-slate-900 dark:text-white font-medium">{{ $programInfo['college_name'] }}</span>
                 </div>
-                <div><span class="text-xs text-slate-700 dark:text-slate-300 block mb-1">القسم العلمي</span> <span
-                    class="text-slate-900 dark:text-white font-medium">الحاسبات</span>
+                <div><span class="text-xs text-slate-700 dark:text-slate-300 block mb-1">القسم العلمي</span>
+                  <span class="text-slate-900 dark:text-white font-medium">{{ $programInfo['department_name'] }}</span>
                 </div>
-                <div><span class="text-xs text-slate-700 dark:text-slate-300 block mb-1">اسم البرنامج</span> <span
-                    class="text-slate-900 dark:text-white font-medium">هندسة الحاسب الآلي</span>
+                <div><span class="text-xs text-slate-700 dark:text-slate-300 block mb-1">اسم البرنامج</span>
+                  <span class="text-slate-900 dark:text-white font-medium">{{ $programInfo['program_name'] }}</span>
                 </div>
-                <div><span class="text-xs text-slate-700 dark:text-slate-300 block mb-1">تاريخ التأسيس</span> <span
-                    class="text-slate-900 dark:text-white font-medium">1430 هـ</span>
+                <div><span class="text-xs text-slate-700 dark:text-slate-300 block mb-1">تاريخ التأسيس</span>
+                  <span class="text-slate-900 dark:text-white font-medium">{{ $programInfo['establishment_date'] ?: '—' }}</span>
                 </div>
-                <div><span class="text-xs text-slate-700 dark:text-slate-300 block mb-1">عنوان الموقع الإلكتروني</span> <span
-                    class="link text-blue-400 font-medium">www.ksu.edu.sa/ce</span>
+                <div><span class="text-xs text-slate-700 dark:text-slate-300 block mb-1">عنوان الموقع الإلكتروني</span>
+                  @if($programInfo['website_url'])
+                    <a href="{{ $programInfo['website_url'] }}" target="_blank" class="text-blue-400 font-medium hover:underline">{{ $programInfo['website_url'] }}</a>
+                  @else
+                    <span class="text-slate-500">—</span>
+                  @endif
                 </div>
               </div>
             </div>
             <div class="space-y-6">
               <div><label class="block text-sm text-slate-700 dark:text-slate-300 mb-2">الملخص التنفيذي للنتيجة الإجمالية لتقييم معايير
-                  الاعتماد البرامجي <span class="text-red-600 dark:text-red-400">*</span></label> <textarea id="executive_summary"
-                  rows="6"
+                  الاعتماد البرامجي <span class="text-red-600 dark:text-red-400">*</span></label>
+                <textarea id="executive_summary" rows="6"
                   placeholder="اكتب ملخصاً تنفيذياً شاملاً يتضمن النتيجة الإجمالية، جوانب القوة، وجوانب التحسين..."
                   class="w-full px-4 py-3 rounded-xl resize-none"
-                  onchange="saveField('program', 'executive_summary', this.value)"></textarea>
+                  onchange="setField('program', 'executive_summary', this.value)">{{ $formData['program']['executive_summary'] ?? '' }}</textarea>
                 <p class="text-xs text-slate-500 mt-2">يجب أن يتضمن: النتيجة الإجمالية، جوانب القوة، وجوانب التحسين</p>
               </div>
               <div>
@@ -480,7 +522,7 @@
                 <div><label class="block text-sm text-slate-700 dark:text-slate-300 mb-2">رسالة البرنامج <span
                       class="text-red-600 dark:text-red-400">*</span></label> <textarea id="program_mission" rows="4"
                     placeholder="اكتب رسالة البرنامج بوضوح..." class="w-full px-4 py-3 rounded-xl resize-none"
-                    onchange="saveField('profile', 'program_mission', this.value)"></textarea>
+                    onchange="saveField('profile', 'program_mission', this.value)">{{ $formData['profile']['program_mission'] ?? '' }}</textarea>
                 </div>
 
                 {{--! Dynamic Objectives --}}
@@ -834,189 +876,195 @@
             <div class="w-2 h-8 bg-emerald-500 rounded-full"></div>
             <h2 class="text-2xl font-bold text-slate-800 dark:text-white">الجزء الثاني: التقييم وفق معايير الاعتماد</h2>
           </div>
-          <p class="text-slate-700 dark:text-slate-300 mr-5 font-medium">تقييم 7 معايير رئيسية بناءً على مؤشرات محددة
-          </p>
+          <p class="text-slate-700 dark:text-slate-300 mr-5 font-medium">تقييم {{ $standards->count() }} معيار رئيسي بناءً على مؤشرات محددة</p>
         </div>
 
-        {{-- Standard Tabs Navigation --}}
-        <div
-          class="bg-white dark:bg-slate-800 p-1.5 rounded-2xl mb-8 flex flex-wrap gap-1.5 shadow-sm border border-slate-100 dark:border-slate-700/50">
-          <button onclick="switchStandardTab(1)"
-            class="std-tab-btn active px-4 py-2.5 rounded-xl text-sm font-semibold transition-all bg-emerald-600 text-white shadow-md shadow-emerald-500/20"
-            data-std="1">١. الرسالة والأهداف</button>
-          <button onclick="switchStandardTab(2)"
-            class="std-tab-btn px-4 py-2.5 rounded-xl text-sm font-semibold transition-all text-slate-700 dark:text-slate-300 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50"
-            data-std="2">٢. البرنامج والجودة</button>
-          <button onclick="switchStandardTab(3)"
-            class="std-tab-btn px-4 py-2.5 rounded-xl text-sm font-semibold transition-all text-slate-700 dark:text-slate-300 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50"
-            data-std="3">٣. التعليم والتعلم</button>
-          <button onclick="switchStandardTab(4)"
-            class="std-tab-btn px-4 py-2.5 rounded-xl text-sm font-semibold transition-all text-slate-700 dark:text-slate-300 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50"
-            data-std="4">٤. الطلاب</button>
-          <button onclick="switchStandardTab(5)"
-            class="std-tab-btn px-4 py-2.5 rounded-xl text-sm font-semibold transition-all text-slate-700 dark:text-slate-300 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50"
-            data-std="5">٥. هيئة التدريس</button>
-          <button onclick="switchStandardTab(6)"
-            class="std-tab-btn px-4 py-2.5 rounded-xl text-sm font-semibold transition-all text-slate-700 dark:text-slate-300 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50"
-            data-std="6">٦. مصادر التعلم والمرافق</button>
-          <button onclick="switchStandardTab(7)"
-            class="std-tab-btn px-4 py-2.5 rounded-xl text-sm font-semibold transition-all text-slate-700 dark:text-slate-300 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50"
-            data-std="7">٧. البحث والابتكار</button>
+        {{-- Standard Tabs Navigation (dynamic) --}}
+        <div class="bg-white dark:bg-slate-800 p-1.5 rounded-2xl mb-8 flex flex-wrap gap-1.5 shadow-sm border border-slate-100 dark:border-slate-700/50">
+          @foreach($standards as $stdIndex => $std)
+            <button onclick="switchStandardTab({{ $std->id }})"
+              class="std-tab-btn {{ $stdIndex === 0 ? 'active bg-emerald-600 text-white shadow-md shadow-emerald-500/20' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50' }} px-4 py-2.5 rounded-xl text-sm font-semibold transition-all"
+              data-std="{{ $std->id }}">{{ $std->number }}. {{ $std->name }}</button>
+          @endforeach
         </div>
 
-        {{-- Standards Content Area --}}
+        {{-- Standards Content Area (dynamic) --}}
         <div id="standards-container">
-          {{-- main Standard  --}}
-          <div id="standard-1-tab-content" class="std-content  fade-in">
-            {{--Standard Header --}}
-            <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-xl mb-8 border-r-4 border-emerald-500">
-              <div class="flex items-center justify-between">
-                <div>
-                  <h2 class="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
-                    <div
-                      class="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center text-emerald-400 font-bold text-xl">
-                      1</div>
-                    المعيار الأول: الرسالة والأهداف
-                  </h2>
-                  <p class="text-slate-700 dark:text-slate-300 text-sm mt-2">وصف المعيار الرئيس</p>
-                </div>
-                <div class="text-left bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
-                  <span class="block text-xs text-slate-700 dark:text-slate-300 mb-1 text-center">التقييم</span>
-                  <div class="flex items-center justify-center gap-1">
-                    <span id="standard-1-score" class="text-3xl font-bold text-emerald-400">0.0</span>
-                    <span class="text-slate-500 text-lg">/5</span>
+          @foreach($standards as $stdIndex => $std)
+            <div id="standard-{{ $std->id }}-tab-content" class="std-content {{ $stdIndex > 0 ? 'hidden' : '' }} fade-in">
+
+              {{-- Standard Header --}}
+              <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-xl mb-8 border-r-4 border-emerald-500">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <h2 class="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
+                      <div class="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center text-emerald-400 font-bold text-xl">{{ $std->number }}</div>
+                      المعيار {{ $std->number }}: {{ $std->name }}
+                    </h2>
+                    @if($std->description)
+                      <p class="text-slate-700 dark:text-slate-300 text-sm mt-2">{{ $std->description }}</p>
+                    @endif
+                  </div>
+                  <div class="text-left bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <span class="block text-xs text-slate-700 dark:text-slate-300 mb-1 text-center">متوسط التقييم</span>
+                    <div class="flex items-center justify-center gap-1">
+                      <span id="standard-{{ $std->id }}-score" class="text-3xl font-bold text-emerald-400">—</span>
+                      <span class="text-slate-500 text-lg">/5</span>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            {{-- Substandards Container --}}
-            <div class="space-y-8">
-
-              {{-- Substandard --}}
-              <div class="bg-white/80 dark:bg-slate-800/80 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700/50">
-                <div class="bg-slate-100 dark:bg-slate-700/30 p-4 border-b border-slate-200 dark:border-slate-700/50 flex items-center justify-between">
-                  <div class="flex items-center gap-3">
-                    <span class="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-lg font-bold text-sm">1.1</span>
-                    <h3 class="font-bold text-lg text-slate-700 dark:text-slate-300">رسالة البرنامج</h3>
+              {{-- Substandards --}}
+              <div class="space-y-8">
+                @foreach($std->subStandards as $sub)
+                  <div class="bg-white/80 dark:bg-slate-800/80 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700/50">
+                    <div class="bg-slate-100 dark:bg-slate-700/30 p-4 border-b border-slate-200 dark:border-slate-700/50 flex items-center justify-between">
+                      <div class="flex items-center gap-3">
+                        <span class="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-lg font-bold text-sm">{{ $sub->number }}</span>
+                        <h3 class="font-bold text-lg text-slate-700 dark:text-slate-300">{{ $sub->name }}</h3>
+                      </div>
+                      @php $examples = $sub->examples_of_evidence ?? []; @endphp
+                      @if(count($examples) > 0)
+                        <div class="tooltip-container">
+                          <svg class="w-5 h-5 text-slate-700 dark:text-slate-300 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <div class="tooltip-text">
+                            <strong>أمثلة للأدلة:</strong><br>
+                            @foreach($examples as $ex)• {{ $ex }}<br>@endforeach
+                          </div>
+                        </div>
+                      @endif
+                    </div>
+                    <div class="p-6 space-y-4">
+                      @foreach($sub->indicators as $ind)
+                        @php
+                          $evalId = $evalIdByIndicatorId[$ind->id] ?? null;
+                          $savedScore = $indicatorScores[$ind->id] ?? null;
+                          $indEvidences = $evalId ? ($evidencesByEvalId[$evalId] ?? collect()) : collect();
+                        @endphp
+                        <div class="indicator-row rounded-xl p-5 border border-slate-300 dark:border-slate-600 bg-white/50 dark:bg-slate-800/50"
+                          data-indicator-id="{{ $ind->id }}"
+                          data-eval-id="{{ $evalId }}">
+                          <div class="flex items-start justify-between mb-4">
+                            <div class="flex-1">
+                              <span class="text-xs text-blue-400 font-medium">مؤشر {{ $sub->number }}-{{ $loop->iteration }}</span>
+                              <p class="text-slate-900 dark:text-white mt-1">{{ $ind->name }}</p>
+                            </div>
+                          </div>
+                          {{-- Rating Buttons --}}
+                          <div class="flex items-center gap-3 mb-4">
+                            <span class="text-sm text-slate-700 dark:text-slate-300">التقييم:</span>
+                            <div class="flex gap-2">
+                              @foreach([1,2,3,4,5] as $r)
+                                <button
+                                  onclick="setRatingById({{ $ind->id }}, {{ $std->id }}, {{ $r }})"
+                                  class="rating-btn w-10 h-10 rounded-lg bg-slate-200 dark:bg-slate-600 text-slate-900 dark:text-white font-bold"
+                                  data-indicator-id="{{ $ind->id }}"
+                                  data-rating="{{ $r }}"
+                                  style="{{ $savedScore == $r ? 'background-color:'.ratingColor($r).';color:#fff;' : '' }}">{{ $r }}</button>
+                              @endforeach
+                              <button
+                                onclick="setRatingById({{ $ind->id }}, {{ $std->id }}, 0)"
+                                class="rating-btn px-4 h-10 rounded-lg bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-bold border border-slate-500"
+                                data-indicator-id="{{ $ind->id }}"
+                                data-rating="0"
+                                style="{{ $savedScore === 0 ? 'background-color:#312e81;color:#fff;' : '' }}">غير مطابق</button>
+                            </div>
+                          </div>
+                          {{-- Saved Evidences --}}
+                          <div id="evidences-ind-{{ $ind->id }}" class="space-y-2 mb-3">
+                            @foreach($indEvidences as $ev)
+                              <div class="evidence-item bg-slate-100 dark:bg-slate-700 rounded-lg p-3 flex items-center gap-3" 
+                                id="evidence-saved-{{ $ev->id }}"
+                                data-id="{{ $ev->id }}"
+                                data-name="{{ $ev->file_name }}">
+                                <i class="fas fa-file-pdf text-red-500"></i>
+                                <span class="flex-1 text-sm text-slate-800 dark:text-white truncate">{{ $ev->file_name }}</span>
+                                <button onclick="removeEvidenceRow('evidence-saved-{{ $ev->id }}')"
+                                  class="text-red-600 dark:text-red-400 hover:text-red-300 p-1" title="حذف">
+                                  <i class="fas fa-trash-alt text-xs"></i>
+                                </button>
+                              </div>
+                            @endforeach
+                          </div>
+                          {{-- Upload new evidence --}}
+                          @if($evalId)
+                            <label class="cursor-pointer text-blue-400 text-sm flex items-center gap-2 hover:text-blue-300 transition-colors">
+                              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                              </svg>
+                              إرفاق دليل
+                              <input type="file" class="hidden" accept=".pdf"
+                                onchange="uploadEvidence(this, {{ $ind->id }}, {{ $evalId }})">
+                            </label>
+                          @endif
+                        </div>
+                      @endforeach
+                    </div>
                   </div>
-                  <div class="tooltip-container">
-                    <svg class="w-5 h-5 text-slate-700 dark:text-slate-300 cursor-help" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <div class="tooltip-text"><strong>أمثلة للأدلة:</strong><br>• وثيقة الرسالة المعتمدة<br>• محاضر اجتماعات المراجعة<br>• استبيانات أصحاب المصلحة</div>
+                @endforeach
+              </div>
+
+              {{-- Standard Comments Sections --}}
+              <div class="mt-12 space-y-6">
+                <div class="flex items-center gap-3 mb-4">
+                  <div class="w-1.5 h-6 bg-amber-500 rounded-full"></div>
+                  <h3 class="text-xl font-bold text-slate-900 dark:text-white">التعليقات الختامية للمعيار</h3>
+                </div>
+                {{-- Program Comment --}}
+                <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+                  <div class="bg-slate-100 dark:bg-slate-700/30 p-4 border-b border-slate-200 dark:border-slate-700/50">
+                    <label class="block text-sm font-medium text-slate-800 dark:text-slate-200">تعليق البرنامج</label>
+                  </div>
+                  <div class="p-6">
+                    <textarea rows="3" placeholder="أدخل تعليق البرنامج على هذا المعيار..."
+                      class="w-full px-4 py-3 rounded-xl resize-none bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white text-sm"
+                      onchange="saveStdComment({{ $std->id }}, 'program_comment', this.value)">{{ $formData['standard_comments'][$std->id]['program_comment'] ?? '' }}</textarea>
                   </div>
                 </div>
-                <div class="p-6 space-y-4">
-
-                  {{-- Indicators --}}
-                  <div class="indicator-row rounded-xl p-5 border border-slate-300 dark:border-slate-600 bg-white/50 dark:bg-slate-800/50"
-                    data-indicator="1-1">
-                    <div class="flex items-start justify-between mb-4">
-                      <div class="flex-1">
-                        <span class="text-xs text-blue-400 font-medium">مؤشر 1-1</span>
-                        <p class="text-slate-900 dark:text-white mt-1">وضوح رسالة البرنامج واتساقها مع رسالة المؤسسة</p>
-                      </div>
-                    </div>
-                    <div class="flex items-center gap-3 mb-4"><span class="text-sm text-slate-700 dark:text-slate-300">التقييم:</span>
-                      <div class="flex gap-2">
-                        <button onclick="setRating(1, 1, 1)"
-                          class="rating-btn w-10 h-10 rounded-lg bg-slate-200 dark:bg-slate-600 text-slate-900 dark:text-white font-bold hover:bg-red-500"
-                          data-rating="1">1</button>
-                        <button onclick="setRating(1, 1, 2)"
-                          class="rating-btn w-10 h-10 rounded-lg bg-slate-200 dark:bg-slate-600 text-slate-900 dark:text-white font-bold hover:bg-orange-500"
-                          data-rating="2">2</button>
-                        <button onclick="setRating(1, 1, 3)"
-                          class="rating-btn w-10 h-10 rounded-lg bg-slate-200 dark:bg-slate-600 text-slate-900 dark:text-white font-bold hover:bg-yellow-500"
-                          data-rating="3">3</button>
-                        <button onclick="setRating(1, 1, 4)"
-                          class="rating-btn w-10 h-10 rounded-lg bg-slate-200 dark:bg-slate-600 text-slate-900 dark:text-white font-bold hover:bg-lime-500"
-                          data-rating="4">4</button>
-                        <button onclick="setRating(1, 1, 5)"
-                          class="rating-btn w-10 h-10 rounded-lg bg-slate-200 dark:bg-slate-600 text-slate-900 dark:text-white font-bold hover:bg-emerald-500"
-                          data-rating="5">5</button>
-                        <button onclick="setRating(1, 1, 0)"
-                          class="rating-btn px-4 h-10 rounded-lg bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 font-bold hover:bg-slate-700  border border-slate-500"
-                          data-rating="0">غير مطابق</button>
-                      </div>
-                    </div>
-                    <div id="evidences-1-1" class="space-y-2 mb-3"></div>
-                    <button onclick="addEvidence(1, 1)"
-                      class="text-blue-400 text-sm flex items-center gap-2 hover:text-blue-300 transition-colors">
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                      </svg> إرفاق دليل
+                {{-- Strengths --}}
+                <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+                  <div class="bg-emerald-500/10 p-4 border-b border-emerald-500/20 flex items-center justify-between">
+                    <label class="block text-sm font-medium text-emerald-700 dark:text-emerald-400">جوانب القوة</label>
+                    <button onclick="addCommentPoint({{ $std->id }}, 'strengths')" class="text-xs text-emerald-500 hover:text-emerald-400 flex items-center gap-1">
+                      <i class="fas fa-plus-circle"></i> إضافة نقطة
                     </button>
                   </div>
-
+                  <div class="p-6">
+                    <div id="std-{{ $std->id }}-strengths-list" class="space-y-3"></div>
+                  </div>
                 </div>
-
-              </div>
-            </div>
-            {{-- Standard Comments Sections --}}
-            <div class="mt-12 space-y-6">
-              {{-- Header --}}
-              <div class="flex items-center gap-3 mb-4">
-                <div class="w-1.5 h-6 bg-amber-500 rounded-full"></div>
-                <h3 class="text-xl font-bold text-slate-900 dark:text-white">التعليقات الختامية للمعيار</h3>
-              </div>
-
-              {{-- Program Comment --}}
-              <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-                <div class="bg-slate-100 dark:bg-slate-700/30 p-4 border-b border-slate-200 dark:border-slate-700/50">
-                  <label class="block text-sm font-medium text-slate-800 dark:text-slate-200">تعليق البرنامج</label>
+                {{-- Improvements --}}
+                <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+                  <div class="bg-red-500/10 p-4 border-b border-red-500/20 flex items-center justify-between">
+                    <label class="block text-sm font-medium text-red-700 dark:text-red-400">جوانب تحتاج تحسين</label>
+                    <button onclick="addCommentPoint({{ $std->id }}, 'improvements')" class="text-xs text-red-500 hover:text-red-400 flex items-center gap-1">
+                      <i class="fas fa-plus-circle"></i> إضافة نقطة
+                    </button>
+                  </div>
+                  <div class="p-6">
+                    <div id="std-{{ $std->id }}-improvements-list" class="space-y-3"></div>
+                  </div>
                 </div>
-                <div class="p-6">
-                  <textarea rows="3" placeholder="أدخل تعليق البرنامج على هذا المعيار..."
-                    class="w-full px-4 py-3 rounded-xl resize-none bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white text-sm"
-                    onchange="saveStandardComment(1, 'program_comment', this.value)"></textarea>
-                </div>
-              </div>
-
-              {{-- Strengths --}}
-              <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-                <div class="bg-emerald-500/10 p-4 border-b border-emerald-500/20 flex items-center justify-between">
-                  <label class="block text-sm font-medium text-emerald-700 dark:text-emerald-400">جوانب القوة</label>
-                  <button onclick="addCommentPoint(1, 'strengths')" class="text-xs text-emerald-500 hover:text-emerald-400 flex items-center gap-1">
-                    <i class="fas fa-plus-circle"></i> إضافة نقطة
-                  </button>
-                </div>
-                <div class="p-6">
-                  <div id="std-1-strengths-list" class="space-y-3"></div>
+                {{-- Priorities --}}
+                <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+                  <div class="bg-amber-500/10 p-4 border-b border-amber-500/20 flex items-center justify-between">
+                    <label class="block text-sm font-medium text-amber-700 dark:text-amber-400">أولويات التحسين</label>
+                    <button onclick="addCommentPoint({{ $std->id }}, 'priorities')" class="text-xs text-amber-500 hover:text-amber-400 flex items-center gap-1">
+                      <i class="fas fa-plus-circle"></i> إضافة نقطة
+                    </button>
+                  </div>
+                  <div class="p-6">
+                    <div id="std-{{ $std->id }}-priorities-list" class="space-y-3"></div>
+                  </div>
                 </div>
               </div>
-
-              {{-- Improvements --}}
-              <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-                <div class="bg-red-500/10 p-4 border-b border-red-500/20 flex items-center justify-between">
-                  <label class="block text-sm font-medium text-red-700 dark:text-red-400">جوانب تحتاج تحسين</label>
-                  <button onclick="addCommentPoint(1, 'improvements')" class="text-xs text-red-600 dark:text-red-500 hover:text-red-700 dark:hover:text-red-600 dark:text-red-400 flex items-center gap-1">
-                    <i class="fas fa-plus-circle"></i> إضافة نقطة
-                  </button>
-                </div>
-                <div class="p-6">
-                  <div id="std-1-improvements-list" class="space-y-3"></div>
-                </div>
-              </div>
-
-              {{-- Priorities --}}
-              <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-                <div class="bg-amber-500/10 p-4 border-b border-amber-500/20 flex items-center justify-between">
-                  <label class="block text-sm font-medium text-amber-700 dark:text-amber-400">أولويات التحسين</label>
-                  <button onclick="addCommentPoint(1, 'priorities')" class="text-xs text-amber-500 hover:text-amber-400 flex items-center gap-1">
-                    <i class="fas fa-plus-circle"></i> إضافة نقطة
-                  </button>
-                </div>
-                <div class="p-6">
-                  <div id="std-1-priorities-list" class="space-y-3"></div>
-                </div>
-              </div>
-
-
-                </div>
-              </div>
-            </div> {{-- End standards-container --}}
-          </div> {{-- End section-2 --}}
+            </div>{{-- End standard-{{ $std->id }}-tab-content --}}
+          @endforeach
+        </div> {{-- End standards-container --}}
+      </div> {{-- End section-2 --}}
 
           {{--? Section 3: Independent Evaluations --}}
           <div id="section-3" class="section-content hidden p-8 fade-in">
@@ -1037,43 +1085,62 @@
                   </svg> التقييمات المستقلة
                 </h3>
                 <div class="space-y-6">
-                  <div id="evaluation_procedures" class="bg-slate-100 dark:bg-slate-700/30 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+
+                  {{-- الإجراءات المتبعة --}}
+                  <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
                     <div class="bg-blue-500/10 p-4 border-b border-blue-500/20 flex items-center justify-between">
-                      <label class="block text-sm font-medium text-blue-700 dark:text-blue-400">الإجراءات المتبعة للحصول على التقييم <span class="text-red-600 dark:text-red-400">*</span></label>
-                      <button onclick="addSection3Point('evaluations', 'evaluation_procedures')" class="text-xs text-blue-500 hover:text-blue-400 flex items-center gap-1">
-                        <i class="fas fa-plus-circle"></i> إضافة نقطة
+                      <label class="block text-sm font-semibold text-blue-700 dark:text-blue-400 flex items-center gap-2">
+                        <span class="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-500 text-xs"><i class="fas fa-list-ul"></i></span>
+                        الإجراءات المتبعة للحصول على التقييم <span class="text-red-500">*</span>
+                      </label>
+                      <button onclick="addSection3Point('evaluations', 'evaluation_procedures')"
+                        class="flex items-center gap-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200 bg-blue-500/10 hover:bg-blue-500/20 px-3 py-1.5 rounded-xl transition-all">
+                        <i class="fas fa-plus text-[10px]"></i> إضافة نقطة
                       </button>
                     </div>
-                    <div class="p-6">
+                    <div class="p-5">
                       <div id="sec3-evaluations-evaluation_procedures-list" class="space-y-3"></div>
                     </div>
                   </div>
-                  
-                  <div id="evaluator_recommendations" class="bg-slate-100 dark:bg-slate-700/30 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+
+                  {{-- توصيات المقيمين --}}
+                  <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
                     <div class="bg-blue-500/10 p-4 border-b border-blue-500/20 flex items-center justify-between">
-                      <label class="block text-sm font-medium text-blue-700 dark:text-blue-400">النقاط التي وضعها المقيمون <span class="text-red-600 dark:text-red-400">*</span></label>
-                      <button onclick="addSection3Point('evaluations', 'evaluator_recommendations')" class="text-xs text-blue-500 hover:text-blue-400 flex items-center gap-1">
-                        <i class="fas fa-plus-circle"></i> إضافة نقطة
+                      <label class="block text-sm font-semibold text-blue-700 dark:text-blue-400 flex items-center gap-2">
+                        <span class="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-500 text-xs"><i class="fas fa-clipboard-check"></i></span>
+                        النقاط التي وضعها المقيمون <span class="text-red-500">*</span>
+                      </label>
+                      <button onclick="addSection3Point('evaluations', 'evaluator_recommendations')"
+                        class="flex items-center gap-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200 bg-blue-500/10 hover:bg-blue-500/20 px-3 py-1.5 rounded-xl transition-all">
+                        <i class="fas fa-plus text-[10px]"></i> إضافة نقطة
                       </button>
                     </div>
-                    <div class="p-6">
+                    <div class="p-5">
                       <div id="sec3-evaluations-evaluator_recommendations-list" class="space-y-3"></div>
                     </div>
                   </div>
 
-                  <div id="actions_taken" class="bg-slate-100 dark:bg-slate-700/30 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+                  {{-- إجراءات الاستجابة --}}
+                  <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
                     <div class="bg-blue-500/10 p-4 border-b border-blue-500/20 flex items-center justify-between">
-                      <label class="block text-sm font-medium text-blue-700 dark:text-blue-400">إجراءات الاستجابة للتوصيات</label>
-                      <button onclick="addSection3Point('evaluations', 'actions_taken')" class="text-xs text-blue-500 hover:text-blue-400 flex items-center gap-1">
-                        <i class="fas fa-plus-circle"></i> إضافة نقطة
+                      <label class="block text-sm font-semibold text-blue-700 dark:text-blue-400 flex items-center gap-2">
+                        <span class="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-500 text-xs"><i class="fas fa-reply"></i></span>
+                        إجراءات الاستجابة للتوصيات
+                      </label>
+                      <button onclick="addSection3Point('evaluations', 'actions_taken')"
+                        class="flex items-center gap-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200 bg-blue-500/10 hover:bg-blue-500/20 px-3 py-1.5 rounded-xl transition-all">
+                        <i class="fas fa-plus text-[10px]"></i> إضافة نقطة
                       </button>
                     </div>
-                    <div class="p-6">
+                    <div class="p-5">
                       <div id="sec3-evaluations-actions_taken-list" class="space-y-3"></div>
                     </div>
                   </div>
+
                 </div>
-              </div>{{--! Results --}}
+              </div>
+
+              {{-- Results --}}
               <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-xl">
                 <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
                   <svg class="w-5 h-5 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
@@ -1082,29 +1149,41 @@
                   </svg> النتائج
                 </h3>
                 <div class="space-y-6">
-                  <div id="success_aspects" class="bg-slate-100 dark:bg-slate-700/30 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-                    <div class="bg-amber-500/10 p-4 border-b border-amber-500/20 flex items-center justify-between">
-                      <label class="block text-sm font-medium text-amber-700 dark:text-amber-400">جوانب النجاح</label>
-                      <button onclick="addSection3Point('results', 'success_aspects')" class="text-xs text-amber-500 hover:text-amber-400 flex items-center gap-1">
-                        <i class="fas fa-plus-circle"></i> إضافة نقطة
+
+                  {{-- جوانب النجاح --}}
+                  <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
+                    <div class="bg-emerald-500/10 p-4 border-b border-emerald-500/20 flex items-center justify-between">
+                      <label class="block text-sm font-semibold text-emerald-700 dark:text-emerald-400 flex items-center gap-2">
+                        <span class="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-500 text-xs"><i class="fas fa-check"></i></span>
+                        جوانب النجاح
+                      </label>
+                      <button onclick="addSection3Point('results', 'success_aspects')"
+                        class="flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-200 bg-emerald-500/10 hover:bg-emerald-500/20 px-3 py-1.5 rounded-xl transition-all">
+                        <i class="fas fa-plus text-[10px]"></i> إضافة نقطة
                       </button>
                     </div>
-                    <div class="p-6">
+                    <div class="p-5">
                       <div id="sec3-results-success_aspects-list" class="space-y-3"></div>
                     </div>
                   </div>
 
-                  <div id="priority_improvements" class="bg-slate-100 dark:bg-slate-700/30 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+                  {{-- جوانب التحسين ذات الأولوية --}}
+                  <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700 overflow-hidden">
                     <div class="bg-amber-500/10 p-4 border-b border-amber-500/20 flex items-center justify-between">
-                      <label class="block text-sm font-medium text-amber-700 dark:text-amber-400">جوانب التحسين ذات الأولوية</label>
-                      <button onclick="addSection3Point('results', 'priority_improvements')" class="text-xs text-amber-500 hover:text-amber-400 flex items-center gap-1">
-                        <i class="fas fa-plus-circle"></i> إضافة نقطة
+                      <label class="block text-sm font-semibold text-amber-700 dark:text-amber-400 flex items-center gap-2">
+                        <span class="w-5 h-5 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-500 text-xs"><i class="fas fa-arrow-up"></i></span>
+                        جوانب التحسين ذات الأولوية
+                      </label>
+                      <button onclick="addSection3Point('results', 'priority_improvements')"
+                        class="flex items-center gap-1.5 text-xs font-semibold text-amber-600 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-200 bg-amber-500/10 hover:bg-amber-500/20 px-3 py-1.5 rounded-xl transition-all">
+                        <i class="fas fa-plus text-[10px]"></i> إضافة نقطة
                       </button>
                     </div>
-                    <div class="p-6">
+                    <div class="p-5">
                       <div id="sec3-results-priority_improvements-list" class="space-y-3"></div>
                     </div>
                   </div>
+
                 </div>
               </div>{{--! Executive Proposals Table --}}
               <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-xl">
@@ -1149,9 +1228,10 @@
   </button>
 
 
+  {{-- Notification Container --}}
+  <div id="notificationArea" class="fixed top-4 left-4 z-[9999] space-y-2 pointer-events-none"></div>
 
 
-  {{-- Toast Notification --}}
   <div id="toast"
     class="fixed bottom-24 left-6 bg-white dark:bg-slate-800 text-slate-900 dark:text-white px-6 py-4 rounded-xl shadow-2xl transform translate-y-20 opacity-0 transition-all duration-300 z-50 flex items-center gap-3 border border-slate-200 dark:border-slate-700">
     <svg id="toast-icon" class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
@@ -1183,8 +1263,52 @@
       </div>
     </div>
   </div>
+
+  {{-- ✦ Unsaved Changes Navigation Modal --}}
+  <div id="unsaved-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[9999] hidden" aria-modal="true" role="dialog">
+    <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 max-w-sm w-full mx-4 shadow-2xl border border-slate-200 dark:border-slate-700">
+      <div class="flex items-start gap-4 mb-5">
+        <div class="w-12 h-12 flex-shrink-0 bg-amber-500/10 rounded-xl flex items-center justify-center">
+          <svg class="w-6 h-6 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+          </svg>
+        </div>
+        <div>
+          <h3 class="font-bold text-slate-900 dark:text-white text-base mb-1">تغييرات غير محفوظة</h3>
+          <p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">لديك تغييرات لم يتم حفظها بعد. ماذا تريد أن تفعل؟</p>
+        </div>
+      </div>
+      <div class="flex flex-col gap-2">
+        <button id="unsaved-save-btn"
+          class="w-full py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm transition-all flex items-center justify-center gap-2">
+          <i class="fas fa-floppy-disk text-xs"></i> حفظ التغييرات
+        </button>
+        <button id="unsaved-leave-btn"
+          class="w-full py-2.5 px-4 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-400 text-slate-700 dark:text-slate-200 font-semibold text-sm transition-all">
+          المغادرة بدون حفظ
+        </button>
+        <button onclick="closeUnsavedModal()"
+          class="w-full py-2.5 px-4 rounded-xl bg-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 font-medium text-sm transition-all">
+          إلغاء
+        </button>
+      </div>
+    </div>
+  </div>
   <script>
-    // Dark Mode Toggle - Now only toggles the class, CSS handles the icons instantly
+    // Global Endpoints
+    window.SAVE_URL = "{{ route('requests.stage_three.save', [$accreditationRequest->id, $formSubmission->id]) }}";
+    window.UPLOAD_BASE = "{{ route('requests.stage_three.upload_evidence_temp', [$accreditationRequest->id, $formSubmission->id]) }}";
+
+    // Server-Rendered Persistent Data
+    let _sfd = {!! json_encode($formData, JSON_UNESCAPED_UNICODE) !!};
+    window.SAVED_FORM_DATA = (Array.isArray(_sfd) && _sfd.length === 0) ? {} : (_sfd || {});
+    
+    let _ssc = {!! json_encode($indicatorScores, JSON_UNESCAPED_UNICODE) !!};
+    window.SAVED_SCORES = (Array.isArray(_ssc) && _ssc.length === 0) ? {} : (_ssc || {});
+
+
+
+    // Dark Mode Toggle
     function toggleDarkMode() {
       const isDark = document.documentElement.classList.toggle('dark');
       localStorage.setItem('theme', isDark ? 'dark' : 'light');
@@ -1193,92 +1317,62 @@
     // Initialize theme from localStorage or system preference
     (function() {
       const isDark = localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
-      if (isDark) {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-      }
+      if (isDark) document.documentElement.classList.add('dark');
+      else document.documentElement.classList.remove('dark');
     })();
 
-    // App State
+    // ── App State ─────────────────────────────────────────────────────
     let currentSection = 1;
     let currentTab = 'general';
-    let formData = {};
-    let ratings = {};
-    let evidences = {};
-    let standardComments = {};
-    let section3Data = {
-      evaluations: { evaluation_procedures: [], evaluator_recommendations: [], response_mechanism: [], actions_taken: [] },
-      results: { success_aspects: [], priority_improvements: [] }
-    };
-    let tableData = {
-      graduates: { last_year: {}, prev_year: {}, two_years_ago: {} },
-      research: {},
-      facilities: {},
-      proposals: [],
-      objectives: []
-    };
-    let missingFields = [];
-
-    // Default Config
-    const defaultConfig = {
-      app_title: 'الدراسة الذاتية',
-      primary_color: '#3b82f6',
-      secondary_surface: '#1e293b',
-      text_color: '#f1f5f9',
-      primary_action: '#3b82f6',
-      secondary_action: '#64748b'
-    };
-
-    // Element SDK Integration
-    if (window.elementSdk) {
-      window.elementSdk.init({
-        defaultConfig,
-        onConfigChange: async (config) => {
-          document.getElementById('app-title').textContent = config.app_title || defaultConfig.app_title;
-          document.documentElement.style.setProperty('--primary-action', config.primary_action || defaultConfig.primary_action);
-        },
-        mapToCapabilities: (config) => ({
-          recolorables: [
-            {
-              get: () => config.primary_action || defaultConfig.primary_action,
-              set: (value) => {
-                config.primary_action = value;
-                window.elementSdk.setConfig({ primary_action: value });
-              }
-            }
-          ],
-          borderables: [],
-          fontEditable: undefined,
-          fontSizeable: undefined
-        }),
-        mapToEditPanelValues: (config) => new Map([
-          ['app_title', config.app_title || defaultConfig.app_title]
-        ])
+    // formData starts from server-saved data, nested by section key
+    let formData = window.SAVED_FORM_DATA || {};
+    // Indicator scores: { indicatorId: score }
+    let scores = {};
+    // Populate scores from saved data
+    if (window.SAVED_SCORES) {
+      Object.entries(window.SAVED_SCORES).forEach(([id, score]) => {
+        if (score !== null && score !== undefined) scores[id] = parseInt(score);
       });
     }
-
-    // Data SDK Integration
-    let allData = [];
-
-    const dataHandler = {
-      onDataChanged(data) {
-        allData = data;
-        loadDataToUI(data);
-        updateProgress();
-      }
+    let standardComments = formData.standard_comments || {};
+    let section3Data = {
+      evaluations: { evaluation_procedures: [], evaluator_recommendations: [], actions_taken: [] },
+      results: { success_aspects: [], priority_improvements: [] }
     };
+    // Load from saved formData (handles both array and JSON-string formats)
+    function _parseS3Array(val) {
+      if (Array.isArray(val)) return val;
+      if (typeof val === 'string') { try { const p = JSON.parse(val); return Array.isArray(p) ? p : []; } catch(e) {} }
+      return [];
+    }
+    if (formData.evaluations) {
+      ['evaluation_procedures','evaluator_recommendations','actions_taken'].forEach(k => {
+        section3Data.evaluations[k] = _parseS3Array(formData.evaluations[k]);
+      });
+    }
+    if (formData.results) {
+      ['success_aspects','priority_improvements'].forEach(k => {
+        section3Data.results[k] = _parseS3Array(formData.results[k]);
+      });
+    }
+    let tableData = formData.tables || {
+      graduates: { last_year: {}, prev_year: {}, two_years_ago: {} },
+      research: {}, facilities: {}, proposals: [], objectives: []
+    };
+    if (!Array.isArray(tableData.objectives)) { tableData.objectives = formData.profile && formData.profile.program_objectives_list ? JSON.parse(formData.profile.program_objectives_list || '[]') : []; }
 
-    async function initDataSdk() {
-      if (window.dataSdk) {
-        const result = await window.dataSdk.init(dataHandler);
-        if (!result.isOk) {
-          console.error('Failed to initialize Data SDK');
-        }
-      }
+    let missingFields = [];
+
+    // ── Helper: set a nested formData field ──────────────────────────
+    function setField(section, key, value) {
+      if (!formData[section]) formData[section] = {};
+      formData[section][key] = value;
     }
 
-    initDataSdk();
+    // Keep legacy saveField calls working (section3, tables, etc.)
+    function saveField(section, key, value) {
+      setField(section, key, value);
+    }
 
     function loadDataToUI(data) {
       data.forEach(record => {
@@ -1420,166 +1514,26 @@
       currentTab = tabName;
     }
 
-    // Save Field
-    async function saveField(section, fieldKey, value) {
-      const existingRecord = allData.find(r => r.section === section && r.field_key === fieldKey);
-
-      showSavingIndicator();
-
-      if (window.dataSdk) {
-        if (existingRecord) {
-          const result = await window.dataSdk.update({
-            ...existingRecord,
-            field_value: value,
-            updated_at: new Date().toISOString()
-          });
-          if (!result.isOk) {
-            showToast('حدث خطأ أثناء الحفظ', 'error');
-          }
-        } else {
-          if (allData.length >= 999) {
-            showToast('تم الوصول للحد الأقصى من السجلات', 'error');
-            return;
-          }
-          const result = await window.dataSdk.create({
-            id: `${section}_${fieldKey}_${Date.now()}`,
-            section: section,
-            field_key: fieldKey,
-            field_value: value,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          });
-          if (!result.isOk) {
-            showToast('حدث خطأ أثناء الحفظ', 'error');
-          }
-        }
-      }
-
-      formData[`${section}_${fieldKey}`] = value;
-      updateProgress();
-      hideSavingIndicator();
+    // ── Helper: update progress (stub) ───────────────────────────────
+    function updateProgress() {
+      // Logic for calculating progress based on formData can be added here
     }
 
-    // Standard Accordion
-    function toggleStandard(standardNum) {
-      const content = document.getElementById(`standard-${standardNum}-content`);
-      const arrow = content.previousElementSibling.querySelector('.standard-arrow');
+    // Stub replaced below — kept for hoisting purposes
+    function renderObjectives() { _renderObjectives(); }
 
-      if (content.classList.contains('open')) {
-        content.classList.remove('open');
-        arrow.style.transform = 'rotate(0deg)';
-      } else {
-        content.classList.add('open');
-        arrow.style.transform = 'rotate(180deg)';
-      }
+    // ── Standard Comments Save Handlers ──────────────────────────────
+    function saveStdComment(standard, field, value) {
+      if (!standardComments[standard]) standardComments[standard] = {};
+      standardComments[standard][field] = value;
     }
 
-    // Rating System
-    function setRating(standard, indicator, rating) {
-      const key = `${standard}-${indicator}`;
-      ratings[key] = rating;
-
-      const container = document.querySelector(`[data-indicator="${key}"]`);
-      if (container) {
-        container.querySelectorAll('.rating-btn').forEach(btn => {
-          btn.classList.remove('selected');
-          const btnRating = parseInt(btn.dataset.rating);
-          if (btnRating === rating) {
-            btn.classList.add('selected');
-            btn.style.backgroundColor = getRatingColor(rating);
-          } else {
-            btn.style.backgroundColor = '';
-          }
-        });
-      }
-
-      updateStandardScore(standard);
-      saveField('ratings', key, rating.toString());
-    }
-
-    function getRatingColor(rating) {
-      const colors = {
-        0: '#312e81',
-        1: '#ef4444',
-        2: '#f97316',
-        3: '#eab308',
-        4: '#84cc16',
-        5: '#10b981'
-      };
-      return colors[rating] || '#64748b';
-    }
-
-    function updateStandardScore(standard) {
-      const standardRatings = Object.entries(ratings)
-        .filter(([key]) => key.startsWith(`${standard}-`))
-        .map(([, value]) => value);
-
-      if (standardRatings.length > 0) {
-        const avg = (standardRatings.reduce((a, b) => a + b, 0) / standardRatings.length).toFixed(1);
-        const scoreEl = document.getElementById(`standard-${standard}-score`);
-        if (scoreEl) {
-          scoreEl.textContent = avg;
-          scoreEl.className = `text-2xl font-bold ${avg >= 4 ? 'text-emerald-400' : avg >= 3 ? 'text-yellow-400' : 'text-red-600 dark:text-red-400'}`;
-        }
-      }
-    }
-
-    // Evidence System
-    let evidenceCounter = {};
-
-    function addEvidence(standard, indicator) {
-      const key = `${standard}-${indicator}`;
-      if (!evidenceCounter[key]) evidenceCounter[key] = 0;
-      evidenceCounter[key]++;
-
-      const container = document.getElementById(`evidences-${key}`);
-      const evidenceNum = evidenceCounter[key];
-      const evidenceId = `${evidenceNum}-${indicator}-${standard}`;
-
-      const row = document.createElement('div');
-      row.className = 'bg-slate-600/50 rounded-lg p-3 flex items-center gap-3';
-      row.id = `evidence-row-${evidenceId}`;
-      row.innerHTML = `
-        <span class="text-xs text-slate-400 whitespace-nowrap">دليل ${evidenceId}</span>
-        <input type="text" placeholder="اسم الدليل" class="flex-1 px-3 py-2 rounded-lg text-sm" onchange="updateEvidence('${key}', ${evidenceNum}, 'name', this.value)">
-        <label class="btn-secondary px-3 py-2 rounded-lg text-sm cursor-pointer flex items-center gap-2">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
-          </svg>
-          ملف
-          <input type="file" class="hidden" onchange="updateEvidence('${key}', ${evidenceNum}, 'file', this.files[0]?.name)">
-        </label>
-        <button onclick="removeEvidence('${key}', ${evidenceNum}, '${evidenceId}')" class="text-red-600 dark:text-red-400 hover:text-red-300 p-1">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-          </svg>
-        </button>
-      `;
-
-      container.appendChild(row);
-
-      if (!evidences[key]) evidences[key] = [];
-      evidences[key].push({ num: evidenceNum, name: '', file: '', note: '' });
-    }
-
-    function updateEvidence(key, num, field, value) {
-      if (evidences[key]) {
-        const evidence = evidences[key].find(e => e.num === num);
-        if (evidence) {
-          evidence[field] = value;
-        }
-      }
-    }
-
-    function removeEvidence(key, num, id) {
-      const row = document.getElementById(`evidence-row-${id}`);
-      if (row) {
-        row.style.opacity = '0';
-        row.style.transform = 'translateX(-20px)';
-        setTimeout(() => row.remove(), 300);
-      }
-      if (evidences[key]) {
-        evidences[key] = evidences[key].filter(e => e.num !== num);
+    function saveStandardComment(standard, field, value) {
+      if (!standardComments[standard]) standardComments[standard] = {};
+      try {
+        standardComments[standard][field] = JSON.parse(value);
+      } catch (e) {
+        standardComments[standard][field] = value;
       }
     }
 
@@ -1603,10 +1557,14 @@
     }
 
     function removeCommentPoint(standard, field, index) {
+      // Immediate deletion — committed to DB only on Save Draft
       if (standardComments[standard] && Array.isArray(standardComments[standard][field])) {
         standardComments[standard][field].splice(index, 1);
         renderCommentPoints(standard, field);
-        saveStandardComment(standard, field, JSON.stringify(standardComments[standard][field]));
+        if (!formData['standard_comments']) formData['standard_comments'] = {};
+        if (!formData['standard_comments'][standard]) formData['standard_comments'][standard] = {};
+        formData['standard_comments'][standard][field] = standardComments[standard][field];
+        hasChanges = true;
       }
     }
 
@@ -1627,12 +1585,14 @@
 
       if (points.length === 0) {
         container.innerHTML = `
-          <div class="py-4 text-center border border-dashed border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900/30 animate-fadeIn">
-            <p class="text-slate-500 text-xs italic">لا توجد نقاط مضافة لهذا القسم</p>
+          <div class="py-5 text-center border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900/20">
+            <i class="fas fa-inbox text-slate-300 dark:text-slate-600 text-2xl mb-2 block"></i>
+            <p class="text-slate-400 dark:text-slate-500 text-sm">لا توجد نقاط مضافة — اضغط &laquo;إضافة نقطة&raquo; للبدء</p>
           </div>
         `;
         return;
       }
+
 
       const colorMap = {
         'strengths': 'emerald',
@@ -1670,56 +1630,72 @@
 
     // Dynamic Objectives
     function addObjective() {
+      // Add a new empty objective and render — user fills it in, saved on input
       tableData.objectives.push('');
-      renderObjectives();
-      saveObjectives();
+      _renderObjectives();
+      // Don't save immediately with empty string — save happens on input change
     }
 
     function removeObjective(index) {
+      // Immediate deletion — committed to DB only on Save Draft
       if (tableData.objectives.length > 1) {
         tableData.objectives.splice(index, 1);
-        renderObjectives();
-        saveObjectives();
       } else {
-        showToast('يجب وجود هدف واحد على الأقل', 'error');
+        tableData.objectives[0] = '';
       }
+      _renderObjectives();
+      saveObjectives();
+      hasChanges = true;
     }
 
     function updateObjective(index, value) {
       tableData.objectives[index] = value;
-      // We don't re-render here to keep focus, but we save
       saveObjectives();
     }
 
     function saveObjectives() {
-      saveField('profile', 'program_objectives_list', JSON.stringify(tableData.objectives));
+      // Only persist non-empty entries
+      const nonEmpty = tableData.objectives.filter(o => o.trim() !== '');
+      saveField('profile', 'program_objectives_list', JSON.stringify(nonEmpty.length > 0 ? tableData.objectives : []));
     }
 
-    function renderObjectives() {
+    // Real render function — numbering OUTSIDE the input field
+    function _renderObjectives() {
       const container = document.getElementById('objectives-list-container');
       if (!container) return;
 
       if (tableData.objectives.length === 0) {
-        tableData.objectives.push('');
+        container.innerHTML = `
+          <div class="py-4 text-center border border-dashed border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900/30">
+            <p class="text-slate-500 text-xs italic">لا توجد أهداف مضافة بعد. انقر "إضافة هدف" للبدء.</p>
+          </div>
+        `;
+        return;
       }
 
       container.innerHTML = tableData.objectives.map((obj, index) => `
-        <div class="flex items-center gap-3 animate-slide-in">
-          <div class="flex-1 relative">
-            <span class="absolute right-4 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center bg-blue-500/20 text-blue-400 rounded-full text-xs">${index + 1}</span>
-            <input type="text" 
-                   value="${obj}" 
-                   placeholder="ادخل الهدف هنا..." 
-                   class="w-full pr-12 pl-4 py-3 rounded-xl bg-white dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-blue-500/50 appearance-none focus:outline-none text-slate-900 dark:text-white"
-                   onchange="updateObjective(${index}, this.value)">
-          </div>
-          <button onclick="removeObjective(${index})" class="p-3 text-slate-500 hover:text-red-600 dark:text-red-400 transition-colors bg-slate-100 dark:bg-slate-700/30 rounded-xl hover:bg-red-400/10">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        <div class="flex items-center gap-3 animate-slide-in" id="objective-row-${index}">
+          <div class="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-blue-500/20 text-blue-600 dark:text-blue-400 rounded-full text-sm font-bold">${index + 1}</div>
+          <input type="text"
+                 value="${(obj || '').replace(/"/g, '&quot;')}"
+                 placeholder="أدخل الهدف هنا..."
+                 class="flex-1 px-4 py-3 rounded-xl bg-white dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-blue-500/50 focus:outline-none text-slate-900 dark:text-white text-sm transition-all"
+                 oninput="updateObjective(${index}, this.value)">
+          <button onclick="removeObjective(${index})" title="حذف الهدف"
+                  class="flex-shrink-0 p-2.5 text-slate-400 hover:text-red-500 dark:text-slate-500 dark:hover:text-red-400 bg-slate-100 dark:bg-slate-700/30 rounded-xl hover:bg-red-50 dark:hover:bg-red-500/10 transition-all">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
             </svg>
           </button>
         </div>
       `).join('');
+
+      // Focus the last input if it's new and empty
+      const lastObj = tableData.objectives[tableData.objectives.length - 1];
+      if (lastObj === '') {
+        const lastInput = container.querySelector(`#objective-row-${tableData.objectives.length - 1} input`);
+        if (lastInput) setTimeout(() => lastInput.focus(), 50);
+      }
     }
 
     // Fixed Tables Update Logic
@@ -1797,35 +1773,50 @@
       }
     }
 
-    // Generic Remove Table Row
+    // Generic Remove Table Row — committed to DB only on Save Draft
     function removeTableRow(tableName, rowId) {
-      const prefix = tableName === 'graduates' ? 'graduate' : tableName === 'research' ? 'research' : tableName === 'facilities' ? 'facility' : 'proposal';
-      const row = document.getElementById(`${prefix}-row-${rowId}`);
+      const row = document.getElementById(`proposal-row-${rowId}`);
       if (row) {
         row.style.opacity = '0';
-        row.style.transform = 'translateX(-20px)';
-        row.style.transition = 'all 0.3s ease';
-        setTimeout(() => row.remove(), 300);
+        row.style.transform = 'translateX(10px)';
+        row.style.transition = 'all 0.25s ease';
+        setTimeout(() => row.remove(), 250);
       }
       tableData[tableName] = tableData[tableName].filter(r => r.id !== rowId);
+      hasChanges = true;
     }
 
     // Section 3 Lists
     function addSection3Point(section, field) {
+      // Ensure section3Data structure is always fully initialized
       if (!section3Data[section]) section3Data[section] = {};
-      if (!section3Data[section][field]) section3Data[section][field] = [];
+      if (!Array.isArray(section3Data[section][field])) {
+        section3Data[section][field] = [];
+      }
       section3Data[section][field].push('');
       renderSection3Points(section, field);
       saveSection3Field(section, field);
+      hasChanges = true;
+      // Focus the new input
+      setTimeout(() => {
+        const list = document.getElementById(`sec3-${section}-${field}-list`);
+        if (list) {
+          const inputs = list.querySelectorAll('input');
+          if (inputs.length) inputs[inputs.length - 1].focus();
+        }
+      }, 60);
     }
 
     function removeSection3Point(section, field, index) {
+      // Immediate deletion — committed to DB only on Save Draft
       if (section3Data[section] && Array.isArray(section3Data[section][field])) {
         section3Data[section][field].splice(index, 1);
         renderSection3Points(section, field);
         saveSection3Field(section, field);
+        hasChanges = true;
       }
     }
+
 
     function updateSection3Point(section, field, index, value) {
       if (section3Data[section] && Array.isArray(section3Data[section][field])) {
@@ -1835,7 +1826,10 @@
     }
 
     function saveSection3Field(section, field) {
-      saveField(section, field, JSON.stringify(section3Data[section][field]));
+      // Store as actual array in formData (not a JSON string)
+      // The full section3Data merge into formData happens at saveDraft time
+      if (!formData[section]) formData[section] = {};
+      formData[section][field] = section3Data[section][field];
     }
 
     function renderSection3Points(section, field) {
@@ -1846,36 +1840,37 @@
         ? section3Data[section][field]
         : [];
 
+      // Empty state — matches section 2 style
       if (points.length === 0) {
         container.innerHTML = `
-          <div class="py-4 text-center border border-dashed border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900/30 animate-fadeIn">
-            <p class="text-slate-500 text-xs italic">لا توجد نقاط مضافة لهذا القسم</p>
+          <div class="py-5 text-center border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-900/20">
+            <i class="fas fa-inbox text-slate-300 dark:text-slate-600 text-2xl mb-2 block"></i>
+            <p class="text-slate-400 dark:text-slate-500 text-sm">لا توجد نقاط مضافة بعد — اضغط &laquo;إضافة نقطة&raquo; للبدء</p>
           </div>
         `;
         return;
       }
 
-      const colors = {
-        'evaluation_procedures': 'blue',
-        'evaluator_recommendations': 'blue',
-        'actions_taken': 'blue',
-        'success_aspects': 'amber',
-        'priority_improvements': 'amber'
+      const colorMap = {
+        'evaluation_procedures':     { color: 'blue',    icon: 'fa-list-ul' },
+        'evaluator_recommendations': { color: 'blue',    icon: 'fa-clipboard-check' },
+        'actions_taken':             { color: 'blue',    icon: 'fa-reply' },
+        'success_aspects':           { color: 'emerald', icon: 'fa-check' },
+        'priority_improvements':     { color: 'amber',   icon: 'fa-arrow-up' },
       };
-      const color = colors[field] || 'slate';
+      const { color } = colorMap[field] || { color: 'slate' };
 
       container.innerHTML = points.map((point, index) => `
-        <div class="flex items-center gap-2 group animate-fadeIn mb-2">
-          <div class="flex-1 relative">
-            <span class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center bg-${color}-500/20 text-${color}-400 rounded-full text-[10px] font-bold">${index + 1}</span>
-            <input type="text" 
-                   value="${point.replace(/"/g, '&quot;')}" 
-                   placeholder="أدخل النقطة..." 
-                   class="w-full pr-10 pl-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/50 focus:border-${color}-500/50 focus:ring-1 focus:ring-${color}-500/30 text-sm text-slate-900 dark:text-white transition-all"
-                   onchange="updateSection3Point('${section}', '${field}', ${index}, this.value)">
-          </div>
-          <button onclick="removeSection3Point('${section}', '${field}', ${index})" 
-                  class="p-2.5 text-slate-500 hover:text-red-600 dark:text-red-400 bg-slate-100 dark:bg-slate-800 hover:bg-red-500/10 rounded-xl transition-all">
+        <div class="flex items-center gap-2 group animate-fadeIn">
+          <div class="flex-shrink-0 w-6 h-6 flex items-center justify-center bg-${color}-500/20 text-${color}-600 dark:text-${color}-400 rounded-full text-[10px] font-bold">${index + 1}</div>
+          <input type="text"
+                 value="${(point || '').replace(/"/g, '&quot;')}"
+                 placeholder="أدخل النقطة..."
+                 class="flex-1 px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/50 focus:border-${color}-500/50 focus:ring-1 focus:ring-${color}-500/30 text-sm text-slate-900 dark:text-white transition-all focus:outline-none"
+                 oninput="updateSection3Point('${section}', '${field}', ${index}, this.value)">
+          <button onclick="removeSection3Point('${section}', '${field}', ${index})"
+                  title="حذف"
+                  class="flex-shrink-0 p-2.5 text-slate-400 hover:text-red-500 dark:text-slate-500 dark:hover:text-red-400 bg-slate-100 dark:bg-slate-800 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl transition-all">
             <i class="fas fa-trash-alt text-xs"></i>
           </button>
         </div>
@@ -1937,9 +1932,283 @@
       }
     }
 
-    // Save Draft
-    function saveDraft() {
-      showToast('تم حفظ المسودة بنجاح');
+    // ── Save Draft (real Laravel POST) ──────────────────────────────
+    let hasChanges = false;
+
+    // ── Unsaved Changes Navigation Modal ─────────────────────────────
+    let _pendingNavigationHref = null;
+
+    function showUnsavedModal(href) {
+      _pendingNavigationHref = href;
+      const modal = document.getElementById('unsaved-modal');
+      modal.classList.remove('hidden');
+
+      document.getElementById('unsaved-save-btn').onclick = async () => {
+        closeUnsavedModal();
+        await saveDraft();
+        if (_pendingNavigationHref) window.location.href = _pendingNavigationHref;
+      };
+
+      document.getElementById('unsaved-leave-btn').onclick = () => {
+        hasChanges = false;
+        closeUnsavedModal();
+        if (_pendingNavigationHref) window.location.href = _pendingNavigationHref;
+      };
+    }
+
+    function closeUnsavedModal() {
+      document.getElementById('unsaved-modal').classList.add('hidden');
+      _pendingNavigationHref = null;
+    }
+
+    // Close unsaved modal on backdrop click
+    document.getElementById('unsaved-modal').addEventListener('click', function(e) {
+      if (e.target === this) closeUnsavedModal();
+    });
+
+    // Intercept all <a> link navigations (sidebar back links etc.)
+    document.addEventListener('click', function(e) {
+      const anchor = e.target.closest('a[href]');
+      if (!anchor) return;
+      const href = anchor.getAttribute('href');
+      if (!href || href === '#' || href.startsWith('javascript')) return;
+      if (hasChanges) {
+        e.preventDefault();
+        showUnsavedModal(anchor.href);
+      }
+    });
+
+    // Trap browser-level navigation (reload/tab close) — show custom modal via keyboard interception
+    // We still keep a minimal beforeunload, but also intercept F5/Ctrl+R to show our custom modal
+    window.addEventListener('beforeunload', (e) => {
+      if (hasChanges) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    });
+
+    // Intercept F5 / Ctrl+R / Ctrl+Shift+R to show the custom unsaved modal instead
+    document.addEventListener('keydown', (e) => {
+      if (!hasChanges) return;
+      const isReload = e.key === 'F5' ||
+        (e.ctrlKey && (e.key === 'r' || e.key === 'R')) ||
+        (e.metaKey && (e.key === 'r' || e.key === 'R'));
+      if (isReload) {
+        e.preventDefault();
+        showUnsavedModal(window.location.href);
+        // Override leave button to reload instead of navigate
+        document.getElementById('unsaved-leave-btn').onclick = () => {
+          hasChanges = false;
+          closeUnsavedModal();
+          window.location.reload();
+        };
+      }
+    });
+
+    // Capture changes on any input
+    document.addEventListener('input', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') {
+        hasChanges = true;
+      }
+    });
+
+    async function saveDraft() {
+      const btn = document.getElementById('save-draft-btn');
+      const icon = document.getElementById('save-draft-icon');
+      const text = document.getElementById('save-draft-text');
+
+      if (btn) {
+        btn.disabled = true;
+        icon.className = 'fa-solid fa-circle-notch fa-spin';
+        text.textContent = 'جاري الحفظ...';
+      }
+
+      showToast('جاري حفظ التغييرات...');
+
+      // Gather evidences from DOM
+      const evidencesPayload = {};
+      document.querySelectorAll('.indicator-row').forEach(row => {
+        const indId = row.dataset.indicatorId;
+        const evs = [];
+        row.querySelectorAll('.evidence-item').forEach(evLine => {
+          if (evLine.dataset.id) {
+            evs.push({ id: evLine.dataset.id, file_name: evLine.dataset.name });
+          } else if (evLine.dataset.tempPath) {
+            evs.push({ temp_path: evLine.dataset.tempPath, file_name: evLine.dataset.name });
+          }
+        });
+        if (evs.length > 0) {
+          evidencesPayload[indId] = evs;
+        }
+      });
+
+      // Merge section3 and tableData into formData before saving
+      formData['standard_comments'] = standardComments;
+      formData['evaluations'] = section3Data.evaluations;
+      formData['results'] = section3Data.results;
+      formData['tables'] = tableData;
+
+      const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
+      try {
+        const resp = await fetch(window.SAVE_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': csrfToken,
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({
+            form_data: formData,
+            scores: scores,
+            evidences: evidencesPayload
+          }),
+        });
+        const json = await resp.json();
+        if (json.success) {
+          hasChanges = false;
+          showToast('تم حفظ المسودة بنجاح', 'success');
+        } else {
+          showToast('حدث خطأ أثناء الحفظ', 'error');
+        }
+      } catch (e) {
+        showToast('تعذر الاتصال بالخادم', 'error');
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          icon.className = 'fa-solid fa-floppy-disk';
+          text.textContent = 'حفظ كمسودة';
+        }
+      }
+    }
+
+    // ── Helper: get Rating Color ─────────────────────────────────────
+    function getRatingColor(rating) {
+      const map = {
+        1: '#ef4444',
+        2: '#f97316',
+        3: '#eab308',
+        4: '#84cc16',
+        5: '#10b981',
+        0: '#312e81'
+      };
+      return map[rating] || '';
+    }
+
+    // ── Rating by Indicator ID (DB-based) ────────────────────────────
+    function setRatingById(indicatorId, standardId, rating) {
+      scores[indicatorId] = rating;
+
+      // Visual update
+      document.querySelectorAll(`[data-indicator-id="${indicatorId}"] .rating-btn`).forEach(btn => {
+        const btnRating = parseInt(btn.dataset.rating);
+        if (btnRating === rating) {
+          btn.style.backgroundColor = getRatingColor(rating);
+          btn.style.color = '#fff';
+        } else {
+          btn.style.backgroundColor = '';
+          btn.style.color = '';
+        }
+      });
+
+      // Recalculate standard average from this standard's indicators
+      updateStandardScoreById(standardId);
+    }
+
+    function updateStandardScoreById(standardId) {
+      // Collect all indicator IDs that belong to this standard's tab
+      const container = document.getElementById(`standard-${standardId}-tab-content`);
+      if (!container) return;
+      const indicatorEls = container.querySelectorAll('[data-indicator-id]');
+      const vals = [];
+      indicatorEls.forEach(el => {
+        const id = el.dataset.indicatorId;
+        if (scores[id] !== undefined) vals.push(scores[id]);
+      });
+      const scoreEl = document.getElementById(`standard-${standardId}-score`);
+      if (scoreEl && vals.length > 0) {
+        const avg = (vals.reduce((a, b) => a + b, 0) / vals.length).toFixed(1);
+        scoreEl.textContent = avg;
+        scoreEl.className = `text-3xl font-bold ${avg >= 4 ? 'text-emerald-400' : avg >= 3 ? 'text-yellow-400' : 'text-red-400'}`;
+      } else if (scoreEl) {
+        scoreEl.textContent = '—';
+      }
+    }
+
+    // ── Evidence Upload ───────────────────────────────────────────────
+    async function uploadEvidence(input, indicatorId, evalId) {
+      const file = input.files[0];
+      if (!file) return;
+
+      const fileName = prompt('أدخل اسم الدليل (وصف الملف):');
+      if (!fileName) { input.value = ''; return; }
+
+      const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('file_name', fileName);
+      fd.append('_token', csrfToken);
+
+      showToast('جاري رفع الملف في الخلفية...');
+
+      try {
+        const resp = await fetch(window.UPLOAD_BASE, {
+          method: 'POST',
+          headers: { 'X-CSRF-TOKEN': csrfToken },
+          body: fd,
+        });
+        const json = await resp.json();
+        if (json.success) {
+          appendEvidenceRow(indicatorId, { temp_path: json.temp_path, file_name: json.file_name });
+          hasChanges = true;
+          showToast('تم الرفع للذاكرة المؤقتة!', 'success');
+        } else {
+          showToast('فشل رفع الملف', 'error');
+        }
+      } catch (e) {
+        showToast('تعذر الاتصال بالخادم', 'error');
+      }
+      input.value = '';
+    }
+
+    function appendEvidenceRow(indicatorId, evidence) {
+      const container = document.getElementById(`evidences-ind-${indicatorId}`);
+      if (!container) return;
+      
+      const rowId = evidence.id ? `evidence-saved-${evidence.id}` : `evidence-temp-${Date.now()}`;
+      
+      const row = document.createElement('div');
+      row.className = 'evidence-item bg-slate-100 dark:bg-slate-700 rounded-lg p-3 flex items-center gap-3';
+      row.id = rowId;
+      
+      if (evidence.id) {
+        row.dataset.id = evidence.id;
+      } else {
+        row.dataset.tempPath = evidence.temp_path;
+      }
+      row.dataset.name = evidence.file_name;
+      
+      row.innerHTML = `
+        <i class="fas fa-file-pdf text-red-500"></i>
+        <span class="flex-1 text-sm text-slate-800 dark:text-white truncate">${evidence.file_name}</span>
+        <button onclick="removeEvidenceRow('${rowId}')" class="text-red-600 dark:text-red-400 hover:text-red-300 p-1" title="حذف">
+          <i class="fas fa-trash-alt text-xs"></i>
+        </button>
+      `;
+      container.appendChild(row);
+    }
+
+    function removeEvidenceRow(rowId) {
+      // Immediate deletion — committed to DB only on Save Draft
+      const row = document.getElementById(rowId);
+      if (row) {
+        row.style.opacity = '0';
+        row.style.transform = 'translateX(10px)';
+        row.style.transition = 'all 0.25s ease';
+        setTimeout(() => row.remove(), 250);
+        hasChanges = true;
+        showToast('تم حذف الملف — سيُطبَّق عند حفظ المسودة', 'info');
+      }
     }
 
     // Submit Report
@@ -2066,29 +2335,30 @@
       }
     }
 
-    // Toast Notifications
-    function showToast(message, type = 'success') {
-      const toast = document.getElementById('toast');
-      const icon = document.getElementById('toast-icon');
-      const msg = document.getElementById('toast-message');
-
-      msg.textContent = message;
-
-      if (type === 'error') {
-        icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>';
-        icon.classList.remove('text-emerald-400');
-        icon.classList.add('text-red-600 dark:text-red-400');
-      } else {
-        icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>';
-        icon.classList.remove('text-red-600 dark:text-red-400');
-        icon.classList.add('text-emerald-400');
-      }
-
-      toast.classList.remove('translate-y-20', 'opacity-0');
-
+    // Show notification (Stage 2 style)
+    function showNotification(message, type = 'info') {
+      const colors = {
+        success: 'bg-emerald-600',
+        error: 'bg-red-600',
+        info: 'bg-blue-600'
+      };
+      const area = document.getElementById('notificationArea');
+      if (!area) return;
+      const el = document.createElement('div');
+      el.className = `${colors[type] || colors.info} text-white px-5 py-3 rounded-xl shadow-lg text-sm font-bold flex items-center gap-2 animate-slide-in`;
+      const icons = { success: 'fa-circle-check', error: 'fa-circle-xmark', info: 'fa-circle-info' };
+      el.innerHTML = `<i class="fa-solid ${icons[type] || icons.info}"></i> ${message}`;
+      area.appendChild(el);
       setTimeout(() => {
-        toast.classList.add('translate-y-20', 'opacity-0');
+        el.style.opacity = '0';
+        el.style.transition = 'opacity 0.3s';
+        setTimeout(() => el.remove(), 300);
       }, 3000);
+    }
+
+    // Replace showToast calls with showNotification compatibility wrapper
+    function showToast(message, type = 'success') {
+      showNotification(message, type === 'success' ? 'success' : (type === 'error' ? 'error' : 'info'));
     }
 
     // Saving Indicator
@@ -2106,21 +2376,166 @@
       }, 500);
     }
 
-    // Initialize
-    updateProgress();
-    renderObjectives();
+    // ── Initialize from saved data ─────────────────────────────────
+    (function initFromSaved() {
+      // Apply saved scores visually
+      Object.entries(scores).forEach(([indId, score]) => {
+        if (score === null || score === undefined) return;
+        document.querySelectorAll(`[data-indicator-id="${indId}"] .rating-btn`).forEach(btn => {
+          const btnRating = parseInt(btn.dataset.rating);
+          if (btnRating === parseInt(score)) {
+            btn.style.backgroundColor = getRatingColor(parseInt(score));
+            btn.style.color = '#fff';
+          }
+        });
+      });
 
-    // Initial render for Standard 1 comments
-    ['strengths', 'improvements', 'priorities', 'independent_opinion'].forEach(field => {
-      renderCommentPoints(1, field);
-    });
+      // Load standard comments from saved formData
+      const savedComments = formData['standard_comments'] || {};
+      Object.assign(standardComments, savedComments);
 
-    ['evaluation_procedures', 'evaluator_recommendations', 'response_mechanism', 'actions_taken'].forEach(field => {
-      renderSection3Points('evaluations', field);
-    });
-    ['success_aspects', 'priority_improvements'].forEach(field => {
-      renderSection3Points('results', field);
-    });
+      // section3Data is already loaded at declaration time using _parseS3Array
+
+
+      // Load tables data from saved formData
+      if (formData['tables']) {
+        const ft = formData['tables'];
+        if (ft['graduates']) Object.assign(tableData.graduates, ft['graduates']);
+        if (ft['research']) Object.assign(tableData.research, ft['research']);
+        if (ft['facilities']) Object.assign(tableData.facilities, ft['facilities']);
+        if (Array.isArray(ft['proposals'])) tableData.proposals = ft['proposals'];
+        if (Array.isArray(ft['objectives'])) tableData.objectives = ft['objectives'];
+      }
+
+      // Fill Section 1 simple text inputs from saved formData
+      ['review_team_head','review_date'].forEach(key => {
+        const el = document.getElementById(key);
+        if (el && formData['general'] && formData['general'][key] != null) el.value = formData['general'][key];
+      });
+      ['coordinator_name','coordinator_title','coordinator_email','coordinator_phone','report_date'].forEach(key => {
+        const el = document.getElementById(key);
+        if (el && formData['program'] && formData['program'][key] != null) el.value = formData['program'][key];
+      });
+      // NOTE: program_mission and other textareas that are server-rendered don't need re-hydration here.
+      // But we still do it for fields like selects and number inputs.
+      ['program_system','credit_hours','courses_total','male_students_count',
+       'female_students_count','dept_council_date','college_council_date','academic_council_date',
+       'university_council_date','program_history','env_changes','self_study_arrangements','comparison_methodology'
+      ].forEach(key => {
+        const el = document.getElementById(key);
+        if (el && formData['profile'] && formData['profile'][key] != null) el.value = formData['profile'][key];
+      });
+
+      // ── Populate saved graduates table inputs ──────────────────────
+      const gradYears = ['last_year', 'prev_year', 'two_years_ago'];
+      const gradGrades = ['excellent', 'very_good', 'good', 'pass', 'fail'];
+      gradYears.forEach(rowKey => {
+        // Year display label
+        const yearInput = document.querySelector(`[data-row-group="${rowKey}"] input[type="text"]`);
+        if (yearInput && tableData.graduates[rowKey] && tableData.graduates[rowKey]['year_display']) {
+          yearInput.value = tableData.graduates[rowKey]['year_display'];
+        }
+        // Also check for ft_graduates_ROWKEY_year_display stored in formData.tables flat
+        if (yearInput && formData['tables'] && formData['tables'][`ft_graduates_${rowKey}_year_display`]) {
+          yearInput.value = formData['tables'][`ft_graduates_${rowKey}_year_display`];
+        }
+        // Grade counts
+        const rowEl = document.querySelector(`[data-row-group="${rowKey}"]`);
+        if (rowEl) {
+          const inputs = rowEl.querySelectorAll('input[type="number"]');
+          gradGrades.forEach((grade, gi) => {
+            // Check nested object first
+            let val = tableData.graduates[rowKey] && tableData.graduates[rowKey][grade];
+            // Fallback: flat key in formData.tables
+            if ((val === undefined || val === null) && formData['tables']) {
+              val = formData['tables'][`ft_graduates_${rowKey}_${grade}`];
+            }
+            if (val != null && inputs[gi]) {
+              inputs[gi].value = val;
+              // Trigger total recalculation
+              updateFixedTable('graduates', rowKey, grade, val);
+            }
+          });
+        }
+      });
+
+      // ── Populate saved research table inputs ───────────────────────
+      const researchKeys = ['intl_journals_indexed','arabic_journals_reviewed','local_journals_reviewed',
+        'faculty_publications','faculty_textbooks','faculty_translated_books',
+        'master_theses_discussed','phd_dissertations_discussed','conferences_workshops_organized'];
+      researchKeys.forEach((key, i) => {
+        // flat key: res_KEY_count stored in formData.tables
+        const val = formData['tables'] && formData['tables'][`res_${key}_count`];
+        if (val != null) {
+          const input = document.querySelector(`#research-table tr:nth-child(${i + 1}) input`);
+          if (input) input.value = val;
+        }
+      });
+
+      // ── Populate saved facilities table inputs ─────────────────────
+      const facilityKeys = ['classrooms','spec_labs','comp_labs','library','admin_offices','student_lounges','sports','others'];
+      const facilityFields = ['count','area','students','hours'];
+      facilityKeys.forEach((fKey, ri) => {
+        facilityFields.forEach((field, fi) => {
+          const val = formData['tables'] && formData['tables'][`fac_${fKey}_${field}`];
+          if (val != null) {
+            const input = document.querySelector(`#facilities-table tr:nth-child(${ri + 1}) td:nth-child(${fi + 2}) input`);
+            if (input) input.value = val;
+          }
+        });
+      });
+
+      // ── Render Objectives ──────────────────────────────────────────
+      // Load objectives from the profile section if stored there (backward compat)
+      if (tableData.objectives.length === 0 && formData['profile'] && formData['profile']['program_objectives_list']) {
+        try { tableData.objectives = JSON.parse(formData['profile']['program_objectives_list']); } catch(e) {}
+      }
+      _renderObjectives();
+
+      // ── Render Section 3 lists ─────────────────────────────────────
+      ['evaluation_procedures', 'evaluator_recommendations', 'actions_taken'].forEach(field => {
+        renderSection3Points('evaluations', field);
+      });
+      ['success_aspects', 'priority_improvements'].forEach(field => {
+        renderSection3Points('results', field);
+      });
+
+      // ── Render standard comment lists for all standards ────────────
+      document.querySelectorAll('[id^="std-"][id$="-strengths-list"]').forEach(el => {
+        const parts = el.id.split('-');
+        const stdId = parts[1];
+        ['strengths','improvements','priorities'].forEach(field => renderCommentPoints(stdId, field));
+      });
+
+      // ── Render saved proposal rows ─────────────────────────────────
+      if (Array.isArray(tableData.proposals) && tableData.proposals.length > 0) {
+        const tbody = document.getElementById('proposals-table');
+        if (tbody) {
+          tableData.proposals.forEach(proposal => {
+            const rowId = proposal.id || Date.now();
+            const row = document.createElement('tr');
+            row.className = 'border-b border-slate-200 dark:border-slate-700';
+            row.id = `proposal-row-${rowId}`;
+            row.innerHTML = `
+              <td class="py-3 px-4"><input type="text" placeholder="التوصية" class="w-full px-3 py-2 rounded-lg" value="${(proposal.recommendation || '').replace(/"/g,'&quot;')}" oninput="updateProposalRow(${rowId}, 'recommendation', this.value)"></td>
+              <td class="py-3 px-4"><input type="text" placeholder="المسؤول" class="w-full px-3 py-2 rounded-lg" value="${(proposal.responsible || '').replace(/"/g,'&quot;')}" oninput="updateProposalRow(${rowId}, 'responsible', this.value)"></td>
+              <td class="py-3 px-4"><input type="date" class="w-full px-3 py-2 rounded-lg" value="${proposal.timeline || ''}" oninput="updateProposalRow(${rowId}, 'timeline', this.value)"></td>
+              <td class="py-3 px-4"><input type="text" placeholder="الموارد" class="w-full px-3 py-2 rounded-lg" value="${(proposal.resources || '').replace(/"/g,'&quot;')}" oninput="updateProposalRow(${rowId}, 'resources', this.value)"></td>
+              <td class="py-3 px-4">
+                <button onclick="removeTableRow('proposals', ${rowId})" class="text-red-600 dark:text-red-400 hover:text-red-300">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                  </svg>
+                </button>
+              </td>
+            `;
+            tbody.appendChild(row);
+          });
+        }
+      }
+    })();
+
+    // All rendering is now handled inside initFromSaved above.
   </script>
   <script>(function () { function c() { var b = a.contentDocument || a.contentWindow.document; if (b) { var d = b.createElement('script'); d.innerHTML = "window.__CF$cv$params={r:'9c162da1c32df9ec',t:'MTc2ODk5MTg2Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);"; b.getElementsByTagName('head')[0].appendChild(d) } } if (document.body) { var a = document.createElement('iframe'); a.height = 1; a.width = 1; a.style.position = 'absolute'; a.style.top = 0; a.style.left = 0; a.style.border = 'none'; a.style.visibility = 'hidden'; document.body.appendChild(a); if ('loading' !== document.readyState) c(); else if (window.addEventListener) document.addEventListener('DOMContentLoaded', c); else { var e = document.onreadystatechange || function () { }; document.onreadystatechange = function (b) { e(b); 'loading' !== document.readyState && (document.onreadystatechange = e, c()) } } } })();</script>
   <script>(function () { function c() { var b = a.contentDocument || a.contentWindow.document; if (b) { var d = b.createElement('script'); d.innerHTML = "window.__CF$cv$params={r:'9d7c102002e55456',t:'MTc3Mjc0NDU2MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);"; b.getElementsByTagName('head')[0].appendChild(d) } } if (document.body) { var a = document.createElement('iframe'); a.height = 1; a.width = 1; a.style.position = 'absolute'; a.style.top = 0; a.style.left = 0; a.style.border = 'none'; a.style.visibility = 'hidden'; document.body.appendChild(a); if ('loading' !== document.readyState) c(); else if (window.addEventListener) document.addEventListener('DOMContentLoaded', c); else { var e = document.onreadystatechange || function () { }; document.onreadystatechange = function (b) { e(b); 'loading' !== document.readyState && (document.onreadystatechange = e, c()) } } } })();</script>

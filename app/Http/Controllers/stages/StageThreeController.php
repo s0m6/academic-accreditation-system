@@ -4,19 +4,21 @@ namespace App\Http\Controllers\stages;
 
 use App\Http\Controllers\Controller;
 use App\Models\AccreditationRequest;
+use App\Models\Evidence;
 use App\Models\FormSubmission;
+use App\Models\Indicator;
 use App\Models\IndicatorEvaluation;
+use App\Models\Standard;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * Controller for handling Accreditation Stage Three (Self-Study Report).
  */
 class StageThreeController extends Controller
 {
-    /**
-     * Create a new draft form submission for stage three with 50 indicator evaluations.
-     */
+    // Create a new draft form submission for stage three with all indicator evaluations.
     public function createDraft(Request $request, AccreditationRequest $accreditationRequest)
     {
         $user = $request->user();
@@ -45,15 +47,8 @@ class StageThreeController extends Controller
             return back()->with('error', 'يوجد مسودة بالفعل يمكنك التعديل عليها.');
         }
 
-        // Check if there's a previously rejected submission to copy its data
-        $lastRejected = $accreditationRequest->formSubmissions()
-            ->where('stage', 'stage_three')
-            ->where('status', 'rejected')
-            ->latest('id')
-            ->first();
-
-        // Create draft and 50 indicator evaluations atomically
-        $formSubmission = DB::transaction(function () use ($accreditationRequest, $user) {
+        // Create draft and indicator evaluations atomically
+        DB::transaction(function () use ($accreditationRequest, $user) {
             // Create the stage three draft submission
             $formSubmission = FormSubmission::create([
                 'accreditation_request_id' => $accreditationRequest->id,
@@ -67,30 +62,226 @@ class StageThreeController extends Controller
                 'decision_reasons' => null,
             ]);
 
-            // Create 50 indicator evaluation rows linked to this draft
+            // Create indicator evaluation rows linked to this draft for all existing indicators
+            $indicatorIds = Indicator::pluck('id');
             $evaluations = [];
-            for ($i = 1; $i <= 50; $i++) {
+            foreach ($indicatorIds as $indicatorId) {
                 $evaluations[] = [
                     'form_submission_id' => $formSubmission->id,
-                    'indicator_id' => $i,
+                    'indicator_id' => $indicatorId,
                     'score' => null,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ];
             }
-            IndicatorEvaluation::insert($evaluations);
 
-            return $formSubmission;
+            if (! empty($evaluations)) {
+                IndicatorEvaluation::insert($evaluations);
+            }
         });
 
         return back()->with('success', 'تم إنشاء مسودة جديدة بنجاح.');
     }
 
-    /**
-     * Ensure the submission belongs to the correct request and the user is authorized.
-     */
-    private function ensureAuthorized(Request $request, AccreditationRequest $accreditationRequest): void
+    // Show the stage three edit form, loading all required data.
+    public function edit(Request $request, AccreditationRequest $accreditationRequest, FormSubmission $formSubmission)
     {
+        $this->ensureAuthorized($request, $accreditationRequest, $formSubmission);
+
+        // Load the accreditation request hierarchy for program info
+        $accreditationRequest->loadMissing('program.department.college.university');
+        $program = $accreditationRequest->program;
+        $dept = $program->department;
+        $college = $dept->college;
+        $univ = $college->university;
+        $details = $program->program_details ?? [];
+
+        // Build the program info block for the view
+        $programInfo = [
+            'university_name' => $univ->name,
+            'university_president' => $univ->president_name,
+            'college_name' => $college->name,
+            'department_name' => $dept->name,
+            'program_name' => $program->program_name,
+            'degree_level' => $program->degree_level,
+            'website_url' => $details['website_url'] ?? '',
+            'establishment_date' => $details['establishment_date'] ?? '',
+        ];
+
+        // Load all 7 standards with their sub-standards and indicators
+        $standards = Standard::with(['subStandards.indicators'])
+            ->orderBy('id')
+            ->get();
+
+        // Load all indicator evaluations for this submission (keyed by indicator_id)
+        $indicatorEvaluations = $formSubmission->indicatorEvaluations()
+            ->with('evidences')
+            ->get()
+            ->keyBy('indicator_id');
+
+        // Build indicator scores map: indicator_id => score
+        $indicatorScores = $indicatorEvaluations->map(fn ($ie) => $ie->score);
+
+        // Build evidences map: indicator_evaluation_id => [evidence, ...]
+        $evidencesByEvalId = $indicatorEvaluations->mapWithKeys(function ($ie) {
+            return [$ie->id => $ie->evidences];
+        });
+
+        // Build a map: indicator_id => indicator_evaluation_id (needed for evidence upload route)
+        $evalIdByIndicatorId = $indicatorEvaluations->map(fn ($ie) => $ie->id);
+
+        // Current saved form_data (null on first open)
+        $formData = $formSubmission->form_data ?? [];
+
+        return view('requests.stageThreeForm', compact(
+            'accreditationRequest',
+            'formSubmission',
+            'programInfo',
+            'standards',
+            'indicatorScores',
+            'evidencesByEvalId',
+            'evalIdByIndicatorId',
+            'formData'
+        ));
+    }
+
+    // Save the stage three draft: form_data JSON + indicator scores.
+    public function saveDraft(Request $request, AccreditationRequest $accreditationRequest, FormSubmission $formSubmission)
+    {
+        $user = $request->user();
+        if ($user->role !== 'program_coordinator' || $formSubmission->status !== 'draft') {
+            return response()->json(['success' => false, 'message' => 'Unauthorized or non-draft state'], 403);
+        }
+        $this->ensureAuthorized($request, $accreditationRequest, $formSubmission);
+
+        // Decode the main form data payload
+        $formInput = $request->input('form_data', []);
+        $jsonData = is_string($formInput) ? (json_decode($formInput, true) ?? []) : $formInput;
+
+        // Decode and save indicator scores
+        $scoresInput = $request->input('scores', []);
+        $scores = is_string($scoresInput) ? (json_decode($scoresInput, true) ?? []) : $scoresInput;
+
+        // Find relevant evaluations for evidence mapping
+        $indicatorEvaluations = $formSubmission->indicatorEvaluations()->get()->keyBy('indicator_id');
+
+        // Decode and process submitted evidences
+        $evidencesInput = $request->input('evidences', []);
+        $submittedEvidences = is_string($evidencesInput) ? (json_decode($evidencesInput, true) ?? []) : $evidencesInput;
+
+        $submittedEvidenceIds = [];
+
+        // Perform updates and deletions inside a transaction
+        DB::transaction(function () use ($accreditationRequest, $formSubmission, $scores, $indicatorEvaluations, $submittedEvidences, &$submittedEvidenceIds, $jsonData) {
+            // Save indicator scores
+            foreach ($scores as $indicatorId => $score) {
+                IndicatorEvaluation::where('form_submission_id', $formSubmission->id)
+                    ->where('indicator_id', (int) $indicatorId)
+                    ->update(['score' => $score === '' || $score === null ? null : (int) $score]);
+            }
+
+            // Process submitted evidences
+            foreach ($submittedEvidences as $indicatorId => $evs) {
+                $ie = $indicatorEvaluations->get($indicatorId);
+                if (! $ie) {
+                    continue;
+                }
+
+                foreach ($evs as $evData) {
+                    if (! empty($evData['id'])) {
+                        // Existing evidence, keep it
+                        $existing = Evidence::where('id', $evData['id'])
+                            ->where('indicator_evaluation_id', $ie->id)
+                            ->first();
+                        if ($existing) {
+                            $submittedEvidenceIds[] = $existing->id;
+                        }
+                    } elseif (! empty($evData['temp_path']) && ! empty($evData['file_name'])) {
+                        // New evidence from temp - Use 'local' disk explicitly
+                        if (Storage::disk('local')->exists($evData['temp_path']) && str_starts_with($evData['temp_path'], 'temp_files/')) {
+                            $extension = pathinfo($evData['temp_path'], PATHINFO_EXTENSION);
+                            // Save into req_{id}/stagethree/ with unique name
+                            $newPath = "req_{$accreditationRequest->id}/stagethree/".uniqid('ev_').'_'.time().'.'.$extension;
+
+                            // Ensure destination directory exists on local disk
+                            Storage::disk('local')->makeDirectory("req_{$accreditationRequest->id}/stagethree");
+                            Storage::disk('local')->move($evData['temp_path'], $newPath);
+
+                            $newEv = Evidence::create([
+                                'indicator_evaluation_id' => $ie->id,
+                                'file_name' => $evData['file_name'],
+                                'file_path' => $newPath,
+                            ]);
+                            $submittedEvidenceIds[] = $newEv->id;
+                        }
+                    }
+                }
+            }
+
+            // Find and delete removed evidences
+            $allCurrentEvidenceIds = Evidence::whereIn('indicator_evaluation_id', $indicatorEvaluations->pluck('id'))
+                ->pluck('id')
+                ->toArray();
+
+            $toDeleteIds = array_diff($allCurrentEvidenceIds, $submittedEvidenceIds);
+
+            if (! empty($toDeleteIds)) {
+                $toDelete = Evidence::whereIn('id', $toDeleteIds)->get();
+                foreach ($toDelete as $ev) {
+                    if (! Evidence::where('id', '!=', $ev->id)->where('file_path', $ev->file_path)->exists()) {
+                        Storage::disk('local')->delete($ev->file_path);
+                    }
+                    $ev->delete();
+                }
+            }
+
+            // Persist the form_data
+            $formSubmission->update(['form_data' => $jsonData]);
+        });
+
+        return response()->json(['success' => true, 'message' => 'تم حفظ المسودة بنجاح']);
+    }
+
+    // Upload an individual evidence file asynchronously to a temporary location.
+    public function uploadEvidenceTemp(Request $request, AccreditationRequest $accreditationRequest, FormSubmission $formSubmission)
+    {
+        $user = $request->user();
+        if ($user->role !== 'program_coordinator' || $formSubmission->status !== 'draft') {
+            return response()->json(['success' => false, 'message' => 'Unauthorized or non-draft state'], 403);
+        }
+        $this->ensureAuthorized($request, $accreditationRequest, $formSubmission);
+
+        $request->validate([
+            'file' => 'required|file|mimes:pdf|max:10240',
+        ]);
+
+        $file = $request->file('file');
+        // Store in temporary folder immediately so if user leaves without saving, the actual DB isn't updated
+        $path = $file->storeAs(
+            'temp_files',
+            'temp_'.uniqid().'_'.time().'.'.$file->getClientOriginalExtension(),
+            'local'
+        );
+
+        return response()->json([
+            'success' => true,
+            'temp_path' => $path,
+            'file_name' => $request->input('file_name', $file->getClientOriginalName()),
+        ]);
+    }
+
+    // Ensure the submission belongs to the correct request and the user is authorized.
+    private function ensureAuthorized(Request $request, AccreditationRequest $accreditationRequest, ?FormSubmission $formSubmission = null): void
+    {
+        if ($formSubmission) {
+            if ($formSubmission->accreditation_request_id !== $accreditationRequest->id) {
+                abort(404);
+            }
+            if ($formSubmission->stage !== 'stage_three') {
+                abort(404);
+            }
+        }
+
         $user = $request->user();
         if ($user->role === 'program_coordinator' && $accreditationRequest->program_coord_id !== $user->id) {
             abort(403, 'غير مصرح لك بإدارة هذا الطلب.');

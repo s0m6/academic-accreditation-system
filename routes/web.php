@@ -93,8 +93,12 @@ Route::middleware('auth')->group(function () {
     // Stage Three actions
     Route::post('/requests/{accreditationRequest}/stage-three/draft', [StageThreeController::class, 'createDraft'])
         ->name('requests.stage_three.draft');
-
-    // Direct route to the stage three form view
+    Route::get('/requests/{accreditationRequest}/stage-three/{formSubmission}/edit', [StageThreeController::class, 'edit'])
+        ->name('requests.stage_three.edit');
+    Route::post('/requests/{accreditationRequest}/stage-three/{formSubmission}/save', [StageThreeController::class, 'saveDraft'])
+        ->name('requests.stage_three.save');
+    Route::post('/requests/{accreditationRequest}/stage-three/{formSubmission}/upload-evidence-temp', [StageThreeController::class, 'uploadEvidenceTemp'])
+        ->name('requests.stage_three.upload_evidence_temp');
 
 });
-    Route::view('test3', 'requests.stageThreeForm')->name('requests.stage_three.form_preview');
+Route::view('test3', 'requests.stageThreeForm')->name('requests.stage_three.form_preview');
