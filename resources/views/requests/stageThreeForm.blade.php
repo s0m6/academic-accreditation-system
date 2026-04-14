@@ -69,27 +69,11 @@ function ratingColor($rating) {
     :root {
       /* Light Mode - Neutral & Professional */
       --primary-bg: #f8fafc;
-      --secondary-surface: #ffffff;
-      --text-main: #0f172a;
-      --text-muted: #64748b;
-      --primary-action: #2563eb;
-      --border-base: #e2e8f0;
-      --bg-input: #ffffff;
-      --border-input: #cbd5e1;
-      --text-input: #0f172a;
     }
 
     .dark {
       /* Dark Mode - Deep Indigo / Slate */
       --primary-bg: #020617;
-      --secondary-surface: #0f172a;
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
-      --primary-action: #3b82f6;
-      --border-base: #1e293b;
-      --bg-input: #1e293b;
-      --border-input: #334155;
-      --text-input: #f1f5f9;
     }
 
     .custom-scrollbar::-webkit-scrollbar {
@@ -105,152 +89,55 @@ function ratingColor($rating) {
       border-radius: 10px;
     }
 
-    .sidebar-item {
-      transition: all 0.3s ease;
-      position: relative;
-    }
 
-    .sidebar-item::before {
-      content: '';
-      position: absolute;
-      right: 0;
-      top: 0;
-      bottom: 0;
-      width: 4px;
-      background: var(--primary-action);
-      transform: scaleY(0);
-      transition: transform 0.3s ease;
-    }
-
-    .sidebar-item.active::before {
-      transform: scaleY(1);
-    }
-
-    .accordion-content {
-      max-height: 0;
-      overflow: hidden;
-      transition: max-height 0.4s ease;
-    }
-
-    .accordion-content.open {
-      max-height: 10000px;
-    }
-
-    .tab-indicator {
-      transition: all 0.3s ease;
-    }
 
     .fade-in {
       animation: fadeIn 0.4s ease;
     }
 
+    .slide-in {
+      animation: slideIn 0.3s ease-out;
+    }
+
+    /* Global Input Styling to ensure clear borders */
+    input:not([type="checkbox"]):not([type="radio"]):not(.bg-transparent),
+    textarea:not(.bg-transparent),
+    select:not(.bg-transparent) {
+      background-color: #ffffff;
+      border: 1px solid #cbd5e1 !important; /* slate-300 */
+      border-radius: 0.75rem;
+      color: #0f172a;
+      outline: none;
+      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .dark input:not([type="checkbox"]):not([type="radio"]):not(.bg-transparent),
+    .dark textarea:not(.bg-transparent),
+    .dark select:not(.bg-transparent) {
+      background-color: #020617;
+      border: 1px solid #334155 !important; /* slate-700 / border-input equivalent */
+      color: #f8fafc;
+    }
+
+    input:focus:not(.bg-transparent), 
+    textarea:focus:not(.bg-transparent), 
+    select:focus:not(.bg-transparent) {
+      border-color: #3b82f6 !important;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
     @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(10px);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
-    .card-hover {
-      transition: all 0.3s ease;
-    }
-
-    .card-hover:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-    }
-
-    .rating-btn {
-      transition: all 0.2s ease;
-    }
-
-    .rating-btn:hover {
-      transform: scale(1.1);
-    }
-
-    .rating-btn.selected {
-      box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
-      border-color: var(--primary-action) !important;
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(15px); }
+      to { opacity: 1; transform: translateX(0); }
     }
 
 
-
-    input,
-    textarea,
-    select {
-      background: var(--bg-input) !important;
-      border: 1px solid var(--border-input) !important;
-      color: var(--text-input) !important;
-    }
-
-    input:focus,
-    textarea:focus,
-    select:focus {
-      border-color: var(--primary-action) !important;
-      outline: none !important;
-      box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1) !important;
-      transform: translateY(-1px);
-    }
-
-    .glass {
-      background: rgba(255, 255, 255, 0.7);
-      backdrop-filter: blur(10px);
-    }
-
-    .dark .glass {
-      background: rgba(15, 23, 42, 0.7);
-      backdrop-filter: blur(10px);
-    }
-
-    .progress-ring {
-      transform: rotate(-90deg);
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-      transition: all 0.3s ease;
-    }
-
-    .btn-primary:hover:not(:disabled) {
-      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-      transform: translateY(-1px);
-    }
-
-    .btn-secondary {
-      background: #e2e8f0;
-      color: #334155;
-      transition: all 0.3s ease;
-    }
-
-    .btn-secondary:hover {
-      background: #cbd5e1;
-    }
-
-    .dark .btn-secondary {
-      background: #475569;
-      color: #f1f5f9;
-    }
-
-    .dark .btn-secondary:hover {
-      background: #64748b;
-    }
-
-    .indicator-row {
-      transition: all 0.3s ease;
-    }
-
-    .indicator-row:hover {
-      background: rgba(71, 85, 105, 0.1);
-    }
-
-    .dark .indicator-row:hover {
-      background: rgba(71, 85, 105, 0.3);
-    }
   </style>
 
 
@@ -277,20 +164,7 @@ function ratingColor($rating) {
           </div>
         </div>
 
-      </div>{{-- Progress Overview --}}
-      <div class="p-4 border-b border-slate-100 dark:border-slate-800">
-        <div class="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4 border border-slate-100 dark:border-slate-800">
-          <div class="flex items-center justify-between mb-3"><span
-              class="text-sm text-slate-600 dark:text-slate-400">نسبة الإنجاز</span>
-            <span id="progress-percent" class="text-lg font-bold text-blue-600 dark:text-blue-400">0%</span>
-          </div>
-          <div class="h-2 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
-            <div id="progress-bar"
-              class="h-full bg-gradient-to-l from-blue-600 to-blue-400 rounded-full transition-all duration-500"
-              style="width: 0%"></div>
-          </div>
-        </div>
-      </div>
+
       {{-- Navigation --}}
       <nav class="flex-1 py-4 overflow-y-auto custom-scrollbar">
         <div class="px-3 mb-2"><span class="text-xs text-slate-500 font-medium px-3">أقسام الدراسة الذاتية</span>
@@ -304,7 +178,6 @@ function ratingColor($rating) {
           <div class="flex-1"><span class="block font-medium text-slate-800 dark:text-white">الجزء الأول</span> <span
               class="text-xs text-slate-700 dark:text-slate-300">بيانات البرنامج</span>
           </div>
-          <div id="status-1" class="w-3 h-3 rounded-full bg-yellow-500"></div>
         </button>
         {{-- Part 2 --}}
         <button onclick="switchSection(2); switchStandardTab(1)" id="nav-2"
@@ -328,7 +201,6 @@ function ratingColor($rating) {
             <span class="block font-medium">الجزء الثالث</span> <span class="text-xs text-slate-700 dark:text-slate-300">التقييمات
               والنتائج</span>
           </div>
-          <div id="status-3" class="w-2.5 h-2.5 rounded-full bg-slate-300 dark:bg-slate-700"></div>
         </button>
       </nav>
       {{-- Sidebar Footer --}}
@@ -361,15 +233,15 @@ function ratingColor($rating) {
           <button onclick="switchTab('general')"
             class="tab-btn active px-6 py-2.5 rounded-xl text-sm font-semibold transition-all bg-blue-600 text-white shadow-md shadow-blue-500/20"
             data-tab="general"> معلومات عامة </button> <button onclick="switchTab('program')"
-            class="tab-btn px-6 py-2.5 rounded-xl text-sm font-semibold transition-all text-slate-700 dark:text-slate-300 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50"
+            class="tab-btn px-6 py-2.5 rounded-xl text-sm font-semibold transition-all text-slate-700 dark:text-slate-300  hover:bg-slate-100 dark:hover:bg-slate-700/50"
             data-tab="program"> بيانات تعريفية بالبرنامج </button> <button onclick="switchTab('profile')"
-            class="tab-btn px-6 py-2.5 rounded-xl text-sm font-semibold transition-all text-slate-700 dark:text-slate-300 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50"
+            class="tab-btn px-6 py-2.5 rounded-xl text-sm font-semibold transition-all text-slate-700 dark:text-slate-300  hover:bg-slate-100 dark:hover:bg-slate-700/50"
             data-tab="profile"> ملف البرنامج </button> <button onclick="switchTab('tables')"
-            class="tab-btn px-6 py-2.5 rounded-xl text-sm font-semibold transition-all text-slate-700 dark:text-slate-300 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50"
+            class="tab-btn px-6 py-2.5 rounded-xl text-sm font-semibold transition-all text-slate-700 dark:text-slate-300  hover:bg-slate-100 dark:hover:bg-slate-700/50"
             data-tab="tables"> الجداول والبيانات </button>
         </div>
         {{--! Tab Contents --}}
-        <div id="tab-general" class="tab-content">
+        <div id="tab-general" class="tab-content fade-in">
           <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-xl dark:shadow-slate-900/50">
             <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-6 flex items-center gap-2">
               <svg class="w-5 h-5 text-blue-500 dark:text-blue-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
@@ -401,7 +273,7 @@ function ratingColor($rating) {
             </div>
           </div>
         </div>
-        <div id="tab-program" class="tab-content hidden">
+        <div id="tab-program" class="tab-content hidden fade-in">
           <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-xl">
             <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
               <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
@@ -438,10 +310,11 @@ function ratingColor($rating) {
             <div class="space-y-6">
               <div><label class="block text-sm text-slate-700 dark:text-slate-300 mb-2">الملخص التنفيذي للنتيجة الإجمالية لتقييم معايير
                   الاعتماد البرامجي <span class="text-red-600 dark:text-red-400">*</span></label>
-                <textarea id="executive_summary" rows="6"
+                <textarea id="executive_summary"
                   placeholder="اكتب ملخصاً تنفيذياً شاملاً يتضمن النتيجة الإجمالية، جوانب القوة، وجوانب التحسين..."
-                  class="w-full px-4 py-3 rounded-xl resize-none"
-                  onchange="setField('program', 'executive_summary', this.value)">{{ $formData['program']['executive_summary'] ?? '' }}</textarea>
+                  class="w-full px-4 py-3 rounded-xl resize-none overflow-hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white text-sm"
+                  oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'; setField('program', 'executive_summary', this.value)"
+                  onfocus="this.style.height = ''; this.style.height = this.scrollHeight + 'px'">{{ $formData['program']['executive_summary'] ?? '' }}</textarea>
                 <p class="text-xs text-slate-500 mt-2">يجب أن يتضمن: النتيجة الإجمالية، جوانب القوة، وجوانب التحسين</p>
               </div>
               <div>
@@ -482,7 +355,7 @@ function ratingColor($rating) {
             </div>
           </div>
         </div>
-        <div id="tab-profile" class="tab-content hidden">
+        <div id="tab-profile" class="tab-content hidden fade-in">
           <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-xl">
             <h3 class="text-lg font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
               <svg class="w-5 h-5 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
@@ -492,11 +365,11 @@ function ratingColor($rating) {
             </h3>
             <div class="space-y-6">
               <div class="space-y-8">
-                <div><label class="block text-sm text-slate-700 dark:text-slate-300 mb-2">رسالة البرنامج <span
-                      class="text-red-600 dark:text-red-400">*</span></label> <textarea id="program_mission" rows="4"
-                    placeholder="اكتب رسالة البرنامج بوضوح..." class="w-full px-4 py-3 rounded-xl resize-none"
-                    onchange="saveField('profile', 'program_mission', this.value)">{{ $formData['profile']['program_mission'] ?? '' }}</textarea>
-                </div>
+                  <textarea id="program_mission"
+                    placeholder="اكتب رسالة البرنامج بوضوح..." 
+                    class="w-full px-4 py-3 rounded-xl resize-none overflow-hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white text-sm"
+                    oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'; saveField('profile', 'program_mission', this.value)"
+                    onfocus="this.style.height = ''; this.style.height = this.scrollHeight + 'px'">{{ $formData['profile']['program_mission'] ?? '' }}</textarea>
 
                 {{--! Dynamic Objectives --}}
                 <div class="pt-6 border-t border-slate-200 dark:border-slate-700">
@@ -606,15 +479,16 @@ function ratingColor($rating) {
                   </h4>
                   <div class="space-y-6">
                     <div><label class="block text-sm text-slate-700 dark:text-slate-300 mb-2">موجز عن تاريخ البرنامج</label>
-                      <textarea id="program_history" rows="4" placeholder="اكتب موجز تاريخ البرنامج هنا..."
-                        class="w-full px-4 py-3 rounded-xl resize-none bg-slate-100 dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-                        onchange="saveField('profile', 'program_history', this.value)"></textarea>
+                      <textarea id="program_history" placeholder="اكتب موجز تاريخ البرنامج هنا..."
+                        class="w-full px-4 py-3 rounded-xl resize-none overflow-hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white text-sm"
+                        oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'; saveField('profile', 'program_history', this.value)"
+                        onfocus="this.style.height = ''; this.style.height = this.scrollHeight + 'px'">{{ $formData['profile']['program_history'] ?? '' }}</textarea>
                     </div>
-                    <div><label class="block text-sm text-slate-700 dark:text-slate-300 mb-2">التغيرات في البيئة الداخلية والخارجية
-                        للبرنامج</label>
-                      <textarea id="env_changes" rows="4" placeholder="اكتب التغيرات هنا..."
-                        class="w-full px-4 py-3 rounded-xl resize-none bg-slate-100 dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-                        onchange="saveField('profile', 'env_changes', this.value)"></textarea>
+                    <div><label class="block text-sm text-slate-700 dark:text-slate-300 mb-2">التغيرات في البيئة الداخلية والخارجية للبرنامج</label>
+                      <textarea id="env_changes" placeholder="اكتب التغيرات هنا..."
+                        class="w-full px-4 py-3 rounded-xl resize-none overflow-hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white text-sm"
+                        oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'; saveField('profile', 'env_changes', this.value)"
+                        onfocus="this.style.height = ''; this.style.height = this.scrollHeight + 'px'">{{ $formData['profile']['env_changes'] ?? '' }}</textarea>
                     </div>
                   </div>
                 </div>
@@ -645,7 +519,7 @@ function ratingColor($rating) {
           </div>
         </div>
 
-        <div id="tab-tables" class="tab-content hidden">
+        <div id="tab-tables" class="tab-content hidden fade-in">
           {{--! Graduates Table (3 years) --}}
           <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-xl mb-6">
             <div class="flex items-center justify-between mb-6">
@@ -868,21 +742,26 @@ function ratingColor($rating) {
 
               {{-- Standard Header --}}
               <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-xl mb-8 border-r-4 border-emerald-500">
-                <div class="flex items-center justify-between">
-                  <div>
+                <div class="flex flex-col md:flex-row items-start justify-between gap-6">
+                  <div class="flex-1 min-w-0">
                     <h2 class="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
-                      <div class="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center text-emerald-400 font-bold text-xl">{{ $std->number }}</div>
-                      المعيار {{ $std->number }}: {{ $std->name }}
+                      <div class="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center text-emerald-400 flex-shrink-0 font-bold text-xl">{{ $std->number }}</div>
+                      <span class="leading-tight">المعيار {{ $std->number }}: {{ $std->name }}</span>
                     </h2>
                     @if($std->description)
-                      <p class="text-slate-700 dark:text-slate-300 text-sm mt-2">{{ $std->description }}</p>
+                      <div class="max-w-3xl mt-4">
+                        <p class="text-slate-700 dark:text-slate-300 text-sm leading-relaxed border-r-2 border-emerald-500/20 pr-4">
+                          {{ $std->description }}
+                        </p>
+                      </div>
                     @endif
                   </div>
-                  <div class="text-left bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
-                    <span class="block text-xs text-slate-700 dark:text-slate-300 mb-1 text-center">متوسط التقييم</span>
-                    <div class="flex items-center justify-center gap-1">
-                      <span id="standard-{{ $std->id }}-score" class="text-3xl font-bold text-emerald-400">—</span>
-                      <span class="text-slate-500 text-lg">/5</span>
+                  
+                  <div class="flex-shrink-0 w-full md:w-auto bg-slate-50 dark:bg-slate-900/50 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <span class="block text-[10px] font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2 text-center">متوسط تقييم المعيار</span>
+                    <div class="flex items-center justify-center gap-2">
+                      <span id="standard-{{ $std->id }}-score" class="text-4xl font-black text-emerald-500 dark:text-emerald-400">—</span>
+                      <span class="text-slate-400 dark:text-slate-600 font-bold text-xl">/5</span>
                     </div>
                   </div>
                 </div>
@@ -892,7 +771,7 @@ function ratingColor($rating) {
               <div class="space-y-8">
                 @foreach($std->subStandards as $sub)
                   <div class="bg-white/80 dark:bg-slate-800/80 rounded-2xl shadow-lg border border-slate-200 dark:border-slate-700/50">
-                    <div class="bg-slate-100 dark:bg-slate-700/30 p-4 border-b border-slate-200 dark:border-slate-700/50 flex items-center justify-between">
+                    <div class="bg-slate-50 dark:bg-slate-700/30 p-4 border-b border-slate-200 dark:border-slate-700/50 flex items-center justify-between">
                       <div class="flex items-center gap-3 flex-1 min-w-0 pr-2">
                         <span class="px-3 py-1 bg-emerald-500/20 text-emerald-400 rounded-lg font-bold text-sm whitespace-nowrap">{{ $sub->number }}</span>
                         <h3 class="font-bold text-lg text-slate-700 dark:text-slate-300 truncate">{{ $sub->name }}</h3>
@@ -929,7 +808,7 @@ function ratingColor($rating) {
                           data-eval-id="{{ $evalId }}">
                           <div class="flex items-start justify-between mb-5">
                             <div class="flex-1 border-r-4 border-blue-500 pr-3">
-                              <span class="text-xs text-blue-500 font-bold tracking-wider">مؤشر {{ $sub->number }}-{{ $loop->iteration }}</span>
+                              <span class="text-xs text-blue-500 font-bold tracking-wider">مؤشر <span dir="ltr" class="inline-block">{{ $ind->number }}</span></span>
                               <p class="text-slate-800 dark:text-slate-100 mt-2 font-medium leading-relaxed">{{ $ind->name }}</p>
                             </div>
                           </div>
@@ -964,9 +843,12 @@ function ratingColor($rating) {
                               </label>
                               {{-- Upload new evidence trigger --}}
                               @if($evalId)
-                                <button onclick="prepareEvidenceRow({{ $ind->id }}, {{ $evalId }})" class="text-blue-600 dark:text-blue-400 text-xs font-bold flex items-center gap-1.5 hover:text-blue-700 dark:hover:text-blue-300 bg-blue-50 dark:bg-blue-900/20 py-1.5 px-3 rounded-lg transition-colors">
+                                <button id="upload-btn-{{ $ind->id }}" onclick="prepareEvidenceRow({{ $ind->id }}, {{ $evalId }})" class="text-blue-600 dark:text-blue-400 text-xs font-bold flex items-center gap-1.5 hover:text-blue-700 dark:hover:text-blue-300 bg-blue-50 dark:bg-blue-900/20 py-1.5 px-3 rounded-lg transition-colors {{ $savedScore === 0 ? 'hidden' : '' }}">
                                   <i class="fas fa-plus"></i> إرفاق دليل جديد
                                 </button>
+                                <div id="non-compliant-msg-{{ $ind->id }}" class="text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/50 px-3 py-1.5 rounded-lg flex items-center gap-1.5 {{ $savedScore === 0 ? '' : 'hidden' }}">
+                                   <i class="fas fa-info-circle text-slate-400"></i> لا يتطلب إرفاق أدلة في حال عدم المطابقة
+                                </div>
                               @endif
                             </div>
 
@@ -986,13 +868,13 @@ function ratingColor($rating) {
                                   </div>
                                   <span class="flex-1 text-sm font-medium text-slate-800 dark:text-slate-200 truncate" title="{{ $ev->file_name }}">{{ $ev->file_name }}</span>
                                   
-                                  <div class="flex items-center gap-1">
-                                    <a href="/stage-three/view-file?path={{ urlencode($ev->file_path) }}" target="_blank" class="text-blue-500 hover:text-blue-700 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 w-8 h-8 flex items-center justify-center rounded-lg transition-colors" title="عرض الدليل">
-                                      <i class="fas fa-external-link-alt text-xs"></i>
+                                  <div class="flex items-center gap-2">
+                                    <a href="/stage-three/view-file?path={{ urlencode($ev->file_path) }}" target="_blank" class="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40 rounded-lg transition-all border border-blue-200/50 dark:border-blue-800/30" title="عرض الدليل">
+                                      <i class="fas fa-eye"></i> عرض
                                     </a>
                                     <button onclick="removeEvidenceRow('evidence-saved-{{ $ev->id }}')"
-                                      class="text-red-500 hover:text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 w-8 h-8 flex items-center justify-center rounded-lg transition-colors" title="حذف">
-                                      <i class="fas fa-trash-alt text-xs"></i>
+                                      class="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 rounded-lg transition-all border border-red-200/50 dark:border-red-800/30" title="حذف">
+                                      <i class="fas fa-trash-alt"></i> حذف
                                     </button>
                                   </div>
                                 </div>
@@ -1019,9 +901,10 @@ function ratingColor($rating) {
                     <label class="block text-sm font-medium text-slate-800 dark:text-slate-200">تعليق البرنامج</label>
                   </div>
                   <div class="p-6">
-                    <textarea rows="3" placeholder="أدخل تعليق البرنامج على هذا المعيار..."
-                      class="w-full px-4 py-3 rounded-xl resize-none bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white text-sm"
-                      onchange="saveStdComment({{ $std->id }}, 'program_comment', this.value)">{{ $formData['standard_comments'][$std->id]['program_comment'] ?? '' }}</textarea>
+                    <textarea placeholder="أدخل تعليق البرنامج على هذا المعيار..."
+                      class="w-full px-4 py-3 rounded-xl resize-none overflow-hidden bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white text-sm"
+                      oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'; saveStdComment({{ $std->id }}, 'program_comment', this.value)"
+                      onfocus="this.style.height = ''; this.style.height = this.scrollHeight + 'px'">{{ $formData['standard_comments'][$std->id]['program_comment'] ?? '' }}</textarea>
                   </div>
                 </div>
                 {{-- Strengths --}}
@@ -1374,85 +1257,7 @@ function ratingColor($rating) {
       setField(section, key, value);
     }
 
-    function loadDataToUI(data) {
-      data.forEach(record => {
-        const fieldId = record.field_key;
-
-        // Handle fixed tables
-        if (fieldId.startsWith('fixed_table_')) {
-          const parts = fieldId.split('__');
-          if (parts.length === 3) {
-            const [_, tableName, rowKey, field] = [parts[0], parts[1], parts[2], parts[3] || 'value']; // Simplified
-            // This logic will be handled specifically in updateFixedTable-like style but for loading
-            // For now, let's look for actual inputs
-            const input = document.querySelector(`[data-table="${parts[1]}"][data-row="${parts[2]}"][data-field="${parts[3]}"]`);
-            if (input) input.value = record.field_value;
-            return;
-          }
-        }
-
-        // Handle dynamic objectives
-        if (fieldId === 'program_objectives_list') {
-          const list = JSON.parse(record.field_value || '[]');
-          tableData.objectives = list;
-          renderObjectives();
-          return;
-        }
-
-        const element = document.getElementById(fieldId);
-        if (element) {
-          if (element.type === 'radio') {
-            const radio = document.querySelector(`input[name="${fieldId}"][value="${record.field_value}"]`);
-            if (radio) radio.checked = true;
-          } else {
-            element.value = record.field_value;
-          }
-        }
-        formData[`${record.section}_${record.field_key}`] = record.field_value;
-
-        // Handle standard comments data
-        if (record.section === 'standard_comments') {
-          const parts = record.field_key.split('_');
-          const std = parts[0];
-          const field = parts.slice(1).join('_');
-          if (!standardComments[std]) standardComments[std] = {};
-          
-          try {
-            standardComments[std][field] = (record.field_value && record.field_value.startsWith('[')) 
-              ? JSON.parse(record.field_value) 
-              : record.field_value;
-          } catch(e) {
-            standardComments[std][field] = record.field_value;
-          }
-        }
-
-        // Handle section3 lists
-        if (['evaluations', 'results'].includes(record.section) && section3Data[record.section]?.[record.field_key] !== undefined) {
-          try {
-            section3Data[record.section][record.field_key] = (record.field_value && record.field_value.startsWith('[')) 
-              ? JSON.parse(record.field_value) 
-              : (record.field_value ? [record.field_value] : []);
-          } catch(e) {
-            section3Data[record.section][record.field_key] = record.field_value ? [record.field_value] : [];
-          }
-        }
-      });
-
-      // Render standard comments after data is loaded
-      ['strengths', 'improvements', 'priorities', 'independent_opinion'].forEach(field => {
-        renderCommentPoints(1, field);
-      });
-      
-      // Render Section 3 lists
-      ['evaluation_procedures', 'evaluator_recommendations', 'response_mechanism', 'actions_taken'].forEach(field => {
-        renderSection3Points('evaluations', field);
-      });
-      ['success_aspects', 'priority_improvements'].forEach(field => {
-        renderSection3Points('results', field);
-      });
-    }
-
-    // Dropdown Functions (Removed based on new Tab design requirements)
+    // Standard Tabs and Navigation
     let selectedStandard = 1;
 
     function switchStandardTab(standardNum) {
@@ -1528,16 +1333,6 @@ function ratingColor($rating) {
       standardComments[standard][field] = value;
     }
 
-    function saveStandardComment(standard, field, value) {
-      if (!standardComments[standard]) standardComments[standard] = {};
-      try {
-        standardComments[standard][field] = JSON.parse(value);
-      } catch (e) {
-        standardComments[standard][field] = value;
-      }
-    }
-
-    // Standard Comments
     // Standard Comments Point System
     function addCommentPoint(standard, field) {
       if (!standardComments[standard]) standardComments[standard] = {};
@@ -1603,17 +1398,17 @@ function ratingColor($rating) {
       const color = colorMap[field] || 'slate';
 
       container.innerHTML = points.map((point, index) => `
-        <div class="flex items-center gap-2 group animate-fadeIn">
+        <div class="flex items-start gap-2 group fade-in">
           <div class="flex-1 relative">
-            <span class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center bg-${color}-500/20 text-${color}-400 rounded-full text-[10px] font-bold">${index + 1}</span>
-            <input type="text" 
-                   value="${point.replace(/"/g, '&quot;')}" 
-                   placeholder="أدخل النقطة..." 
-                   class="w-full pr-10 pl-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/50 focus:border-${color}-500/50 focus:ring-1 focus:ring-${color}-500/30 text-sm text-slate-900 dark:text-white transition-all"
-                   onchange="updateCommentPoint(${standard}, '${field}', ${index}, this.value)">
+            <span class="absolute right-3 top-3 w-5 h-5 flex items-center justify-center bg-${color}-500/20 text-${color}-400 rounded-full text-[10px] font-bold z-10">${index + 1}</span>
+            <textarea placeholder="أدخل النقطة..." 
+                   class="w-full pr-10 pl-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/50 focus:border-${color}-500/50 focus:ring-1 focus:ring-${color}-500/30 text-sm text-slate-900 dark:text-white transition-all resize-none overflow-hidden"
+                   rows="1"
+                   oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'; updateCommentPoint(${standard}, '${field}', ${index}, this.value)"
+                   onfocus="this.style.height = ''; this.style.height = this.scrollHeight + 'px'">${point.replace(/"/g, '&quot;')}</textarea>
           </div>
           <button onclick="removeCommentPoint(${standard}, '${field}', ${index})" 
-                  class="p-2.5 text-slate-500 hover:text-red-600 dark:text-red-400 bg-slate-100 dark:bg-slate-800 hover:bg-red-500/10 rounded-xl transition-all">
+                  class="p-2.5 text-slate-500 hover:text-red-600 dark:text-red-400 bg-slate-100 dark:bg-slate-800 hover:bg-red-500/10 rounded-xl transition-all mt-1">
             <i class="fas fa-trash-alt text-xs"></i>
           </button>
         </div>
@@ -1674,15 +1469,15 @@ function ratingColor($rating) {
       }
 
       container.innerHTML = tableData.objectives.map((obj, index) => `
-        <div class="flex items-center gap-3 animate-slide-in" id="objective-row-${index}">
-          <div class="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-blue-500/20 text-blue-600 dark:text-blue-400 rounded-full text-sm font-bold">${index + 1}</div>
-          <input type="text"
-                 value="${(obj || '').replace(/"/g, '&quot;')}"
-                 placeholder="أدخل الهدف هنا..."
-                 class="flex-1 px-4 py-3 rounded-xl bg-white dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-blue-500/50 focus:outline-none text-slate-900 dark:text-white text-sm transition-all"
-                 oninput="updateObjective(${index}, this.value)">
+        <div class="flex items-start gap-3 slide-in" id="objective-row-${index}">
+          <div class="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-blue-500/20 text-blue-600 dark:text-blue-400 rounded-full text-sm font-bold mt-2">${index + 1}</div>
+          <textarea placeholder="أدخل الهدف هنا..."
+                 class="flex-1 px-4 py-3 rounded-xl bg-white dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-blue-500/50 focus:outline-none text-slate-900 dark:text-white text-sm transition-all resize-none overflow-hidden"
+                 rows="1"
+                 oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'; updateObjective(${index}, this.value)"
+                 onfocus="this.style.height = ''; this.style.height = this.scrollHeight + 'px'"> ${(obj || '').replace(/"/g, '&quot;')}</textarea>
           <button onclick="removeObjective(${index})" title="حذف الهدف"
-                  class="flex-shrink-0 p-2.5 text-slate-400 hover:text-red-500 dark:text-slate-500 dark:hover:text-red-400 bg-slate-100 dark:bg-slate-700/30 rounded-xl hover:bg-red-50 dark:hover:bg-red-500/10 transition-all">
+                  class="flex-shrink-0 p-2.5 text-slate-400 hover:text-red-500 dark:text-slate-500 dark:hover:text-red-400 bg-slate-100 dark:bg-slate-700/30 rounded-xl hover:bg-red-50 dark:hover:bg-red-500/10 transition-all mt-1">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
             </svg>
@@ -1749,15 +1544,13 @@ function ratingColor($rating) {
       row.className = 'border-b border-slate-200 dark:border-slate-700';
       row.id = `proposal-row-${rowId}`;
       row.innerHTML = `
-        <td class="py-3 px-4"><input type="text" placeholder="التوصية" class="w-full px-3 py-2 rounded-lg" onchange="updateProposalRow(${rowId}, 'recommendation', this.value)"></td>
-        <td class="py-3 px-4"><input type="text" placeholder="المسؤول" class="w-full px-3 py-2 rounded-lg" onchange="updateProposalRow(${rowId}, 'responsible', this.value)"></td>
-        <td class="py-3 px-4"><input type="date" class="w-full px-3 py-2 rounded-lg" onchange="updateProposalRow(${rowId}, 'timeline', this.value)"></td>
-        <td class="py-3 px-4"><input type="text" placeholder="الموارد" class="w-full px-3 py-2 rounded-lg" onchange="updateProposalRow(${rowId}, 'resources', this.value)"></td>
-        <td class="py-3 px-4">
+        <td class="py-3 px-4"><textarea placeholder="التوصية" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm resize-none overflow-hidden" rows="1" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'; updateProposalRow(${rowId}, 'recommendation', this.value)"></textarea></td>
+        <td class="py-3 px-4"><textarea placeholder="المسؤول" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm resize-none overflow-hidden" rows="1" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'; updateProposalRow(${rowId}, 'responsible', this.value)"></textarea></td>
+        <td class="py-3 px-4"><input type="date" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm" onchange="updateProposalRow(${rowId}, 'timeline', this.value)"></td>
+        <td class="py-3 px-4"><textarea placeholder="الموارد" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm resize-none overflow-hidden" rows="1" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'; updateProposalRow(${rowId}, 'resources', this.value)"></textarea></td>
+        <td class="py-3 px-4 text-center">
           <button onclick="removeTableRow('proposals', ${rowId})" class="text-red-600 dark:text-red-400 hover:text-red-300">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-            </svg>
+            <i class="fas fa-trash-alt"></i>
           </button>
         </td>
       `;
@@ -1861,16 +1654,16 @@ function ratingColor($rating) {
       const { color } = colorMap[field] || { color: 'slate' };
 
       container.innerHTML = points.map((point, index) => `
-        <div class="flex items-center gap-2 group animate-fadeIn">
-          <div class="flex-shrink-0 w-6 h-6 flex items-center justify-center bg-${color}-500/20 text-${color}-600 dark:text-${color}-400 rounded-full text-[10px] font-bold">${index + 1}</div>
-          <input type="text"
-                 value="${(point || '').replace(/"/g, '&quot;')}"
-                 placeholder="أدخل النقطة..."
-                 class="flex-1 px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/50 focus:border-${color}-500/50 focus:ring-1 focus:ring-${color}-500/30 text-sm text-slate-900 dark:text-white transition-all focus:outline-none"
-                 oninput="updateSection3Point('${section}', '${field}', ${index}, this.value)">
+        <div class="flex items-start gap-2 group animate-fadeIn">
+          <div class="flex-shrink-0 w-6 h-6 flex items-center justify-center bg-${color}-500/20 text-${color}-600 dark:text-${color}-400 rounded-full text-[10px] font-bold mt-2.5">${index + 1}</div>
+          <textarea placeholder="أدخل النقطة..."
+                 class="flex-1 px-4 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/50 focus:border-${color}-500/50 focus:ring-1 focus:ring-${color}-500/30 text-sm text-slate-900 dark:text-white transition-all focus:outline-none resize-none overflow-hidden"
+                 rows="1"
+                 oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'; updateSection3Point('${section}', '${field}', ${index}, this.value)"
+                 onfocus="this.style.height = ''; this.style.height = this.scrollHeight + 'px'">${(point || '').replace(/"/g, '&quot;')}</textarea>
           <button onclick="removeSection3Point('${section}', '${field}', ${index})"
                   title="حذف"
-                  class="flex-shrink-0 p-2.5 text-slate-400 hover:text-red-500 dark:text-slate-500 dark:hover:text-red-400 bg-slate-100 dark:bg-slate-800 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl transition-all">
+                  class="flex-shrink-0 p-2.5 text-slate-400 hover:text-red-500 dark:text-slate-500 dark:hover:text-red-400 bg-slate-100 dark:bg-slate-800 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl transition-all mt-1">
             <i class="fas fa-trash-alt text-xs"></i>
           </button>
         </div>
@@ -1895,8 +1688,10 @@ function ratingColor($rating) {
 
       const percent = Math.round((filled / requiredFields.length) * 100);
 
-      document.getElementById('progress-percent').textContent = `${percent}%`;
-      document.getElementById('progress-bar').style.width = `${percent}%`;
+      const percentEl = document.getElementById('progress-percent');
+      const progressBar = document.getElementById('progress-bar');
+      if (percentEl) percentEl.textContent = `${percent}%`;
+      if (progressBar) progressBar.style.width = `${percent}%`;
 
       // Update section statuses
       const section1Fields = requiredFields.filter(f => f.startsWith('general_') || f.startsWith('program_') || f.startsWith('profile_'));
@@ -2120,6 +1915,24 @@ function ratingColor($rating) {
           btn.style.transform = '';
         }
       });
+      
+      // Handle evidence attachment visibility for non-compliant (0)
+      const uploadBtn = document.getElementById(`upload-btn-${indicatorId}`);
+      const nonCompliantMsg = document.getElementById(`non-compliant-msg-${indicatorId}`);
+      if (uploadBtn && nonCompliantMsg) {
+        if (rating === 0) {
+          uploadBtn.classList.add('hidden');
+          nonCompliantMsg.classList.remove('hidden');
+          // Clear any pending/naming rows for this indicator
+          const container = document.getElementById(`evidences-ind-${indicatorId}`);
+          if (container) {
+            container.querySelectorAll('.evidence-pending').forEach(p => p.remove());
+          }
+        } else {
+          uploadBtn.classList.remove('hidden');
+          nonCompliantMsg.classList.add('hidden');
+        }
+      }
 
       // Recalculate standard average from this standard's indicators
       updateStandardScoreById(standardId);
@@ -2186,7 +1999,7 @@ function ratingColor($rating) {
       const pendingId = `pending-${Date.now()}`;
       const row = document.createElement('div');
       row.id = pendingId;
-      row.className = 'evidence-pending bg-blue-50/50 dark:bg-blue-900/10 border-2 border-dashed border-blue-300 dark:border-blue-700/50 rounded-xl p-3 flex flex-col sm:flex-row items-center gap-3 animate-fadeIn mb-2';
+      row.className = 'evidence-pending bg-blue-50/50 dark:bg-blue-900/10 border-2 border-dashed border-blue-300 dark:border-blue-700/50 rounded-xl p-3 flex flex-col sm:flex-row items-center gap-3 fade-in mb-2';
       row.innerHTML = `
         <div class="flex-1 w-full relative">
             <input type="text" placeholder="اسم الدليل (مثال: محضر اجتماع 1)" class="ev-name-input w-full px-4 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 outline-none transition-all">
@@ -2283,12 +2096,12 @@ function ratingColor($rating) {
         </div>
         <span class="flex-1 text-sm font-medium text-slate-800 dark:text-slate-200 truncate" title="${evidence.file_name}">${evidence.file_name}</span>
         
-        <div class="flex items-center gap-1">
-          <button onclick="viewEvidenceTemp(this)" data-path="${evidence.temp_path || ''}" data-saved-url="${evidence.file_path || ''}" class="text-blue-500 hover:text-blue-700 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-500/10 w-8 h-8 flex items-center justify-center rounded-lg transition-colors" title="عرض الدليل">
-            <i class="fas fa-external-link-alt text-xs"></i>
+        <div class="flex items-center gap-2">
+          <button onclick="viewEvidenceTemp(this)" data-path="${evidence.temp_path || ''}" data-saved-url="${evidence.file_path || ''}" class="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40 rounded-lg transition-all border border-blue-200/50 dark:border-blue-800/30">
+            <i class="fas fa-eye"></i> عرض
           </button>
-          <button onclick="removeEvidenceRow('${rowId}')" class="text-red-500 hover:text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 w-8 h-8 flex items-center justify-center rounded-lg transition-colors" title="حذف">
-            <i class="fas fa-trash-alt text-xs"></i>
+          <button onclick="removeEvidenceRow('${rowId}')" class="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 rounded-lg transition-all border border-red-200/50 dark:border-red-800/30">
+            <i class="fas fa-trash-alt"></i> حذف
           </button>
         </div>
       `;
@@ -2442,7 +2255,7 @@ function ratingColor($rating) {
       const area = document.getElementById('notificationArea');
       if (!area) return;
       const el = document.createElement('div');
-      el.className = `${colors[type] || colors.info} text-white px-5 py-3 rounded-xl shadow-lg text-sm font-bold flex items-center gap-2 animate-slide-in`;
+      el.className = `${colors[type] || colors.info} text-white px-5 py-3 rounded-xl shadow-lg text-sm font-bold flex items-center gap-2 slide-in`;
       const icons = { success: 'fa-circle-check', error: 'fa-circle-xmark', info: 'fa-circle-info' };
       el.innerHTML = `<i class="fa-solid ${icons[type] || icons.info}"></i> ${message}`;
       area.appendChild(el);
