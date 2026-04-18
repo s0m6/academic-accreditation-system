@@ -212,7 +212,7 @@
                             <div class="bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-xl p-4">
                                 <div class="flex gap-3">
                                     <i class="fa-solid fa-circle-exclamation text-amber-600 dark:text-amber-400 mt-0.5"></i>
-                                    <p class="text-[11px] text-amber-800 dark:text-amber-300 leading-relaxed font-medium">
+                                    <p class="text-[15px] text-amber-800 dark:text-amber-300 leading-relaxed font-medium">
                                         بمجرد الرفع، سيتم قفل التقرير ولن تتمكن من تعديله إلا في حال طلب المجلس ذلك.
                                     </p>
                                 </div>

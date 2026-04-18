@@ -2145,6 +2145,9 @@ function ratingColor($rating) {
           const container = document.getElementById(`evidences-ind-${indicatorId}`);
           if (container) {
             container.querySelectorAll('.evidence-pending').forEach(p => p.remove());
+            container.querySelectorAll('.evidence-item').forEach(item => {
+              removeEvidenceRow(item.id);
+            });
           }
         } else {
           uploadBtn.classList.remove('hidden');
