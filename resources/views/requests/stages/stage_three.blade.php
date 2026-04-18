@@ -16,7 +16,19 @@
     $canSubmit = $userRole === 'program_coordinator' && ! $hasActiveSubmission;
 @endphp
 
-<div class="w-full text-start space-y-6" x-data="{}">
+<div class="w-full text-start space-y-6" x-data="{
+    showSubmitModal: false,
+    showRejectModal: false,
+    showApproveModal: false,
+    showViewReasonsModal: false,
+    submitActionUrl: '',
+    rejectSubmissionId: null,
+    approveSubmissionId: null,
+    reasons: [''],
+    rejectionReasons: [],
+    addReason() { this.reasons.push(''); },
+    removeReason(i) { if (this.reasons.length > 1) this.reasons.splice(i, 1); },
+}">
 
     {{-- Alerts --}}
     @if(session('success'))
@@ -108,17 +120,41 @@
                                 <td class="px-6 py-5">
                                     <div class="flex items-center justify-center gap-2 flex-wrap">
                                         {{-- Dummy Action Buttons as requested --}}
-                                        <button type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20 text-xs font-bold transition-colors cursor-pointer" onclick="alert('تحت التطوير')">
-                                            <i class="fa-solid fa-edit"></i> تعديل
-                                        </button>
+                                        @if($sub->status === 'draft' && $userRole === 'program_coordinator')
+                                            <a href="{{ route('requests.stage_three.edit', [$accreditationRequest->id, $sub->id]) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20 text-xs font-bold transition-colors cursor-pointer">
+                                                <i class="fa-solid fa-edit"></i> تعديل
+                                            </a>
+                                        @endif
                                         
-                                        <button type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-50 text-slate-700 border border-slate-200 hover:bg-slate-100 dark:bg-slate-500/10 dark:text-slate-400 dark:border-slate-500/20 text-xs font-bold transition-colors cursor-pointer" onclick="alert('تحت التطوير')">
+                                        <a href="{{ route('requests.stage_three.show', [$accreditationRequest->id, $sub->id]) }}"
+                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-400 dark:border-indigo-500/20 text-xs font-bold transition-colors cursor-pointer">
                                             <i class="fa-solid fa-eye"></i> عرض
-                                        </button>
+                                        </a>
                                         
-                                        @if($sub->status === 'draft')
-                                            <button type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/20 text-xs font-bold transition-colors cursor-pointer" onclick="alert('تحت التطوير')">
+                                        @if($sub->status === 'draft' && $userRole === 'program_coordinator')
+                                            <button type="button" @click="submitActionUrl = '{{ route('requests.stage_three.submit', [$accreditationRequest, $sub]) }}'; showSubmitModal = true"
+                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/20 text-xs font-bold transition-colors cursor-pointer">
                                                 <i class="fa-solid fa-paper-plane"></i> رفع للمجلس
+                                            </button>
+                                        @endif
+
+                                        {{-- Secretariat Actions --}}
+                                        @if($sub->status === 'pending' && $userRole === 'council_secretariat')
+                                            <button @click="approveSubmissionId = {{ $sub->id }}; showApproveModal = true"
+                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/20 text-xs font-bold transition-colors cursor-pointer">
+                                                <i class="fa-solid fa-circle-check"></i> موافقة
+                                            </button>
+                                            <button @click="rejectSubmissionId = {{ $sub->id }}; reasons = ['']; showRejectModal = true"
+                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20 text-xs font-bold transition-colors cursor-pointer">
+                                                <i class="fa-solid fa-circle-xmark"></i> رفض
+                                            </button>
+                                        @endif
+
+                                        {{-- Rejection Reasons (View) --}}
+                                        @if($sub->status === 'rejected')
+                                            <button @click="showViewReasonsModal = true; rejectionReasons = {{ json_encode($sub->decision_reasons) }}"
+                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20 text-xs font-bold transition-colors cursor-pointer">
+                                                <i class="fa-solid fa-circle-info"></i> الأسباب
                                             </button>
                                         @endif
                                     </div>
@@ -142,5 +178,232 @@
             </p>
          </div>
     @endif
+
+    {{-- MODALS --}}
+    
+    {{-- MODAL: SUBMIT CONFIRM (Coordinator) --}}
+    <template x-teleport="body">
+        <div x-show="showSubmitModal" style="display:none" class="relative z-[200]" role="dialog" aria-modal="true">
+            <div x-show="showSubmitModal"
+                x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+                x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+                class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"></div>
+
+            <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+                <div class="flex min-h-full items-center justify-center p-4 text-center">
+                    <div x-show="showSubmitModal"
+                        x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                        x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+                        @click.away="showSubmitModal = false"
+                        class="relative transform overflow-hidden rounded-2xl bg-(--surface-card) border border-(--border-primary) shadow-2xl w-full max-w-md text-start">
+
+                        <div class="p-6">
+                            <div class="flex items-center gap-4 mb-4">
+                                <div class="w-12 h-12 rounded-full bg-green-100 dark:bg-green-500/10 flex items-center justify-center shrink-0">
+                                    <i class="fa-solid fa-paper-plane text-green-600 dark:text-green-400 text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-(--text-primary)">تأكيد الرفع للمجلس</h3>
+                                    <p class="text-xs text-(--text-secondary) mt-1">
+                                        هل أنت متأكد من رغبتك في رفع تقرير الدراسة الذاتية للمجلس؟
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-xl p-4">
+                                <div class="flex gap-3">
+                                    <i class="fa-solid fa-circle-exclamation text-amber-600 dark:text-amber-400 mt-0.5"></i>
+                                    <p class="text-[15px] text-amber-800 dark:text-amber-300 leading-relaxed font-medium">
+                                        بمجرد الرفع، سيتم قفل التقرير ولن تتمكن من تعديله إلا في حال طلب المجلس ذلك.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="px-6 py-4 border-t border-(--border-primary) bg-(--bg-main) flex justify-end gap-3">
+                            <button type="button" @click="showSubmitModal = false"
+                                class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-(--surface-card) border border-(--border-primary) text-(--text-primary) text-sm font-bold hover:bg-(--bg-main) transition-all cursor-pointer">
+                                إلغاء
+                            </button>
+                            <form method="POST" :action="submitActionUrl" class="inline">
+                                @csrf
+                                @method('PATCH')
+                                <button type="submit"
+                                    class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-green-600 hover:bg-green-700 text-white text-sm font-black shadow-lg shadow-green-500/20 transition-all cursor-pointer">
+                                    <i class="fa-solid fa-circle-check"></i> تأكيد وإرسال
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    {{-- MODAL: REJECT (Secretary) --}}
+    <template x-teleport="body">
+        <div x-show="showRejectModal" style="display:none" class="relative z-[200]" role="dialog" aria-modal="true">
+            <div x-show="showRejectModal"
+                x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+                x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+                class="fixed inset-0 bg-black/60 backdrop-blur-sm"></div>
+
+            <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+                <div class="flex min-h-full items-center justify-center p-4">
+                    <div x-show="showRejectModal"
+                        x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                        x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+                        @click.away="showRejectModal = false"
+                        class="relative rounded-2xl bg-(--surface-card) border border-(--border-primary) shadow-2xl w-full max-w-lg text-start leading-relaxed">
+
+                        <div class="px-6 py-5 border-b border-(--border-primary) bg-(--bg-main) flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 flex items-center justify-center border border-red-100 dark:border-red-500/20 shrink-0">
+                                <i class="fa-solid fa-circle-xmark"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-(--text-primary)">رفض تقرير المرحلة الثالثة</h3>
+                                <p class="text-xs text-(--text-secondary)">سيتم إعادة التقرير للمنسق لتصحيح الملاحظات التالية</p>
+                            </div>
+                        </div>
+
+                        <form method="POST" :action="`{{ url('/requests/' . $accreditationRequest->id . '/stage-three') }}/${rejectSubmissionId}/reject`">
+                            @csrf
+                            @method('PATCH')
+
+                            <div class="p-6 space-y-3">
+                                <template x-for="(reason, i) in reasons" :key="i">
+                                    <div class="flex items-center gap-2">
+                                        <span class="w-6 h-6 rounded-full bg-(--bg-main) border border-(--border-primary) flex items-center justify-center text-xs font-bold text-(--text-secondary) shrink-0" x-text="i + 1"></span>
+                                        <input type="text" :name="`reasons[${i}]`" x-model="reasons[i]" required
+                                            placeholder="أدخل ملاحظة الرفض..."
+                                            class="flex-1 bg-(--bg-main) border border-(--border-primary) text-(--text-primary) text-sm rounded-lg p-2.5 focus:outline-none focus:ring-2 focus:ring-red-400 transition-all">
+                                        <button type="button" @click="removeReason(i)" x-show="reasons.length > 1"
+                                            class="w-7 h-7 flex items-center justify-center rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors cursor-pointer">
+                                            <i class="fa-solid fa-trash-can text-xs"></i>
+                                        </button>
+                                    </div>
+                                </template>
+                                <button type="button" @click="addReason()"
+                                    class="inline-flex items-center gap-2 text-xs font-bold text-(--text-secondary) hover:text-(--text-primary) transition-colors cursor-pointer mt-2 px-1">
+                                    <i class="fa-solid fa-plus-circle"></i> إضافة سبب آخر
+                                </button>
+                            </div>
+
+                            <div class="px-6 py-4 border-t border-(--border-primary) bg-(--bg-main) flex justify-end gap-3">
+                                <button type="button" @click="showRejectModal = false"
+                                    class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-(--surface-card) border border-(--border-primary) text-(--text-primary) text-sm font-bold hover:bg-(--bg-main) transition-all cursor-pointer">
+                                    إلغاء
+                                </button>
+                                <button type="submit"
+                                    class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-black transition-all cursor-pointer">
+                                    <i class="fa-solid fa-circle-xmark"></i> تأكيد الرفض
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    {{-- MODAL: APPROVE CONFIRM (Secretary) --}}
+    <template x-teleport="body">
+        <div x-show="showApproveModal" style="display:none" class="relative z-[200]" role="dialog" aria-modal="true">
+            <div x-show="showApproveModal"
+                x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+                x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+                class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"></div>
+
+            <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+                <div class="flex min-h-full items-center justify-center p-4">
+                    <div x-show="showApproveModal"
+                        x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                        x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+                        @click.away="showApproveModal = false"
+                        class="relative transform overflow-hidden rounded-2xl bg-(--surface-card) border border-(--border-primary) shadow-2xl w-full max-w-md text-start">
+
+                        <div class="px-6 py-8">
+                            <div class="flex flex-col items-center text-center">
+                                <div class="w-16 h-16 rounded-full bg-green-100 dark:bg-green-500/10 flex items-center justify-center mb-4">
+                                    <i class="fa-solid fa-check-double text-green-600 dark:text-green-400 text-2xl"></i>
+                                </div>
+                                <h3 class="text-lg font-bold text-(--text-primary)">تأكيد الموافقة النهائية</h3>
+                                <p class="text-sm text-(--text-secondary) mt-2 max-w-xs leading-relaxed">
+                                    عند الموافقة على تقرير الدراسة الذاتية، سينتقل البرنامج تلقائياً إلى المرحلة الرابعة:
+                                    <span class="block font-bold text-blue-600 dark:text-blue-400 mt-1 uppercase tracking-wider text-[11px]">مرحلة التقييم الميداني</span>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="px-6 py-4 border-t border-(--border-primary) bg-(--bg-main) flex justify-end gap-3">
+                            <button type="button" @click="showApproveModal = false"
+                                class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-(--surface-card) border border-(--border-primary) text-(--text-primary) text-sm font-bold hover:bg-(--bg-main) transition-all cursor-pointer">
+                                إلغاء
+                            </button>
+                            <form method="POST" :action="`{{ url('/requests/' . $accreditationRequest->id . '/stage-three') }}/${approveSubmissionId}/approve`" class="inline">
+                                @csrf
+                                @method('PATCH')
+                                <button type="submit"
+                                    class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-green-600 hover:bg-green-700 text-white text-sm font-black transition-all cursor-pointer">
+                                    <i class="fa-solid fa-circle-check"></i> تأكيد وإغلاق المرحلة
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    {{-- MODAL: VIEW REJECTION REASONS --}}
+    <template x-teleport="body">
+        <div x-show="showViewReasonsModal" style="display:none" class="relative z-[200]" role="dialog" aria-modal="true">
+            <div x-show="showViewReasonsModal"
+                x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+                x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+                class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"></div>
+
+            <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+                <div class="flex min-h-full items-center justify-center p-4">
+                    <div x-show="showViewReasonsModal"
+                        x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                        x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+                        @click.away="showViewReasonsModal = false"
+                        class="relative rounded-2xl bg-(--surface-card) border border-(--border-primary) shadow-2xl w-full max-w-lg text-start">
+
+                        <div class="px-6 py-5 border-b border-(--border-primary) bg-(--bg-main) flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 flex items-center justify-center border border-red-100 dark:border-red-500/20 shrink-0">
+                                    <i class="fa-solid fa-circle-exclamation"></i>
+                                </div>
+                                <h3 class="font-bold text-(--text-primary)">أسباب الرفض</h3>
+                            </div>
+                            <button @click="showViewReasonsModal = false" class="text-(--text-secondary) hover:text-(--text-primary) transition-all cursor-pointer p-2">
+                                <i class="fa-solid fa-times"></i>
+                            </button>
+                        </div>
+
+                        <div class="p-6">
+                            <ul class="space-y-3">
+                                <template x-for="(reason, i) in rejectionReasons" :key="i">
+                                    <li class="flex items-start gap-3 bg-(--bg-main) border border-(--border-primary) rounded-xl p-4 shadow-sm">
+                                        <div class="w-1.5 h-1.5 rounded-full bg-red-500 mt-2 shrink-0"></div>
+                                        <p class="text-sm font-medium text-(--text-primary) leading-relaxed" x-text="reason"></p>
+                                    </li>
+                                </template>
+                            </ul>
+                        </div>
+
+                        <div class="px-6 py-4 border-t border-(--border-primary) bg-(--bg-main) flex justify-end">
+                            <button @click="showViewReasonsModal = false"
+                                class="inline-flex items-center gap-2 px-6 py-2 rounded-xl bg-orange-500 text-white text-xs font-black shadow-lg shadow-orange-500/20 transition-all cursor-pointer">
+                                فهمت ذلك
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
 
 </div>

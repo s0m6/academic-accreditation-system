@@ -6,15 +6,16 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+
 #[Fillable([
-    'name', 
-    'type', 
+    'name',
+    'type',
     'city_id',
-    'accreditation_officer_id', 
-    'president_name', 
-    'president_email', 
-    'president_mobile', 
-    'president_phone'
+    'accreditation_officer_id',
+    'president_name',
+    'president_email',
+    'president_mobile',
+    'president_phone',
 ])]
 class University extends Model
 {

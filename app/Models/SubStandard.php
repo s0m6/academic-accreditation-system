@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use Database\Factories\SubStandardFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class SubStandard extends Model
 {
-    /** @use HasFactory<\Database\Factories\SubStandardFactory> */
+    /** @use HasFactory<SubStandardFactory> */
     use HasFactory;
 
     protected $fillable = [

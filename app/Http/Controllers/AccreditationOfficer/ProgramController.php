@@ -159,21 +159,21 @@ class ProgramController extends Controller
      * Create a new draft accreditation request for a specific program and redirect to its dashboard.
      */
     public function storeRequest(Request $request, Program $program)
-{
-    $university = request()->user()->university;
-    
-    if ($program->department->college->university_id !== $university->id) { 
-        abort(403);
+    {
+        $university = request()->user()->university;
+
+        if ($program->department->college->university_id !== $university->id) {
+            abort(403);
+        }
+
+        $accreditationRequest = $program->accreditationRequests()->create([
+            'current_stage' => 'stage_one',
+            'request_status' => 'draft',
+            'program_coord_id' => request()->user()->id,
+        ]);
+
+        Storage::makeDirectory("req_{$accreditationRequest->id}");
+
+        return redirect()->route('requests.show', $accreditationRequest);
     }
-    
-    $accreditationRequest = $program->accreditationRequests()->create([
-        'current_stage' => 'stage_one',
-        'request_status' => 'draft',
-        'program_coord_id' => request()->user()->id,
-    ]);
-    
-    Storage::makeDirectory("req_{$accreditationRequest->id}");
-    
-    return redirect()->route('requests.show', $accreditationRequest);
-}
 }

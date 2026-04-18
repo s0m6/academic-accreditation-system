@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('form_submission_id')->constrained('form_submissions')->onDelete('cascade');
             $table->foreignId('indicator_id')->constrained('indicators')->onDelete('cascade');
             $table->tinyInteger('score')->nullable();
-            
+
             $table->unique(['form_submission_id', 'indicator_id'], 'sub_ind_unique');
             $table->timestamps();
         });

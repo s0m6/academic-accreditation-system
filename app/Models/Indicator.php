@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use Database\Factories\IndicatorFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Indicator extends Model
 {
-    /** @use HasFactory<\Database\Factories\IndicatorFactory> */
+    /** @use HasFactory<IndicatorFactory> */
     use HasFactory;
 
     protected $fillable = [

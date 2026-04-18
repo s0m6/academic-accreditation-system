@@ -57,12 +57,13 @@ Route::middleware('auth')->group(function () {
 
         return response()->json(['success' => true]);
     })->name('temp_files.cleanup');
+    // requests routes
     Route::get('/requests/{accreditationRequest}', [RequestDashboardController::class, 'show'])
         ->name('requests.show');
     Route::get('/requests/{accreditationRequest}/stage/{stage}', [RequestDashboardController::class, 'stage'])
         ->name('requests.stage');
 
-    // Initial Accreditation Request (Stage One) submission and decision actions
+    //  Stage one actions
     Route::post('/requests/{accreditationRequest}/stage-one', [StageOneController::class, 'store'])
         ->name('requests.stage_one.store');
     Route::patch('/requests/{accreditationRequest}/stage-one/{formSubmission}/reject', [StageOneController::class, 'reject'])
@@ -93,8 +94,21 @@ Route::middleware('auth')->group(function () {
     // Stage Three actions
     Route::post('/requests/{accreditationRequest}/stage-three/draft', [StageThreeController::class, 'createDraft'])
         ->name('requests.stage_three.draft');
-
-    // Direct route to the stage three form view
+    Route::get('/requests/{accreditationRequest}/stage-three/{formSubmission}/edit', [StageThreeController::class, 'edit'])
+        ->name('requests.stage_three.edit');
+    Route::get('/requests/{accreditationRequest}/stage-three/{formSubmission}/show', [StageThreeController::class, 'show'])
+        ->name('requests.stage_three.show');
+    Route::post('/requests/{accreditationRequest}/stage-three/{formSubmission}/save', [StageThreeController::class, 'saveDraft'])
+        ->name('requests.stage_three.save');
+    Route::post('/requests/{accreditationRequest}/stage-three/{formSubmission}/upload-evidence-temp', [StageThreeController::class, 'uploadEvidenceTemp'])
+        ->name('requests.stage_three.upload_evidence_temp');
+    Route::get('/stage-three/view-file', [StageThreeController::class, 'viewFile'])
+        ->name('requests.stage_three.view_file');
+    Route::patch('/requests/{accreditationRequest}/stage-three/{formSubmission}/submit', [StageThreeController::class, 'submit'])
+        ->name('requests.stage_three.submit');
+    Route::patch('/requests/{accreditationRequest}/stage-three/{formSubmission}/reject', [StageThreeController::class, 'reject'])
+        ->name('requests.stage_three.reject');
+    Route::patch('/requests/{accreditationRequest}/stage-three/{formSubmission}/approve', [StageThreeController::class, 'approve'])
+        ->name('requests.stage_three.approve');
 
 });
-    Route::view('test3', 'requests.stageThreeForm')->name('requests.stage_three.form_preview');
