@@ -57,12 +57,13 @@ Route::middleware('auth')->group(function () {
 
         return response()->json(['success' => true]);
     })->name('temp_files.cleanup');
+    // requests routes
     Route::get('/requests/{accreditationRequest}', [RequestDashboardController::class, 'show'])
         ->name('requests.show');
     Route::get('/requests/{accreditationRequest}/stage/{stage}', [RequestDashboardController::class, 'stage'])
         ->name('requests.stage');
 
-    // Initial Accreditation Request (Stage One) submission and decision actions
+    //  Stage one actions
     Route::post('/requests/{accreditationRequest}/stage-one', [StageOneController::class, 'store'])
         ->name('requests.stage_one.store');
     Route::patch('/requests/{accreditationRequest}/stage-one/{formSubmission}/reject', [StageOneController::class, 'reject'])
@@ -111,4 +112,3 @@ Route::middleware('auth')->group(function () {
         ->name('requests.stage_three.approve');
 
 });
-Route::view('test3', 'requests.stageThreeForm')->name('requests.stage_three.form_preview');
