@@ -1070,5 +1070,18 @@ function showNotification(message, type = 'info') {
 <style>
 @keyframes slideIn { from { transform: translateX(-20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 </style>
+<!-- Session Alerts -->
+@if(session('success'))
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(() => {
+        if(typeof showNotification === 'function') {
+            showNotification("{{ session('success') }}", 'success');
+        }
+    }, 500);
+  });
+</script>
+@endif
+
 </body>
 </html>

@@ -65,7 +65,7 @@ class StageTwoController extends Controller
         ]);
 
         return redirect()->route('requests.stage_two.edit', [$accreditationRequest, $formSubmission])
-            ->with('success', 'تم إنشاء مسودة جديدة بنجاح.');
+            ->with('success', 'تم إنشاء مسودة جديدة بنجاح، يمكنك الآن التعديل والحفظ.');
     }
 
     /**

@@ -2796,6 +2796,23 @@ function ratingColor($rating) {
           </div>
       </div>
   </div>
-</body>
+  
+  <!-- Fixed Notification Area -->
+  <div id="notificationArea" class="fixed bottom-4 left-4 z-50 flex flex-col gap-2"></div>
 
+  <!-- Session Alerts -->
+  @if(session('success'))
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => {
+        if(typeof showToast === 'function') {
+          showToast("{{ session('success') }}", 'success');
+        } else if(typeof showNotification === 'function') {
+          showNotification("{{ session('success') }}", 'success');
+        }
+      }, 500);
+    });
+  </script>
+  @endif
+</body>
 </html>

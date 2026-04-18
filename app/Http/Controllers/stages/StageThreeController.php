@@ -56,7 +56,7 @@ class StageThreeController extends Controller
             ->latest('id')
             ->first();
 
-        DB::transaction(function () use ($accreditationRequest, $user, $lastRejected) {
+        $formSubmission = DB::transaction(function () use ($accreditationRequest, $user, $lastRejected) {
 
             // ──────────────────────────────────────────────────────────
             // Step 1: Create the new draft, copying form_data JSON from
@@ -127,9 +127,12 @@ class StageThreeController extends Controller
                     IndicatorEvaluation::insert($evaluations);
                 }
             }
+
+            return $formSubmission;
         });
 
-        return back()->with('success', 'تم إنشاء مسودة جديدة بنجاح.');
+        return redirect()->route('requests.stage_three.edit', [$accreditationRequest->id, $formSubmission->id])
+                         ->with('success', 'تم إنشاء مسودة جديدة بنجاح، يمكنك الآن التعديل والحفظ.');
     }
 
     // Show the stage three edit form, loading all required data.
