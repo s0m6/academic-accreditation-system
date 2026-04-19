@@ -257,6 +257,7 @@ class StageThreeController extends Controller
     // Save the stage three draft: form_data JSON + indicator scores.
     public function saveDraft(Request $request, AccreditationRequest $accreditationRequest, FormSubmission $formSubmission)
     {
+    
         $user = $request->user();
         if ($user->role !== 'program_coordinator' || $formSubmission->status !== 'draft') {
             return response()->json(['success' => false, 'message' => 'Unauthorized or non-draft state'], 403);
@@ -319,7 +320,7 @@ class StageThreeController extends Controller
 
                             // Ensure destination directory exists on local disk
                             Storage::disk('local')->makeDirectory("req_{$accreditationRequest->id}/stagethree");
-                            Storage::disk('local')->copy($evData['temp_path'], $newPath);
+                            Storage::disk('local')->move($evData['temp_path'], $newPath);
 
                             $newEv = Evidence::create([
                                 'indicator_evaluation_id' => $ie->id,

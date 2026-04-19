@@ -119,7 +119,7 @@ class StageTwoController extends Controller
 
         // Helper to check if a file path is safe to delete
         $isSafeToDelete = function ($path) use ($formSubmission) {
-            if (! $path || ! Storage::exists($path)) {
+            if (! $path || ! Storage::disk('local')->exists($path)) {
                 return false;
             }
 
@@ -131,11 +131,25 @@ class StageTwoController extends Controller
 
         $existingPaths = $jsonData['decision_files_paths'] ?? [];
 
-        // Handle files handling up to 8 decision files.
+        // Handle files: processing up to 8 decision files.
         for ($i = 1; $i <= 8; $i++) {
             $fileKey = "decision_file_{$i}";
             $oldPath = $formSubmission->form_data['decision_files'][$i] ?? null;
+            $currentPath = $existingPaths[$i] ?? null;
 
+            // 1. First, if we have a temporary file path for this slot, handle it (Move it to permanent)
+            if ($currentPath && str_starts_with($currentPath, 'temp_files/') && Storage::disk('local')->exists($currentPath)) {
+                $filename = basename($currentPath);
+                $newTempPath = "req_{$accreditationRequest->id}/stage_two_decisions/".$filename;
+                Storage::disk('local')->makeDirectory("req_{$accreditationRequest->id}/stage_two_decisions");
+                
+                // Move it. If it fails, we keep the original temp path as fallback
+                if (Storage::disk('local')->move($currentPath, $newTempPath)) {
+                    $currentPath = $newTempPath;
+                }
+            }
+
+            // 2. Now check if a new file was uploaded via the request for this slot
             if ($request->hasFile($fileKey)) {
                 $file = $request->file($fileKey);
                 $path = $file->storeAs(
@@ -144,41 +158,35 @@ class StageTwoController extends Controller
                     'local'
                 );
 
-                // If there was an old file, delete it from storage ONLY if no one else uses it
-                if ($oldPath && $isSafeToDelete($oldPath)) {
-                    Storage::delete($oldPath);
+                // If we just moved a temp file OR had an old file, and now we are replacing it with a direct upload,
+                // we should delete the previous one (whether it was the just-moved temp or the older permanent one).
+                if ($currentPath && $currentPath !== $path && $isSafeToDelete($currentPath)) {
+                    Storage::disk('local')->delete($currentPath);
+                }
+                
+                // Also handle the case where we had an old path that wasn't the current one
+                if ($oldPath && $oldPath !== $path && $oldPath !== $currentPath && $isSafeToDelete($oldPath)) {
+                    Storage::disk('local')->delete($oldPath);
                 }
 
-                // Modify the JSON data to point to the new file
-                if (! isset($jsonData['decision_files'])) {
-                    $jsonData['decision_files'] = [];
-                }
-                $jsonData['decision_files'][$i] = $path;
-            } elseif (! empty($existingPaths[$i])) {
-                // keep the old file mapping if it was not deleted
-                $currentPath = $existingPaths[$i];
-                if (str_starts_with($currentPath, 'temp_files/')) {
-                    $filename = basename($currentPath);
-                    $newPath = "req_{$accreditationRequest->id}/stage_two_decisions/".$filename;
-                    if (Storage::exists($currentPath)) {
-                        Storage::move($currentPath, $newPath);
-                        $currentPath = $newPath;
-                    }
-                }
+                $currentPath = $path;
+            }
 
-                // If there was an old file that is DIFFERENT from this one, try to delete it
-                if ($oldPath && $oldPath !== $currentPath && $isSafeToDelete($oldPath)) {
-                    Storage::delete($oldPath);
-                }
-
+            // 3. Update the JSON data for this slot
+            if ($currentPath) {
                 if (! isset($jsonData['decision_files'])) {
                     $jsonData['decision_files'] = [];
                 }
                 $jsonData['decision_files'][$i] = $currentPath;
+                
+                // cleanup old file if it was replaced by a DIFFERENT existing path or new move
+                if ($oldPath && $oldPath !== $currentPath && $isSafeToDelete($oldPath)) {
+                    Storage::disk('local')->delete($oldPath);
+                }
             } else {
-                // User may have deleted the file, try to delete physically if safe
+                // No file for this slot (deleted by user)
                 if ($oldPath && $isSafeToDelete($oldPath)) {
-                    Storage::delete($oldPath);
+                    Storage::disk('local')->delete($oldPath);
                 }
                 if (isset($jsonData['decision_files'][$i])) {
                     unset($jsonData['decision_files'][$i]);

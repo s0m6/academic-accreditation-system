@@ -979,13 +979,37 @@ function ratingColor($rating) {
                                       readonly
                                       class="ev-name-input flex-1 text-sm font-medium px-3 py-1.5 rounded-lg truncate" 
                                       oninput="hasChanges = true"
-                                      onblur="this.readOnly = true"
+                                      onblur="
+                                        this.readOnly = true;
+                                        let item = this.closest('.evidence-item');
+                                        let editBtn = item.querySelector('.ev-edit-btn');
+                                        let closeBtn = item.querySelector('.ev-close-btn');
+                                        if (editBtn) editBtn.style.display = 'flex';
+                                        if (closeBtn) closeBtn.style.display = 'none';
+                                      "
                                       title="{{ $ev->file_name }}">
                                   
                                   <div class="flex items-center gap-2">
                                     @if(!isset($readonly) || !$readonly)
-                                    <button onclick="let inp = this.closest('.evidence-item').querySelector('.ev-name-input'); inp.readOnly = false; inp.focus();" class="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/40 rounded-lg transition-all border border-amber-200/50 dark:border-amber-800/30" title="تعديل الاسم">
+                                    <button class="ev-edit-btn flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/40 rounded-lg transition-all border border-amber-200/50 dark:border-amber-800/30" 
+                                            onclick="
+                                              let inp = this.closest('.evidence-item').querySelector('.ev-name-input');
+                                              let item = this.closest('.evidence-item');
+                                              let editBtn = item.querySelector('.ev-edit-btn');
+                                              let closeBtn = item.querySelector('.ev-close-btn');
+                                              inp.readOnly = false;
+                                              inp.focus();
+                                              inp.setSelectionRange(inp.value.length, inp.value.length);
+                                              if (editBtn) editBtn.style.display = 'none';
+                                              if (closeBtn) closeBtn.style.display = 'flex';
+                                            " 
+                                            title="تعديل الاسم">
                                       <i class="fas fa-pen-to-square"></i> تعديل الاسم
+                                    </button>
+                                    <button class="ev-close-btn hidden items-center gap-2 px-3 py-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/20 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 rounded-lg transition-all border border-emerald-300/50 dark:border-emerald-700/40"
+                                            style="display:none"
+                                            onclick="let inp = this.closest('.evidence-item').querySelector('.ev-name-input'); inp.blur();">
+                                      <i class="fas fa-check"></i> إغلاق التعديل
                                     </button>
                                     @endif
                                     <a href="/stage-three/view-file?path={{ urlencode($ev->file_path) }}" target="_blank" class="flex items-center gap-2 px-3 py-1.5 text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/40 rounded-lg transition-all border border-blue-200/50 dark:border-blue-800/30" title="عرض الدليل">
@@ -2352,7 +2376,11 @@ function ratingColor($rating) {
                 const nameInput = lastItem.querySelector('.ev-name-input');
                 const editBtn   = lastItem.querySelector('.ev-edit-btn');
                 const closeBtn  = lastItem.querySelector('.ev-close-btn');
-                if (nameInput) { nameInput.readOnly = false; nameInput.focus(); }
+                if (nameInput) { 
+                  nameInput.readOnly = false; 
+                  nameInput.focus();
+                  nameInput.setSelectionRange(nameInput.value.length, nameInput.value.length);
+                }
                 if (editBtn)  editBtn.style.display  = 'none';
                 if (closeBtn) closeBtn.style.display = 'flex';
             }
@@ -2423,6 +2451,7 @@ function ratingColor($rating) {
                     let closeBtn = item.querySelector('.ev-close-btn');
                     inp.readOnly = false;
                     inp.focus();
+                    inp.setSelectionRange(inp.value.length, inp.value.length);
                     if (editBtn) editBtn.style.display = 'none';
                     if (closeBtn) closeBtn.style.display = 'flex';
                   ">

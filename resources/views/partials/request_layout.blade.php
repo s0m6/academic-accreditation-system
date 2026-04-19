@@ -41,7 +41,7 @@
             <p class="text-sm text-(--text-secondary)">@yield('description', '')</p>
         </div>
 
-        <div class="flex flex-col items-center justify-center min-h-100 border-2 border-dashed border-(--border-primary) rounded-3xl p-12 text-center bg-(--surface-card)/50">
+        <div class=" min-h-100  text-center">
             @yield('content')
         </div>
     </main>
