@@ -18,7 +18,7 @@
     <!-- Requests Table -->
     <div class="shadow-md rounded-2xl overflow-hidden border border-(--border-primary) bg-(--surface-card)">
         
-        <div class="border-b border-(--border-primary) bg-(--bg-main) px-6 py-5 flex items-center justify-between">
+        <div class="border-b border-(--border-primary) bg-(--content-container) px-6 py-5 flex items-center justify-between">
             <div class="flex items-center gap-4">
                 <div class="w-12 h-12 shrink-0 rounded-full bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 flex justify-center items-center shadow-inner border border-orange-100 dark:border-orange-500/20">
                     <span class="text-2xl font-black">1</span>
