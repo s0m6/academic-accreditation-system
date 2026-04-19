@@ -998,6 +998,9 @@ async function handleFileSelect(event, id) {
             }
             
             showNotification('تم الرفع للذاكرة المؤقتة!', 'success');
+            
+            // Clear the file input value to prevent it from being sent again with the main form
+            event.target.value = '';
         } else {
             showNotification(result.message || 'حدث خطأ أثناء الرفع', 'error');
             event.target.value = '';
