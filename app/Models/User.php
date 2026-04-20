@@ -34,4 +34,10 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasOne(University::class, 'accreditation_officer_id');
     }
+
+    /** Get the evaluator profile linked to this user. */
+    public function evaluator(): HasOne
+    {
+        return $this->hasOne(Evaluator::class);
+    }
 }
