@@ -31,6 +31,7 @@
 
 @layer base {
   :root {
+    --bg-component: #ffffff;
     --bg-main: #f8f8f8;
     --bg-sidebar: #ffffff;
     --text-sidebar: #64748b;
@@ -48,6 +49,7 @@
   }
 
   .dark {
+    --bg-component: #1e293b;
     --bg-main: #0f172a;
     --bg-sidebar: #1e293b;
     --text-sidebar: #94a3b8;

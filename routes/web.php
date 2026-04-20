@@ -15,6 +15,7 @@ Route::get('/dashboard', function () {
         'accreditation_officer' => redirect()->route('accreditation_officer.dashboard'),
         'council_secretariat' => redirect()->route('council_secretariat.dashboard'),
         'program_coordinator' => redirect()->route('program_coordinator.dashboard'),
+        'evaluator' => redirect()->route('evaluator.dashboard'),
         default => abort(403),
     };
 })->middleware(['auth', 'verified'])->name('dashboard');

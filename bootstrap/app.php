@@ -26,6 +26,11 @@ return Application::configure(basePath: dirname(__DIR__))
                 ->prefix('program-coordinator')
                 ->name('program_coordinator.')
                 ->group(base_path('routes/program_coordinator.php'));
+
+            Route::middleware(['web', 'auth', 'verified', 'role:evaluator'])
+                ->prefix('evaluator')
+                ->name('evaluator.')
+                ->group(base_path('routes/evaluator.php'));
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
