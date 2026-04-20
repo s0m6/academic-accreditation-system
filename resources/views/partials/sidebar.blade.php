@@ -51,6 +51,15 @@
                 <span class="sidebar-text font-semibold">الجامعات</span>
             </a>
 
+            <!-- Evaluators / المقيمون -->
+            <a href="{{ route('council_secretariat.evaluators.index') }}"
+                class="sidebar-link {{ request()->routeIs('council_secretariat.evaluators.*') ? 'sidebar-link-active' : '' }} group">
+                <div class="sidebar-icon-wrapper">
+                    <i class="fa-solid fa-user-tie"></i>
+                </div>
+                <span class="sidebar-text font-semibold">المقيمون</span>
+            </a>
+
             <!-- Category: Accreditation / الاعتماد -->
             <div class="sidebar-category mt-8 mb-1 px-3">
                 <span class="sidebar-text text-[14px] font-bold uppercase"
