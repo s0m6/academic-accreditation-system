@@ -89,7 +89,8 @@ class StageFourController extends Controller
         $universityId = $accreditationRequest->program->department->college->university_id;
 
         $result = $evaluators->map(function ($ev) use ($activeEvaluatorIds, $collegeCity, $universityId) {
-            $hasConflict = $ev->conflicts->contains('university_id', $universityId);
+            $conflicts = $ev->conflicts->where('university_id', $universityId);
+            $hasConflict = $conflicts->isNotEmpty();
             $sameCity = $ev->city_id === $collegeCity;
 
             return [
@@ -99,9 +100,10 @@ class StageFourController extends Controller
                 'academic_rank' => $ev->academic_rank,
                 'general_specialty' => $ev->general_specialty,
                 'detailed_specialty' => $ev->detailed_specialty,
-                'city' => $ev->city?->city_name,
+                'city' => $ev->city?->city_name ?? '—',
                 'same_city' => $sameCity,
                 'has_conflict' => $hasConflict,
+                'conflict_details' => $conflicts->pluck('conflict_text')->toArray(),
                 'already_selected' => in_array($ev->id, $activeEvaluatorIds),
             ];
         });
@@ -192,6 +194,39 @@ class StageFourController extends Controller
         });
 
         return back()->with('success', 'تم استبدال العضو وإرسال دعوة للمقيم الجديد.');
+    }
+
+    /**
+     * Re-invite the same member after they declined (keeps record history).
+     */
+    public function reinviteMember(AccreditationRequest $accreditationRequest, CommitteeMember $committeeMember)
+    {
+        $this->authorizeSecretariat();
+
+        // Check if the member had actually declined
+        if (! in_array($committeeMember->member_status, ['declined_by_member', 'declined_by_uni'])) {
+            return back()->with('error', 'لا يمكن إعادة دعوة هذا العضو حالياً.');
+        }
+
+        $committee = $accreditationRequest->committee;
+
+        DB::transaction(function () use ($committeeMember, $committee) {
+            // Deactivate old record
+            $committeeMember->update(['is_active' => false]);
+
+            // Create new record for same evaluator
+            $committee->members()->create([
+                'evaluator_id' => $committeeMember->evaluator_id,
+                'member_status' => 'pending_invite',
+                'invite_sent_at' => now(),
+                'is_active' => true,
+                'member_responded_at' => null,
+                'university_responded_at' => null,
+                'reject_reason' => null,
+            ]);
+        });
+
+        return back()->with('success', 'تمت إعادة إرسال الدعوة للمقيم بنجاح.');
     }
 
     /**

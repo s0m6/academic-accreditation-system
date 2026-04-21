@@ -42,8 +42,10 @@
 
     // Big member-picker modal
     showPickerModal: false,
-    pickerTargetMemberId: null,   // committee_member id (for replace), or null (for invite)
+    pickerTargetMemberId: null,
     isReplacing: false,
+    pickerPanel: 'search', // 'search' or 'conflicts'
+    pickerSelectedConflictInfo: null,
 
     // Picker state
     pickerSearch: '',
@@ -72,6 +74,7 @@
     openPicker(memberId, isReplace) {
         this.pickerTargetMemberId = memberId;
         this.isReplacing = isReplace;
+        this.pickerPanel = 'search';
         this.pickerSearch = '';
         this.pickerRankFilter = '';
         this.pickerSameCityFilter = false;
@@ -104,8 +107,22 @@
     },
 
     selectEvaluator(id, name) {
-        this.pickerSelectedId = id;
-        this.pickerSelectedName = name;
+        if (this.pickerSelectedId === id) {
+            this.pickerSelectedId = null;
+            this.pickerSelectedName = '';
+        } else {
+            this.pickerSelectedId = id;
+            this.pickerSelectedName = name;
+        }
+    },
+
+    showConflicts(ev) {
+        this.pickerSelectedConflictInfo = ev;
+        this.pickerPanel = 'conflicts';
+    },
+
+    backToSearch() {
+        this.pickerPanel = 'search';
     },
 
     addReason() { this.rejectReasons.push(''); },
@@ -331,12 +348,25 @@
 
                             {{-- Actions --}}
                             @if($isSecretariat && !$committeeApproved)
-                                @if(in_array($member->member_status, ['declined_by_member', 'declined_by_uni']))
-                                    <button type="button"
-                                        @click="openPicker({{ $member->id }}, true)"
-                                        class="w-full mt-auto inline-flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold transition-colors shadow-sm cursor-pointer">
-                                        <i class="fa-solid fa-arrows-rotate"></i> استبدال المقيم
-                                    </button>
+                                {{-- Replace/Reinvite actions --}}
+                                @php $isMemberReject = in_array($member->member_status, ['declined_by_member', 'declined_by_uni']); @endphp
+                                
+                                @if($isMemberReject)
+                                    <div class="flex flex-col gap-2 mt-auto">
+                                        <form method="POST" action="{{ route('requests.stage_four.reinvite_member', [$accreditationRequest, $member]) }}" class="w-full">
+                                            @csrf
+                                            <button type="submit"
+                                                class="w-full inline-flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-orange-100 hover:bg-orange-200 text-orange-700 dark:bg-orange-500/10 dark:hover:bg-orange-500/20 dark:text-orange-400 text-xs font-bold transition-colors border border-orange-200 dark:border-orange-500/20 cursor-pointer">
+                                                <i class="fa-solid fa-paper-plane"></i> إعادة إرسال الدعوة
+                                            </button>
+                                        </form>
+
+                                        <button type="button"
+                                            @click="openPicker({{ $member->id }}, true)"
+                                            class="w-full inline-flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold transition-colors shadow-sm cursor-pointer">
+                                            <i class="fa-solid fa-arrows-rotate"></i> استبدال المقيم بمقيم آخر
+                                        </button>
+                                    </div>
                                 @endif
                             @endif
 
@@ -475,152 +505,235 @@
                 class="absolute inset-0 bg-black/70 backdrop-blur-sm"></div>
 
             {{-- Panel --}}
-            <div x-show="showPickerModal"
-                x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4"
-                x-transition:enter-end="opacity-100 translate-y-0"
-                class="relative flex flex-col m-4 md:m-8 lg:m-16 rounded-2xl bg-(--surface-card) border border-(--border-primary) shadow-2xl overflow-hidden"
-                style="max-height: calc(100vh - 4rem)">
+                <div x-show="showPickerModal"
+                    x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4"
+                    x-transition:enter-end="opacity-100 translate-y-0"
+                    class="relative flex flex-col m-4 md:m-8 lg:m-16 rounded-2xl bg-(--surface-card) border border-(--border-primary) shadow-2xl overflow-hidden h-[85vh] max-h-[900px]"
+                    @click.away="showPickerModal = false">
 
-                {{-- Modal Header --}}
-                <div class="px-6 py-5 border-b border-(--border-primary) bg-(--bg-main) flex items-center justify-between shrink-0">
-                    <div class="flex items-center gap-3">
-                        <div class="w-11 h-11 rounded-2xl bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 flex items-center justify-center border border-orange-100 dark:border-orange-500/20">
-                            <i class="fa-solid fa-user-magnifying-glass text-lg"></i>
+                    {{-- Modal Header --}}
+                    <div class="px-6 py-5 border-b border-(--border-primary) bg-(--bg-main) flex items-center justify-between shrink-0">
+                        <div class="flex items-center gap-3">
+                            <div class="w-11 h-11 rounded-2xl bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 flex items-center justify-center border border-orange-100 dark:border-orange-500/20">
+                                <i class="fa-solid fa-user-magnifying-glass text-lg"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-(--text-primary)" x-text="pickerPanel === 'conflicts' ? 'تفاصيل تعارض المصالح' : (isReplacing ? 'استبدال المقيم' : 'اختيار مقيم لللجنة')"></h3>
+                                <p class="text-xs text-(--text-secondary)" x-text="pickerPanel === 'conflicts' ? 'أسباب التعارض المسجلة للمقيم مع هذه الجامعة' : 'ابحث وصفّ لاختيار المقيم المناسب'"></p>
+                            </div>
                         </div>
-                        <div>
-                            <h3 class="font-bold text-(--text-primary)" x-text="isReplacing ? 'استبدال المقيم' : 'اختيار مقيم لللجنة'"></h3>
-                            <p class="text-xs text-(--text-secondary)">ابحث وصفّ لاختيار المقيم المناسب</p>
-                        </div>
-                    </div>
-                    <button @click="showPickerModal = false" class="text-(--text-secondary) hover:text-(--text-primary) p-2 rounded-lg transition cursor-pointer">
-                        <i class="fa-solid fa-xmark text-xl"></i>
-                    </button>
-                </div>
-
-                {{-- Filters bar --}}
-                <div class="px-6 py-4 border-b border-(--border-primary) bg-(--bg-main) shrink-0">
-                    <div class="flex flex-wrap gap-3 items-end">
-                        {{-- Search --}}
-                        <div class="relative flex-1 min-w-48">
-                            <i class="fa-solid fa-search absolute start-3.5 top-1/2 -translate-y-1/2 text-(--text-secondary) text-sm pointer-events-none"></i>
-                            <input type="text" x-model="pickerSearch"
-                                @input.debounce.400ms="searchEvaluators()"
-                                placeholder="ابحث بالاسم أو التخصص..."
-                                class="w-full pe-4 ps-10 py-2.5 rounded-xl bg-(--surface-card) border border-(--border-primary) text-(--text-primary) text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 transition">
-                        </div>
-
-                        {{-- Academic rank --}}
-                        <select x-model="pickerRankFilter" @change="searchEvaluators()"
-                            class="rounded-xl border border-(--border-primary) bg-(--surface-card) text-(--text-primary) px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 transition">
-                            <option value="">جميع الدرجات العلمية</option>
-                            <option value="Professor">أستاذ</option>
-                            <option value="Associate Professor">أستاذ مشارك</option>
-                            <option value="Assistant Professor">أستاذ مساعد</option>
-                            <option value="Lecturer">محاضر</option>
-                            <option value="Expert">خبير</option>
-                        </select>
-
-                        {{-- Checkboxes --}}
-                        <label class="flex items-center gap-2 cursor-pointer px-3 py-2.5 rounded-xl border border-(--border-primary) bg-(--surface-card) hover:bg-(--bg-main) transition select-none">
-                            <input type="checkbox" x-model="pickerSameCityFilter" @change="searchEvaluators()"
-                                class="w-4 h-4 rounded accent-orange-500">
-                            <span class="text-sm font-medium text-(--text-primary)">نفس مدينة الكلية</span>
-                        </label>
-
-                        <label class="flex items-center gap-2 cursor-pointer px-3 py-2.5 rounded-xl border border-(--border-primary) bg-(--surface-card) hover:bg-(--bg-main) transition select-none">
-                            <input type="checkbox" x-model="pickerNoConflictFilter" @change="searchEvaluators()"
-                                class="w-4 h-4 rounded accent-orange-500">
-                            <span class="text-sm font-medium text-(--text-primary)">بدون تعارض مصالح</span>
-                        </label>
-                    </div>
-                </div>
-
-                {{-- Results table --}}
-                <div class="flex-1 overflow-y-auto">
-                    {{-- Loading --}}
-                    <div x-show="pickerLoading" class="flex items-center justify-center py-20">
-                        <div class="flex flex-col items-center gap-3 text-(--text-secondary)">
-                            <i class="fa-solid fa-spinner fa-spin text-3xl text-orange-500"></i>
-                            <span class="text-sm font-medium">جاري البحث...</span>
-                        </div>
+                        <button @click="showPickerModal = false" class="text-(--text-secondary) hover:text-(--text-primary) p-2 rounded-lg transition cursor-pointer">
+                            <i class="fa-solid fa-xmark text-xl"></i>
+                        </button>
                     </div>
 
-                    {{-- No results --}}
-                    <div x-show="!pickerLoading && pickerResults.length === 0" class="flex flex-col items-center justify-center py-20 text-center gap-4">
-                        <div class="w-16 h-16 rounded-2xl bg-(--bg-main) border border-(--border-primary) flex items-center justify-center">
-                            <i class="fa-solid fa-users-slash text-2xl text-(--text-secondary)"></i>
+                    {{-- Main Modal Content: Dual Panels with Sliding Transitions --}}
+                    <div class="flex-1 relative overflow-hidden bg-(--surface-card)">
+                    
+                    {{-- PANEL 1: Search Results --}}
+                    <div x-show="pickerPanel === 'search'"
+                        x-transition:enter="transition ease-out duration-400"
+                        x-transition:enter-start="opacity-0 translate-x-full"
+                        x-transition:enter-end="opacity-100 translate-x-0"
+                        x-transition:leave="transition ease-in duration-300"
+                        x-transition:leave-start="opacity-100 translate-x-0"
+                        x-transition:leave-end="opacity-0 translate-x-full"
+                        class="absolute inset-0 flex flex-col">
+
+                        {{-- Filters bar (moved inside panel to ensure it slides too) --}}
+                        <div class="px-6 py-4 border-b border-(--border-primary) bg-(--bg-main) shrink-0">
+                            <div class="flex flex-wrap gap-3 items-end">
+                                {{-- Search --}}
+                                <div class="relative flex-1 min-w-48">
+                                    <i class="fa-solid fa-search absolute start-3.5 top-1/2 -translate-y-1/2 text-(--text-secondary) text-sm pointer-events-none"></i>
+                                    <input type="text" x-model="pickerSearch"
+                                        @input.debounce.400ms="searchEvaluators()"
+                                        placeholder="ابحث بالاسم أو التخصص..."
+                                        class="w-full pe-4 ps-10 py-2.5 rounded-xl bg-(--surface-card) border border-(--border-primary) text-(--text-primary) text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 transition">
+                                </div>
+
+                                {{-- Academic rank --}}
+                                <select x-model="pickerRankFilter" @change="searchEvaluators()"
+                                    class="rounded-xl border border-(--border-primary) bg-(--surface-card) text-(--text-primary) px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 transition">
+                                    <option value="">جميع الدرجات العلمية</option>
+                                    <option value="Professor">أستاذ</option>
+                                    <option value="Associate Professor">أستاذ مشارك</option>
+                                    <option value="Assistant Professor">أستاذ مساعد</option>
+                                    <option value="Lecturer">محاضر</option>
+                                    <option value="Expert">خبير</option>
+                                </select>
+
+                                {{-- Checkboxes --}}
+                                <label class="flex items-center gap-2 cursor-pointer px-3 py-2.5 rounded-xl border border-(--border-primary) bg-(--surface-card) hover:bg-(--bg-main) transition select-none">
+                                    <input type="checkbox" x-model="pickerSameCityFilter" @change="searchEvaluators()"
+                                        class="w-4 h-4 rounded accent-orange-500">
+                                    <span class="text-sm font-medium text-(--text-primary)">نفس مدينة الكلية</span>
+                                </label>
+
+                                <label class="flex items-center gap-2 cursor-pointer px-3 py-2.5 rounded-xl border border-(--border-primary) bg-(--surface-card) hover:bg-(--bg-main) transition select-none">
+                                    <input type="checkbox" x-model="pickerNoConflictFilter" @change="searchEvaluators()"
+                                        class="w-4 h-4 rounded accent-orange-500">
+                                    <span class="text-sm font-medium text-(--text-primary)">بدون تعارض مصالح</span>
+                                </label>
+                            </div>
                         </div>
-                        <p class="text-(--text-secondary) font-medium">لا توجد نتائج مطابقة</p>
+
+                        {{-- Results table --}}
+                        <div class="flex-1 overflow-y-auto">
+                            {{-- Loading --}}
+                            <div x-show="pickerLoading" class="flex items-center justify-center py-20">
+                                <div class="flex flex-col items-center gap-3 text-(--text-secondary)">
+                                    <i class="fa-solid fa-spinner fa-spin text-3xl text-orange-500"></i>
+                                    <span class="text-sm font-medium">جاري البحث...</span>
+                                </div>
+                            </div>
+
+                            {{-- No results --}}
+                            <div x-show="!pickerLoading && pickerResults.length === 0" class="flex flex-col items-center justify-center py-20 text-center gap-4">
+                                <div class="w-16 h-16 rounded-2xl bg-(--bg-main) border border-(--border-primary) flex items-center justify-center">
+                                    <i class="fa-solid fa-users-slash text-2xl text-(--text-secondary)"></i>
+                                </div>
+                                <p class="text-(--text-secondary) font-medium">لا توجد نتائج مطابقة</p>
+                            </div>
+
+                            {{-- Table --}}
+                            <table x-show="!pickerLoading && pickerResults.length > 0" class="w-full text-sm">
+                                <thead class="sticky top-0 bg-(--bg-main) border-b border-(--border-primary) text-xs uppercase text-(--text-secondary) z-10">
+                                    <tr>
+                                        <th class="px-5 py-4 font-bold text-start">المقيم</th>
+                                        <th class="px-5 py-4 font-bold text-center">الدرجة</th>
+                                        <th class="px-5 py-4 font-bold text-center">المدينة</th>
+                                        <th class="px-5 py-4 font-bold text-center">نفس المدينة</th>
+                                        <th class="px-5 py-4 font-bold text-center">بلا تعارض</th>
+                                        <th class="px-5 py-4 font-bold text-center">اختيار</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-(--border-primary)">
+                                    <template x-for="ev in pickerResults" :key="ev.id">
+                                        <tr :class="ev.already_selected ? 'opacity-40 pointer-events-none' : (pickerSelectedId === ev.id ? 'bg-orange-50 dark:bg-orange-500/5' : 'hover:bg-(--bg-main)')"
+                                            class="transition-colors cursor-pointer group"
+                                            @click="!ev.already_selected && selectEvaluator(ev.id, ev.name)">
+                                            <td class="px-5 py-4">
+                                                <div class="flex items-center gap-3">
+                                                    <div class="w-10 h-10 rounded-xl bg-(--surface-card) border border-(--border-primary) flex items-center justify-center shrink-0 shadow-sm">
+                                                        <span class="font-black text-(--text-primary)" x-text="ev.name.charAt(0)"></span>
+                                                    </div>
+                                                    <div>
+                                                        <a :href="`{{ url('/council-secretariat/evaluators') }}/${ev.id}`" target="_blank" 
+                                                           @click.stop
+                                                           class="font-bold text-(--text-primary) hover:text-indigo-600 dark:hover:text-indigo-400 hover:underline transition-colors block" 
+                                                           x-text="ev.name"></a>
+                                                        <p class="text-xs text-(--text-secondary)" x-text="ev.general_specialty"></p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="px-5 py-4 text-center">
+                                                <span class="inline-flex px-2 py-0.5 rounded-lg text-xs font-bold bg-(--bg-main) border border-(--border-primary) text-(--text-primary)"
+                                                    x-text="ev.academic_rank"></span>
+                                            </td>
+                                            <td class="px-5 py-4 text-center text-(--text-secondary)" x-text="ev.city || '—'"></td>
+                                            <td class="px-5 py-4 text-center">
+                                                <i :class="ev.same_city ? 'fa-solid fa-circle-check text-green-500' : 'fa-solid fa-circle-minus text-gray-300 dark:text-gray-600'"></i>
+                                            </td>
+                                            <td class="px-5 py-4 text-center">
+                                                <template x-if="!ev.has_conflict">
+                                                    <i class="fa-solid fa-circle-check text-green-500"></i>
+                                                </template>
+                                                <template x-if="ev.has_conflict">
+                                                    <button type="button" @click.stop="showConflicts(ev)"
+                                                        class="w-8 h-8 rounded-lg bg-red-50 dark:bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all flex items-center justify-center mx-auto cursor-pointer shadow-sm group/conflict"
+                                                        title="عرض تفاصيل التعارض">
+                                                        <i class="fa-solid fa-triangle-exclamation transition-transform group-hover/conflict:scale-110"></i>
+                                                    </button>
+                                                </template>
+                                            </td>
+                                            <td class="px-5 py-4 text-center">
+                                                <template x-if="ev.already_selected">
+                                                    <span class="text-xs font-bold text-(--text-secondary)">موجود</span>
+                                                </template>
+                                                <template x-if="!ev.already_selected">
+                                                    <button type="button" @click.stop="selectEvaluator(ev.id, ev.name)"
+                                                        :class="pickerSelectedId === ev.id
+                                                            ? 'bg-orange-500 text-white border-orange-500'
+                                                            : 'bg-(--surface-card) text-(--text-primary) border-(--border-primary) group-hover:border-orange-400'"
+                                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-bold transition cursor-pointer">
+                                                        <i :class="pickerSelectedId === ev.id ? 'fa-solid fa-check' : 'fa-solid fa-hand-pointer'"></i>
+                                                        <span x-text="pickerSelectedId === ev.id ? 'محدد' : 'حدد'"></span>
+                                                    </button>
+                                                </template>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
 
-                    {{-- Table --}}
-                    <table x-show="!pickerLoading && pickerResults.length > 0" class="w-full text-sm">
-                        <thead class="sticky top-0 bg-(--bg-main) border-b border-(--border-primary) text-xs uppercase text-(--text-secondary)">
-                            <tr>
-                                <th class="px-5 py-3 font-bold text-start">المقيم</th>
-                                <th class="px-5 py-3 font-bold text-center">الدرجة العلمية</th>
-                                <th class="px-5 py-3 font-bold text-center">المدينة</th>
-                                <th class="px-5 py-3 font-bold text-center">
-                                    <span class="inline-flex items-center gap-1">
-                                        <i class="fa-solid fa-location-crosshairs text-orange-500"></i> نفس المدينة
-                                    </span>
-                                </th>
-                                <th class="px-5 py-3 font-bold text-center">
-                                    <span class="inline-flex items-center gap-1">
-                                        <i class="fa-solid fa-handshake-slash text-red-500"></i> بلا تعارض
-                                    </span>
-                                </th>
-                                <th class="px-5 py-3 font-bold text-center">اختيار</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-(--border-primary)">
-                            <template x-for="ev in pickerResults" :key="ev.id">
-                                <tr :class="ev.already_selected ? 'opacity-40 pointer-events-none' : (pickerSelectedId === ev.id ? 'bg-orange-50 dark:bg-orange-500/5' : 'hover:bg-(--bg-main)')"
-                                    class="transition-colors cursor-pointer"
-                                    @click="!ev.already_selected && selectEvaluator(ev.id, ev.name)">
-                                    <td class="px-5 py-4">
-                                        <div class="flex items-center gap-3">
-                                            <div class="w-10 h-10 rounded-xl bg-(--surface-card) border border-(--border-primary) flex items-center justify-center shrink-0">
-                                                <span class="font-black text-(--text-primary)" x-text="ev.name.charAt(0)"></span>
-                                            </div>
-                                            <div>
-                                                <a :href="`{{ url('/council-secretariat/evaluators') }}/${ev.id}`" target="_blank" 
-                                                   class="font-bold text-indigo-600 dark:text-indigo-400 hover:underline transition-colors" 
-                                                   x-text="ev.name"></a>
-                                                <p class="text-xs text-(--text-secondary)" x-text="ev.general_specialty"></p>
-                                            </div>
+                    {{-- PANEL 2: Conflict Details --}}
+                    <div x-show="pickerPanel === 'conflicts'"
+                        x-transition:enter="transition ease-out duration-400"
+                        x-transition:enter-start="opacity-0 -translate-x-full"
+                        x-transition:enter-end="opacity-100 translate-x-0"
+                        x-transition:leave="transition ease-in duration-300"
+                        x-transition:leave-start="opacity-100 translate-x-0"
+                        x-transition:leave-end="opacity-0 -translate-x-full"
+                        class="absolute inset-0 flex flex-col bg-(--bg-main)">
+
+                        <div class="px-6 py-6 flex flex-col h-full">
+                            <div class="flex items-center justify-between mb-8">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-12 h-12 rounded-2xl bg-red-50 dark:bg-red-500/10 text-red-600 flex items-center justify-center border border-red-100 dark:border-red-500/20 shadow-sm">
+                                        <i class="fa-solid fa-handshake-slash text-xl"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-(--text-primary) text-lg">تعارض المصالح</h4>
+                                        <p class="text-sm text-(--text-secondary)">أسباب التعارض المسجلة لهذا المقيم</p>
+                                    </div>
+                                </div>
+                                <button @click="backToSearch()" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-(--surface-card) border border-(--border-primary) text-(--text-primary) hover:bg-(--bg-main) transition font-bold text-sm cursor-pointer">
+                                    <i class="fa-solid fa-arrow-right-long"></i>
+                                    العودة لنتائج البحث
+                                </button>
+                            </div>
+
+                            <div class="flex-1 overflow-y-auto space-y-6">
+                                <div class="p-4 rounded-2xl bg-amber-50 dark:bg-amber-500/5 border border-amber-200 dark:border-amber-500/10 flex gap-4">
+                                    <div class="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0">
+                                        <i class="fa-solid fa-circle-exclamation"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="font-bold text-amber-900 dark:text-amber-300" x-text="pickerSelectedConflictInfo?.name"></p>
+                                        <p class="text-sm text-amber-800 dark:text-amber-400 mt-1">
+                                            هذا المقيم لديه تعارض مسجل مع الجامعة المعنية بهذا الطلب. يرجى مراجعة الأسباب أدناه لاتخاذ قرارك.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div class="space-y-4">
+                                    <h5 class="font-black text-(--text-primary) flex items-center gap-2 px-1">
+                                        <i class="fa-solid fa-list-ul text-xs opacity-50"></i>
+                                        تفاصيل التعارض:
+                                    </h5>
+                                    <template x-if="pickerSelectedConflictInfo?.conflict_details?.length">
+                                        <div class="grid grid-cols-1 gap-3">
+                                            <template x-for="(txt, idx) in pickerSelectedConflictInfo.conflict_details" :key="idx">
+                                                <div class="p-4 rounded-xl border border-(--border-primary) bg-(--surface-card) flex gap-3 items-start shadow-sm transition hover:shadow-md">
+                                                    <span class="w-6 h-6 rounded-lg bg-(--bg-main) border border-(--border-primary) text-[10px] font-black text-(--text-secondary) flex items-center justify-center shrink-0" x-text="idx + 1"></span>
+                                                    <p class="text-sm text-(--text-primary) leading-relaxed" x-text="txt"></p>
+                                                </div>
+                                            </template>
                                         </div>
-                                    </td>
-                                    <td class="px-5 py-4 text-center">
-                                        <span class="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-bold bg-(--bg-main) border border-(--border-primary) text-(--text-primary)"
-                                            x-text="ev.academic_rank"></span>
-                                    </td>
-                                    <td class="px-5 py-4 text-center text-(--text-secondary)" x-text="ev.city || '—'"></td>
-                                    <td class="px-5 py-4 text-center">
-                                        <i :class="ev.same_city ? 'fa-solid fa-circle-check text-green-500' : 'fa-solid fa-circle-xmark text-gray-300 dark:text-gray-600'"></i>
-                                    </td>
-                                    <td class="px-5 py-4 text-center">
-                                        <i :class="!ev.has_conflict ? 'fa-solid fa-circle-check text-green-500' : 'fa-solid fa-triangle-exclamation text-red-500'"></i>
-                                    </td>
-                                    <td class="px-5 py-4 text-center">
-                                        <template x-if="ev.already_selected">
-                                            <span class="text-xs font-bold text-(--text-secondary)">موجود</span>
-                                        </template>
-                                        <template x-if="!ev.already_selected">
-                                            <button type="button" @click.stop="selectEvaluator(ev.id, ev.name)"
-                                                :class="pickerSelectedId === ev.id
-                                                    ? 'bg-orange-500 text-white border-orange-500'
-                                                    : 'bg-(--surface-card) text-(--text-primary) border-(--border-primary) hover:border-orange-400 hover:text-orange-600'"
-                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-bold transition cursor-pointer">
-                                                <i :class="pickerSelectedId === ev.id ? 'fa-solid fa-check' : 'fa-solid fa-circle-plus'"></i>
-                                                <span x-text="pickerSelectedId === ev.id ? 'محدد' : 'اختيار'"></span>
-                                            </button>
-                                        </template>
-                                    </td>
-                                </tr>
-                            </template>
-                        </tbody>
-                    </table>
+                                    </template>
+                                    <template x-if="!pickerSelectedConflictInfo?.conflict_details?.length">
+                                        <div class="p-10 text-center opacity-40">
+                                            <i class="fa-solid fa-comment-slash text-4xl mb-3 block"></i>
+                                            <p>لا توجد تفاصيل نصية مسجلة للتعارض</p>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 {{-- Footer --}}
