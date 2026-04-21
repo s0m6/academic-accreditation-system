@@ -102,12 +102,29 @@ class RequestDashboardController extends Controller
             ->orderByDesc('id')
             ->get();
 
+        // Load committee data with active members for stage four panel
+        $committee = $accreditationRequest->committee;
+        if ($committee) {
+            $committee->load([
+                'activeMembers.evaluator.user',
+                'activeMembers.evaluator.city',
+                'chairEvaluator.user',
+            ]);
+        }
+
+        // Load council coordinators list for the coordinator selector modal
+        $coordinators = User::where('role', 'council_coordinator')
+            ->orderBy('name')
+            ->get(['id', 'name', 'email']);
+
         return [
             'accreditationRequest' => $accreditationRequest,
             'stages' => self::STAGES,
             'activeStage' => $activeStage,
             'prefill' => $prefill,
             'activeStageSubmissions' => $activeStageSubmissions,
+            'committee' => $committee,
+            'coordinators' => $coordinators,
         ];
     }
 

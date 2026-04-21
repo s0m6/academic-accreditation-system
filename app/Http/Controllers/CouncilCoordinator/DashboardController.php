@@ -15,7 +15,7 @@ class DashboardController extends Controller
     public function index()
     {
         $assignedCount = AccreditationRequest::where('council_coord_id', Auth::id())->count();
-        $recentRequests = AccreditationRequest::with(['program.college.university'])
+        $recentRequests = AccreditationRequest::with(['program.department.college.university'])
             ->where('council_coord_id', Auth::id())
             ->latest()
             ->take(5)
@@ -29,11 +29,11 @@ class DashboardController extends Controller
      */
     public function requests(Request $request)
     {
-        $requests = AccreditationRequest::with(['program.college.university'])
+        $requests = AccreditationRequest::with(['program.department.college.university'])
             ->where('council_coord_id', Auth::id())
             ->when($request->filled('search'), function ($query) use ($request) {
                 $query->whereHas('program', function ($q) use ($request) {
-                    $q->where('name', 'like', '%'.$request->search.'%');
+                    $q->where('program_name', 'like', '%'.$request->search.'%');
                 });
             })
             ->latest()

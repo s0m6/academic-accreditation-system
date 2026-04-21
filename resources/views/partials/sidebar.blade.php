@@ -218,6 +218,7 @@
                 </div>
                 <span class="sidebar-text font-semibold">طلبات الاعتماد</span>
             </a>
+
         @endif
 
         @if (auth()->user()->role == 'evaluator')
@@ -241,6 +242,27 @@
                 <span class="sidebar-text text-[14px] font-bold uppercase"
                     style="color: var(--text-primary);">التقييمات</span>
             </div>
+
+            <!-- Invitations / دعوات التقييم -->
+            <a href="{{ route('evaluator.invitations') }}"
+                class="sidebar-link {{ request()->routeIs('evaluator.invitations') ? 'sidebar-link-active' : '' }} group">
+                <div class="sidebar-icon-wrapper">
+                    <i class="fa-solid fa-envelope-open-text"></i>
+                </div>
+                <span class="sidebar-text font-semibold flex items-center gap-2">
+                    دعوات التقييم
+                    @php
+                        $pendingCount = auth()->user()->evaluator
+                            ?->committeeMemberships()
+                            ->where('is_active', true)
+                            ->where('member_status', 'pending_invite')
+                            ->count() ?? 0;
+                    @endphp
+                    @if($pendingCount > 0)
+                        <span class="inline-flex items-center justify-center w-5 h-5 text-[10px] font-black rounded-full bg-orange-500 text-white">{{ $pendingCount }}</span>
+                    @endif
+                </span>
+            </a>
 
             <!-- My Evaluations / تقييماتي -->
             <a href="#"

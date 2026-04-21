@@ -86,8 +86,8 @@
                                         <i class="fa-solid fa-graduation-cap"></i>
                                     </div>
                                     <div>
-                                        <div class="font-bold text-(--text-primary) text-[14px]">{{ $req->program->name }}</div>
-                                        <div class="text-[11px] text-(--text-secondary) font-normal">{{ $req->program->college->university->name }}</div>
+                                        <div class="font-bold text-(--text-primary) text-[14px]">{{ $req->program->program_name }}</div>
+                                        <div class="text-[11px] text-(--text-secondary) font-normal">{{ $req->program->department->college->university->name }}</div>
                                     </div>
                                 </div>
                             </td>
