@@ -78,6 +78,10 @@
   ::before {
     border-color: var(--border-primary);
   }
+
+  [x-cloak] {
+    display: none !important;
+  }
 }
 
 @layer components {

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CouncilSecretariat\CoordinatorController;
 use App\Http\Controllers\CouncilSecretariat\EvaluatorController;
 use App\Http\Controllers\CouncilSecretariat\RequestController;
 use App\Http\Controllers\CouncilSecretariat\UniversityController;
@@ -11,6 +12,12 @@ Route::get('/dashboard', function () {
 
 Route::get('/universities', [UniversityController::class, 'index'])->name('universities');
 Route::post('/universities/{university}/officer', [UniversityController::class, 'storeOfficer'])->name('universities.storeOfficer');
+
+// Council Coordinators management
+Route::prefix('coordinators')->name('coordinators.')->group(function () {
+    Route::get('/', [CoordinatorController::class, 'index'])->name('index');
+    Route::post('/', [CoordinatorController::class, 'store'])->name('store');
+});
 
 Route::prefix('requests')->name('requests.')->group(function () {
     Route::get('/stage-one', [RequestController::class, 'stageOne'])->name('stage_one');

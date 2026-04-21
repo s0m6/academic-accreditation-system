@@ -60,6 +60,15 @@
                 <span class="sidebar-text font-semibold">المقيمون</span>
             </a>
 
+            <!-- Council Coordinators / منسقي المجلس -->
+            <a href="{{ route('council_secretariat.coordinators.index') }}"
+                class="sidebar-link {{ request()->routeIs('council_secretariat.coordinators.*') ? 'sidebar-link-active' : '' }} group">
+                <div class="sidebar-icon-wrapper">
+                    <i class="fa-solid fa-user-gear"></i>
+                </div>
+                <span class="sidebar-text font-semibold">منسقي المجلس</span>
+            </a>
+
             <!-- Category: Accreditation / الاعتماد -->
             <div class="sidebar-category mt-8 mb-1 px-3">
                 <span class="sidebar-text text-[14px] font-bold uppercase"
@@ -210,6 +219,38 @@
                     <i class="fa-solid fa-clipboard-check"></i>
                 </div>
                 <span class="sidebar-text font-semibold">تقييماتي الجارية</span>
+            </a>
+        @endif
+
+        @if (auth()->user()->role == 'council_coordinator')
+            <!-- Category: General -->
+            <div class="sidebar-category mt-2 mb-1 px-3">
+                <span class="sidebar-text text-[14px] font-bold uppercase"
+                    style="color: var(--text-primary);">الرئيسية</span>
+            </div>
+
+            <!-- Dashboard / الرئيسية -->
+            <a href="{{ route('council_coordinator.dashboard') }}"
+                class="sidebar-link {{ request()->routeIs('council_coordinator.dashboard') ? 'sidebar-link-active' : '' }} group">
+                <div class="sidebar-icon-wrapper">
+                    <i class="fa-solid fa-house"></i>
+                </div>
+                <span class="sidebar-text font-semibold">الرئيسية</span>
+            </a>
+
+            <!-- Category: Accreditation / الاعتماد -->
+            <div class="sidebar-category mt-8 mb-1 px-3">
+                <span class="sidebar-text text-[14px] font-bold uppercase"
+                    style="color: var(--text-primary);">الاعتماد الأكاديمي</span>
+            </div>
+
+            <!-- Accreditation Requests / طلبات الاعتماد -->
+            <a href="{{ route('council_coordinator.requests') }}"
+                class="sidebar-link {{ request()->routeIs('council_coordinator.requests') ? 'sidebar-link-active' : '' }} group">
+                <div class="sidebar-icon-wrapper">
+                    <i class="fa-solid fa-file-invoice"></i>
+                </div>
+                <span class="sidebar-text font-semibold">طلبات الاعتماد</span>
             </a>
         @endif
 

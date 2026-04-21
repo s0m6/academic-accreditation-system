@@ -15,6 +15,7 @@ Route::get('/dashboard', function () {
         'accreditation_officer' => redirect()->route('accreditation_officer.dashboard'),
         'council_secretariat' => redirect()->route('council_secretariat.dashboard'),
         'program_coordinator' => redirect()->route('program_coordinator.dashboard'),
+        'council_coordinator' => redirect()->route('council_coordinator.dashboard'),
         'evaluator' => redirect()->route('evaluator.dashboard'),
         default => abort(403),
     };
@@ -34,6 +35,7 @@ Route::get('/blank', function () {
     return view('partials.blank');
 });
 require __DIR__.'/auth.php';
+require __DIR__.'/council_coordinator.php';
 
 // ------------------------------------------------------------------
 // Accreditation Request Dashboard — accessible to multiple roles

@@ -42,4 +42,16 @@ class UserFactory extends Factory
             'email_verified_at' => null,
         ]);
     }
+
+    /**
+     * Indicate that the user is a council coordinator.
+     */
+    public function coordinator(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'role' => 'council_coordinator',
+            'mobile' => fake()->phoneNumber(),
+            'phone' => fake()->phoneNumber(),
+        ]);
+    }
 }
