@@ -41,6 +41,7 @@ require __DIR__.'/council_coordinator.php';
 // Accreditation Request Dashboard — accessible to multiple roles
 // ------------------------------------------------------------------
 use App\Http\Controllers\RequestDashboardController;
+use App\Http\Controllers\stages\StageFourController;
 use App\Http\Controllers\stages\StageOneController;
 use App\Http\Controllers\stages\StageThreeController;
 use App\Http\Controllers\stages\StageTwoController;
@@ -113,5 +114,21 @@ Route::middleware('auth')->group(function () {
         ->name('requests.stage_three.reject');
     Route::patch('/requests/{accreditationRequest}/stage-three/{formSubmission}/approve', [StageThreeController::class, 'approve'])
         ->name('requests.stage_three.approve');
+
+    // Stage Four actions
+    Route::patch('/requests/{accreditationRequest}/stage-four/coordinator', [StageFourController::class, 'assignCoordinator'])
+        ->name('requests.stage_four.assign_coordinator');
+    Route::get('/requests/{accreditationRequest}/stage-four/search-evaluators', [StageFourController::class, 'searchEvaluators'])
+        ->name('requests.stage_four.search_evaluators');
+    Route::post('/requests/{accreditationRequest}/stage-four/invite-member', [StageFourController::class, 'inviteMember'])
+        ->name('requests.stage_four.invite_member');
+    Route::patch('/requests/{accreditationRequest}/stage-four/replace-member/{committeeMember}', [StageFourController::class, 'replaceMember'])
+        ->name('requests.stage_four.replace_member');
+    Route::patch('/requests/{accreditationRequest}/stage-four/cancel-member/{committeeMember}', [StageFourController::class, 'cancelMember'])
+        ->name('requests.stage_four.cancel_member');
+    Route::post('/requests/{accreditationRequest}/stage-four/reinvite-member/{committeeMember}', [StageFourController::class, 'reinviteMember'])
+        ->name('requests.stage_four.reinvite_member');
+    Route::patch('/requests/{accreditationRequest}/stage-four/approve-committee', [StageFourController::class, 'approveCommittee'])
+        ->name('requests.stage_four.approve_committee');
 
 });

@@ -44,4 +44,12 @@ class AccreditationRequest extends Model
     {
         return $this->hasMany(FormSubmission::class);
     }
+
+    /**
+     * Get the evaluation committee for this request.
+     */
+    public function committee()
+    {
+        return $this->hasOne(Committee::class);
+    }
 }

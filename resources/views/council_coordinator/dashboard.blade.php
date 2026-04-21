@@ -63,8 +63,8 @@
                         @endphp
                         <tr class="hover:bg-(--border-primary)/30 transition-colors">
                             <td class="px-6 py-4 text-start font-bold text-(--text-primary)">
-                                <div>{{ $req->program->name }}</div>
-                                <div class="text-xs text-(--text-secondary) font-normal">{{ $req->program->college->university->name }}</div>
+                                <div>{{ $req->program->program_name }}</div>
+                                <div class="text-xs text-(--text-secondary) font-normal">{{ $req->program->department->college->university->name }}</div>
                             </td>
                             <td class="px-6 py-4">
                                 <span class="px-3 py-1.5 rounded-lg text-xs font-bold bg-brand-50 text-brand-700 border border-brand-100">

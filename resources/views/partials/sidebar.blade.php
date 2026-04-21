@@ -108,7 +108,37 @@
                     <a href="{{ route('council_secretariat.requests.stage_three') }}" 
                         class="flex items-center gap-2 py-2 text-sm font-medium transition-all hover:text-orange-600 dark:hover:text-orange-400 {{ request()->routeIs('council_secretariat.requests.stage_three') ? 'text-orange-600 dark:text-orange-400 font-bold translate-x-1' : 'text-(--text-secondary)' }}">
                         <span class="w-6 h-6 flex items-center justify-center rounded-full bg-orange-100 text-orange-700 text-[12px] font-black dark:bg-orange-500/20 dark:text-orange-400 border border-orange-200 dark:border-orange-500/30">3</span>
-                        تقرير الدراسة الذاتيه
+                        تقرير الدراسة الذاتية
+                    </a>
+
+                    <a href="{{ route('council_secretariat.requests.stage_four') }}" 
+                        class="flex items-center gap-2 py-2 text-sm font-medium transition-all hover:text-orange-600 dark:hover:text-orange-400 {{ request()->routeIs('council_secretariat.requests.stage_four') ? 'text-orange-600 dark:text-orange-400 font-bold translate-x-1' : 'text-(--text-secondary)' }}">
+                        <span class="w-6 h-6 flex items-center justify-center rounded-full bg-orange-100 text-orange-700 text-[12px] font-black dark:bg-orange-500/20 dark:text-orange-400 border border-orange-200 dark:border-orange-500/30">4</span>
+                        اختيار لجنة التقييم
+                    </a>
+
+                    <a href="{{ route('council_secretariat.requests.stage_five') }}" 
+                        class="flex items-center gap-2 py-2 text-sm font-medium transition-all hover:text-orange-600 dark:hover:text-orange-400 {{ request()->routeIs('council_secretariat.requests.stage_five') ? 'text-orange-600 dark:text-orange-400 font-bold translate-x-1' : 'text-(--text-secondary)' }}">
+                        <span class="w-6 h-6 flex items-center justify-center rounded-full bg-orange-100 text-orange-700 text-[12px] font-black dark:bg-orange-500/20 dark:text-orange-400 border border-orange-200 dark:border-orange-500/30">5</span>
+                        تحديد جدول الزيارة
+                    </a>
+
+                    <a href="{{ route('council_secretariat.requests.stage_six') }}" 
+                        class="flex items-center gap-2 py-2 text-sm font-medium transition-all hover:text-orange-600 dark:hover:text-orange-400 {{ request()->routeIs('council_secretariat.requests.stage_six') ? 'text-orange-600 dark:text-orange-400 font-bold translate-x-1' : 'text-(--text-secondary)' }}">
+                        <span class="w-6 h-6 flex items-center justify-center rounded-full bg-orange-100 text-orange-700 text-[12px] font-black dark:bg-orange-500/20 dark:text-orange-400 border border-orange-200 dark:border-orange-500/30">6</span>
+                        تقارير نتائج التقييم(الأولية)
+                    </a>
+
+                    <a href="{{ route('council_secretariat.requests.stage_seven') }}" 
+                        class="flex items-center gap-2 py-2 text-sm font-medium transition-all hover:text-orange-600 dark:hover:text-orange-400 {{ request()->routeIs('council_secretariat.requests.stage_seven') ? 'text-orange-600 dark:text-orange-400 font-bold translate-x-1' : 'text-(--text-secondary)' }}">
+                        <span class="w-6 h-6 flex items-center justify-center rounded-full bg-orange-100 text-orange-700 text-[12px] font-black dark:bg-orange-500/20 dark:text-orange-400 border border-orange-200 dark:border-orange-500/30">7</span>
+                        توصيات اللجنة والرد عليها
+                    </a>
+
+                    <a href="{{ route('council_secretariat.requests.stage_eight') }}" 
+                        class="flex items-center gap-2 py-2 text-sm font-medium transition-all hover:text-orange-600 dark:hover:text-orange-400 {{ request()->routeIs('council_secretariat.requests.stage_eight') ? 'text-orange-600 dark:text-orange-400 font-bold translate-x-1' : 'text-(--text-secondary)' }}">
+                        <span class="w-6 h-6 flex items-center justify-center rounded-full bg-orange-100 text-orange-700 text-[12px] font-black dark:bg-orange-500/20 dark:text-orange-400 border border-orange-200 dark:border-orange-500/30">8</span>
+                        تقارير نتائج التقييم(الختامية)
                     </a>
                 </div>
             </div>
@@ -188,6 +218,7 @@
                 </div>
                 <span class="sidebar-text font-semibold">طلبات الاعتماد</span>
             </a>
+
         @endif
 
         @if (auth()->user()->role == 'evaluator')
@@ -212,9 +243,30 @@
                     style="color: var(--text-primary);">التقييمات</span>
             </div>
 
+            <!-- Invitations / دعوات التقييم -->
+            <a href="{{ route('evaluator.invitations') }}"
+                class="sidebar-link {{ request()->routeIs('evaluator.invitations') ? 'sidebar-link-active' : '' }} group">
+                <div class="sidebar-icon-wrapper">
+                    <i class="fa-solid fa-envelope-open-text"></i>
+                </div>
+                <span class="sidebar-text font-semibold flex items-center gap-2">
+                    دعوات التقييم
+                    @php
+                        $pendingCount = auth()->user()->evaluator
+                            ?->committeeMemberships()
+                            ->where('is_active', true)
+                            ->where('member_status', 'pending_invite')
+                            ->count() ?? 0;
+                    @endphp
+                    @if($pendingCount > 0)
+                        <span class="inline-flex items-center justify-center w-5 h-5 text-[10px] font-black rounded-full bg-orange-500 text-white">{{ $pendingCount }}</span>
+                    @endif
+                </span>
+            </a>
+
             <!-- My Evaluations / تقييماتي -->
-            <a href="#"
-                class="sidebar-link group">
+            <a href="{{ route('evaluator.evaluations') }}"
+                class="sidebar-link {{ request()->routeIs('evaluator.evaluations') ? 'sidebar-link-active' : '' }} group">
                 <div class="sidebar-icon-wrapper">
                     <i class="fa-solid fa-clipboard-check"></i>
                 </div>

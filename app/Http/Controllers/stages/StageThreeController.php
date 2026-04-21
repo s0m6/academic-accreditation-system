@@ -4,6 +4,7 @@ namespace App\Http\Controllers\stages;
 
 use App\Http\Controllers\Controller;
 use App\Models\AccreditationRequest;
+use App\Models\Committee;
 use App\Models\Evidence;
 use App\Models\FormSubmission;
 use App\Models\Indicator;
@@ -132,7 +133,7 @@ class StageThreeController extends Controller
         });
 
         return redirect()->route('requests.stage_three.edit', [$accreditationRequest->id, $formSubmission->id])
-                         ->with('success', 'تم إنشاء مسودة جديدة بنجاح، يمكنك الآن التعديل والحفظ.');
+            ->with('success', 'تم إنشاء مسودة جديدة بنجاح، يمكنك الآن التعديل والحفظ.');
     }
 
     // Show the stage three edit form, loading all required data.
@@ -257,7 +258,7 @@ class StageThreeController extends Controller
     // Save the stage three draft: form_data JSON + indicator scores.
     public function saveDraft(Request $request, AccreditationRequest $accreditationRequest, FormSubmission $formSubmission)
     {
-    
+
         $user = $request->user();
         if ($user->role !== 'program_coordinator' || $formSubmission->status !== 'draft') {
             return response()->json(['success' => false, 'message' => 'Unauthorized or non-draft state'], 403);
@@ -305,9 +306,9 @@ class StageThreeController extends Controller
                             ->first();
                         if ($existing) {
                             $submittedEvidenceIds[] = $existing->id;
-                            
+
                             // Update the file_name if it was modified in the UI
-                            if (!empty($evData['file_name']) && $existing->file_name !== $evData['file_name']) {
+                            if (! empty($evData['file_name']) && $existing->file_name !== $evData['file_name']) {
                                 $existing->update(['file_name' => $evData['file_name']]);
                             }
                         }
@@ -465,18 +466,27 @@ class StageThreeController extends Controller
         }
         $this->ensureAuthorized($request, $accreditationRequest, $formSubmission);
 
-        $formSubmission->update([
-            'status' => 'approved',
-            'decided_by' => $user->id,
-            'decision_at' => Carbon::now(),
-        ]);
+        DB::transaction(function () use ($formSubmission, $user, $accreditationRequest) {
+            $formSubmission->update([
+                'status' => 'approved',
+                'decided_by' => $user->id,
+                'decision_at' => Carbon::now(),
+            ]);
 
-        // Advance the request to stage four
-        $accreditationRequest->update([
-            'current_stage' => 'stage_four',
-        ]);
+            // Advance the request to stage four
+            $accreditationRequest->update([
+                'current_stage' => 'stage_four',
+            ]);
 
-        return back()->with('success', 'تمت الموافقة على التقرير بنجاح. الطلب الآن في المرحلة الرابعة.');
+            // Create the evaluation committee in "forming" status
+            Committee::create([
+                'accreditation_request_id' => $accreditationRequest->id,
+                'status' => 'forming',
+                'chair_evaluator_id' => null,
+            ]);
+        });
+
+        return back()->with('success', 'تمت الموافقة على التقرير بنجاح، وتم إنشاء لجنة التقييم (قيد التشكيل). الطلب الآن في المرحلة الرابعة.');
     }
 
     // Ensure the submission belongs to the correct request and the user is authorized.
