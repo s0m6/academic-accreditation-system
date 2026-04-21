@@ -18,6 +18,13 @@
         this.declineActionUrl = url;
         this.declineReasons = [''];
         this.showDeclineModal = true;
+    },
+
+    showAcceptModal: false,
+    acceptActionUrl: '',
+    openAccept(url) {
+        this.acceptActionUrl = url;
+        this.showAcceptModal = true;
     }
 }">
 
@@ -135,13 +142,11 @@
                         {{-- Action buttons for pending_invite --}}
                         @if($invitation->member_status === 'pending_invite')
                             <div class="flex items-center gap-3 pt-4 border-t border-(--border-primary) flex-wrap">
-                                <form method="POST" action="{{ route('evaluator.invitations.accept', $invitation) }}">
-                                    @csrf @method('PATCH')
-                                    <button type="submit"
-                                        class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-green-600 hover:bg-green-700 text-white text-sm font-bold transition-colors shadow-md shadow-green-500/20 cursor-pointer">
-                                        <i class="fa-solid fa-circle-check"></i> قبول الدعوة
-                                    </button>
-                                </form>
+                                <button type="button"
+                                    @click="openAccept('{{ route('evaluator.invitations.accept', $invitation) }}')"
+                                    class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-green-600 hover:bg-green-700 text-white text-sm font-bold transition-colors shadow-md shadow-green-500/20 cursor-pointer">
+                                    <i class="fa-solid fa-circle-check"></i> قبول الدعوة
+                                </button>
 
                                 <button type="button"
                                     @click="openDecline({{ $invitation->id }}, '{{ route('evaluator.invitations.decline', $invitation) }}')"
@@ -219,6 +224,50 @@
                             <button type="submit"
                                 class="px-6 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-black transition cursor-pointer">
                                 <i class="fa-solid fa-circle-xmark me-1"></i> تأكيد الرفض
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </template>
+    {{-- MODAL: قبول الدعوة --}}
+    <template x-teleport="body">
+        <div x-show="showAcceptModal" style="display:none" class="relative z-[200]" role="dialog" aria-modal="true">
+            <div class="fixed inset-0 bg-black/60 backdrop-blur-sm"></div>
+            <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
+                <div x-show="showAcceptModal"
+                    x-transition:enter="ease-out duration-200" x-transition:enter-start="opacity-0 scale-95"
+                    x-transition:enter-end="opacity-100 scale-100"
+                    @click.away="showAcceptModal = false"
+                    class="relative w-full max-w-md rounded-2xl bg-(--surface-card) border border-(--border-primary) shadow-2xl text-start overflow-hidden">
+                    
+                    <div class="px-6 py-5 border-b border-(--border-primary) bg-(--bg-main) flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-2xl bg-green-50 dark:bg-green-500/10 text-green-600 dark:text-green-400 flex items-center justify-center border border-green-100 dark:border-green-500/20">
+                            <i class="fa-solid fa-circle-check text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-(--text-primary)">تأكيد قبول الدعوة</h3>
+                            <p class="text-xs text-(--text-secondary)">سيتم تسجيل موافقتك على المشاركة في اللجنة</p>
+                        </div>
+                    </div>
+
+                    <div class="p-6">
+                        <p class="text-sm text-(--text-primary) leading-relaxed">
+                            هل أنت متأكد من رغبتك في قبول هذه الدعوة؟ بقبولك للدعوة، فإنك تؤكد استعدادك للبدء في عملية التقييم الأكاديمي لهذا البرنامج وفق الجداول الزمنية المحددة.
+                        </p>
+                    </div>
+
+                    <form method="POST" :action="acceptActionUrl">
+                        @csrf @method('PATCH')
+                        <div class="px-6 py-4 border-t border-(--border-primary) bg-(--bg-main) flex justify-end gap-3">
+                            <button type="button" @click="showAcceptModal = false"
+                                class="px-5 py-2.5 rounded-xl border border-(--border-primary) text-(--text-primary) text-sm font-bold hover:bg-(--bg-main) transition cursor-pointer">
+                                إلغاء
+                            </button>
+                            <button type="submit"
+                                class="px-6 py-2.5 rounded-xl bg-green-600 hover:bg-green-700 text-white text-sm font-black shadow-lg shadow-green-500/20 transition cursor-pointer">
+                                <i class="fa-solid fa-check me-1"></i> تأكيد القبول
                             </button>
                         </div>
                     </form>

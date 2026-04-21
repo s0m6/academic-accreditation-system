@@ -66,6 +66,10 @@
     showApproveCommitteeModal: false,
     chairEvaluatorId: '',
 
+    // Approve member confirmation modal
+    showApproveMemberModal: false,
+    approveMemberUrl: '',
+
     // View reject reasons modal
     showViewReasonsModal: false,
     viewReasons: [],
@@ -373,13 +377,11 @@
                             {{-- Program coord actions —  pending_uni only --}}
                             @if($isProgramCoord && $member->member_status === 'pending_uni')
                                 <div class="flex gap-2 mt-auto">
-                                    <form method="POST" action="{{ route('program_coordinator.committee.approve', $member->id) }}" class="flex-1">
-                                        @csrf @method('PATCH')
-                                        <button type="submit"
-                                            class="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-green-600 hover:bg-green-700 text-white text-xs font-bold transition-colors cursor-pointer">
-                                            <i class="fa-solid fa-check"></i> موافقة
-                                        </button>
-                                    </form>
+                                    <button type="button"
+                                        @click="showApproveMemberModal = true; approveMemberUrl = '{{ route('program_coordinator.committee.approve', $member->id) }}'"
+                                        class="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-green-600 hover:bg-green-700 text-white text-xs font-bold transition-colors cursor-pointer">
+                                        <i class="fa-solid fa-check"></i> موافقة
+                                    </button>
                                     <button type="button"
                                         @click="showRejectModal = true; rejectMemberId = {{ $member->id }}; rejectReasons = ['']"
                                         class="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-red-50 dark:bg-red-500/10 hover:bg-red-100 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-500/20 text-xs font-bold transition-colors cursor-pointer">
@@ -952,6 +954,53 @@
                             فهمت ذلك
                         </button>
                     </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    {{-- ═══════════════════════════════════════════════════════════════════════════ --}}
+    {{-- MODAL: تأكيد موافقة الجامعة على العضو --}}
+    {{-- ═══════════════════════════════════════════════════════════════════════════ --}}
+    <template x-teleport="body">
+        <div x-show="showApproveMemberModal" style="display:none" class="relative z-[200]" role="dialog" aria-modal="true">
+            <div class="fixed inset-0 bg-black/60 backdrop-blur-sm"></div>
+            <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
+                <div x-show="showApproveMemberModal"
+                    x-transition:enter="ease-out duration-200" x-transition:enter-start="opacity-0 scale-95"
+                    x-transition:enter-end="opacity-100 scale-100"
+                    @click.away="showApproveMemberModal = false"
+                    class="relative w-full max-w-md rounded-2xl bg-(--surface-card) border border-(--border-primary) shadow-2xl text-start overflow-hidden">
+                    
+                    <div class="px-6 py-5 border-b border-(--border-primary) bg-(--bg-main) flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-2xl bg-green-50 dark:bg-green-500/10 text-green-600 dark:text-green-400 flex items-center justify-center border border-green-100 dark:border-green-500/20">
+                            <i class="fa-solid fa-circle-check text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-(--text-primary)">تأكيد الموافقة</h3>
+                            <p class="text-xs text-(--text-secondary)">سيتم اعتماد هذا المقيم من جانب الجامعة</p>
+                        </div>
+                    </div>
+
+                    <div class="p-6">
+                        <p class="text-sm text-(--text-primary) leading-relaxed">
+                            هل أنت متأكد من رغبتك في الموافقة على هذا المقيم للانضمام إلى اللجنة؟ سيتم إخطار المجلس بموافقة الجامعة.
+                        </p>
+                    </div>
+
+                    <form method="POST" :action="approveMemberUrl">
+                        @csrf @method('PATCH')
+                        <div class="px-6 py-4 border-t border-(--border-primary) bg-(--bg-main) flex justify-end gap-3">
+                            <button type="button" @click="showApproveMemberModal = false"
+                                class="px-5 py-2.5 rounded-xl border border-(--border-primary) text-(--text-primary) text-sm font-bold hover:bg-(--bg-main) transition cursor-pointer">
+                                إلغاء
+                            </button>
+                            <button type="submit"
+                                class="px-6 py-2.5 rounded-xl bg-green-600 hover:bg-green-700 text-white text-sm font-black shadow-lg shadow-green-500/20 transition cursor-pointer">
+                                <i class="fa-solid fa-check me-1"></i> موافقة وتأكيد
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
