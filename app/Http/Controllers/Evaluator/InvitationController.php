@@ -21,7 +21,6 @@ class InvitationController extends Controller
 
         // Load active invitations with full committee/request/program chain
         $invitations = CommitteeMember::where('evaluator_id', $evaluator->id)
-            ->where('is_active', true)
             ->with([
                 'committee.accreditationRequest.program.department.college.university',
             ])

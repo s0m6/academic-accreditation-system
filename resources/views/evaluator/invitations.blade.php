@@ -58,86 +58,184 @@
     @else
         <div class="space-y-4">
             @foreach ($invitations as $invitation)
-                @php
-                    $request = $invitation->committee->accreditationRequest;
-                    $program = $request->program;
-                    $dept = $program->department;
-                    $college = $dept->college;
-                    $university = $college->university;
+                    @php
+                        $request = $invitation->committee->accreditationRequest;
+                        $program = $request->program;
+                        $dept = $program->department;
+                        $college = $dept->college;
+                        $university = $college->university;
 
-                    $statusConfig = [
-                        'pending_invite'     => ['label' => 'في انتظار ردك', 'color' => 'amber', 'icon' => 'clock'],
-                        'pending_uni'        => ['label' => 'بانتظار موافقة الجامعة', 'color' => 'blue', 'icon' => 'hourglass-half'],
-                        'declined_by_member' => ['label' => 'رفضت الدعوة', 'color' => 'red', 'icon' => 'circle-xmark'],
-                        'declined_by_uni'    => ['label' => 'رفضت الجامعة', 'color' => 'red', 'icon' => 'circle-xmark'],
-                        'accepted'           => ['label' => 'مقبولة ومؤكدة', 'color' => 'green', 'icon' => 'circle-check'],
-                    ];
-                    $st = $statusConfig[$invitation->member_status] ?? $statusConfig['pending_invite'];
-                @endphp
+                        $statusConfig = [
+                            'pending_invite'     => ['label' => 'في انتظار ردك', 'color' => 'amber', 'icon' => 'clock'],
+                            'pending_uni'        => ['label' => 'بانتظار موافقة الجامعة', 'color' => 'blue', 'icon' => 'hourglass-half'],
+                            'declined_by_member' => ['label' => 'رفضت الدعوة', 'color' => 'red', 'icon' => 'circle-xmark'],
+                            'declined_by_uni'    => ['label' => 'رفضت الجامعة', 'color' => 'red', 'icon' => 'circle-xmark'],
+                            'accepted'           => ['label' => 'مقبولة ومؤكدة', 'color' => 'green', 'icon' => 'circle-check'],
+                            'canceled'           => ['label' => 'ملغاة من الأمانة', 'color' => 'gray', 'icon' => 'ban'],
+                        ];
+                        $st = $statusConfig[$invitation->member_status] ?? $statusConfig['pending_invite'];
 
-                <div class="rounded-2xl border border-(--border-primary) bg-(--surface-card) shadow-sm overflow-hidden">
-                    {{-- Card Header --}}
-                    <div class="px-6 py-4 border-b border-(--border-primary) bg-(--bg-main) flex items-center justify-between flex-wrap gap-3">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-2xl bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 flex items-center justify-center border border-orange-100 dark:border-orange-500/20 shrink-0">
-                                <i class="fa-solid fa-graduation-cap"></i>
+                        // Dynamic check: if member accepted and university responded, but committee not finalized
+                        if ($invitation->member_status === 'accepted' && $invitation->committee->status === 'forming') {
+                            $st = [
+                                'label' => 'وافقت الجامعة - بانتظار الأمانة',
+                                'color' => 'blue',
+                                'icon' => 'hourglass-half'
+                            ];
+                        }
+                    @endphp
+
+                    <div class="rounded-2xl border border-(--border-primary) bg-(--surface-card) shadow-sm overflow-hidden {{ $invitation->member_status === 'canceled' ? 'opacity-70 grayscale' : '' }}">
+                        {{-- Card Header --}}
+                        <div class="px-6 py-4 border-b border-(--border-primary) bg-(--bg-main) flex items-center justify-between flex-wrap gap-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-2xl bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 flex items-center justify-center border border-orange-100 dark:border-orange-500/20 shrink-0">
+                                    <i class="fa-solid fa-graduation-cap"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-(--text-primary)">{{ $program->program_name }}</h3>
+                                    <p class="text-xs text-(--text-secondary)">{{ $university->name }} — {{ $college->name }}</p>
+                                </div>
                             </div>
-                            <div>
-                                <h3 class="font-bold text-(--text-primary)">{{ $program->program_name }}</h3>
-                                <p class="text-xs text-(--text-secondary)">{{ $university->name }} — {{ $college->name }}</p>
-                            </div>
+
+                            {{-- Status badge --}}
+                            <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold border
+                                {{ $st['color'] === 'green' ? 'bg-green-50 text-green-700 border-green-200 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/20'
+                                : ($st['color'] === 'amber' ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20'
+                                : ($st['color'] === 'blue' ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20'
+                                : ($st['color'] === 'gray' ? 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-500/10 dark:text-gray-400 dark:border-gray-500/20'
+                                : 'bg-red-50 text-red-700 border-red-200 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20'))) }}">
+                                <i class="fa-solid fa-{{ $st['icon'] }}"></i>
+                                {{ $st['label'] }}
+                            </span>
                         </div>
 
-                        {{-- Status badge --}}
-                        <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold border
-                            {{ $st['color'] === 'green' ? 'bg-green-50 text-green-700 border-green-200 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/20'
-                            : ($st['color'] === 'amber' ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20'
-                            : ($st['color'] === 'blue' ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20'
-                            : 'bg-red-50 text-red-700 border-red-200 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20')) }}">
-                            <i class="fa-solid fa-{{ $st['icon'] }}"></i>
-                            {{ $st['label'] }}
-                        </span>
-                    </div>
+                        {{-- Card Body --}}
+                        <div class="p-6">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                                {{-- University --}}
+                                <div class="bg-(--bg-main) rounded-xl p-4 border border-(--border-primary)">
+                                    <p class="text-xs font-bold text-(--text-secondary) uppercase tracking-wider mb-1">الجامعة</p>
+                                    <p class="font-bold text-(--text-primary)">{{ $university->name }}</p>
+                                </div>
 
-                    {{-- Card Body --}}
-                    <div class="p-6">
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
-                            {{-- University --}}
-                            <div class="bg-(--bg-main) rounded-xl p-4 border border-(--border-primary)">
-                                <p class="text-xs font-bold text-(--text-secondary) uppercase tracking-wider mb-1">الجامعة</p>
-                                <p class="font-bold text-(--text-primary)">{{ $university->name }}</p>
-                                <span class="text-xs text-(--text-secondary)">{{ $university->type === 'government' ? 'حكومية' : 'خاصة' }}</span>
+                                {{-- College --}}
+                                <div class="bg-(--bg-main) rounded-xl p-4 border border-(--border-primary)">
+                                    <p class="text-xs font-bold text-(--text-secondary) uppercase tracking-wider mb-1">الكلية</p>
+                                    <p class="font-bold text-(--text-primary) truncate">{{ $college->name }}</p>
+                                </div>
+
+                                {{-- Program --}}
+                                <div class="bg-(--bg-main) rounded-xl p-4 border border-(--border-primary)">
+                                    <p class="text-xs font-bold text-(--text-secondary) uppercase tracking-wider mb-1">البرنامج</p>
+                                    <p class="font-bold text-(--text-primary) truncate">{{ $program->program_name }}</p>
+                                </div>
+
+                                {{-- Current Phase --}}
+                                <div class="bg-(--bg-main) rounded-xl p-4 border border-(--border-primary)">
+                                    <p class="text-xs font-bold text-(--text-secondary) uppercase tracking-wider mb-1">المرحلة الحالية</p>
+                                    <p class="font-bold text-(--text-primary)">{{ $st['label'] }}</p>
+                                </div>
                             </div>
 
-                            {{-- College --}}
-                            <div class="bg-(--bg-main) rounded-xl p-4 border border-(--border-primary)">
-                                <p class="text-xs font-bold text-(--text-secondary) uppercase tracking-wider mb-1">الكلية</p>
-                                <p class="font-bold text-(--text-primary) truncate">{{ $college->name }}</p>
-                                <p class="text-xs text-(--text-secondary) truncate">{{ $dept->name }}</p>
-                            </div>
+                            {{-- Timeline - History --}}
+                            <div class="mb-8">
+                                <h4 class="text-xs font-black text-(--text-secondary) uppercase tracking-[0.1em] flex items-center gap-2 mb-5">
+                                    <i class="fa-solid fa-clock-rotate-left"></i> تسلسل حالة الدعوة
+                                </h4>
+                                <div class="relative space-y-6 before:content-[''] before:absolute before:right-[11px] before:top-2 before:bottom-2 before:w-[2px] before:bg-(--border-primary)">
+                                    
+                                    {{-- 1. Invitation Sent --}}
+                                    <div class="relative ps-8">
+                                        <div class="absolute right-0 top-1.5 w-6 h-6 rounded-full bg-orange-100 dark:bg-orange-500/10 border-2 border-orange-500 flex items-center justify-center z-10">
+                                            <i class="fa-solid fa-paper-plane text-[10px] text-orange-600"></i>
+                                        </div>
+                                        <div class="flex flex-col">
+                                            <span class="text-sm font-bold text-(--text-primary)">إرسال الدعوة من أمانة المجلس</span>
+                                            <span class="text-[11px] text-(--text-secondary)">{{ $invitation->invite_sent_at?->format('Y/m/d H:i') ?: '—' }} ({{ $invitation->invite_sent_at?->diffForHumans() }})</span>
+                                        </div>
+                                    </div>
 
-                            {{-- Program --}}
-                            <div class="bg-(--bg-main) rounded-xl p-4 border border-(--border-primary)">
-                                <p class="text-xs font-bold text-(--text-secondary) uppercase tracking-wider mb-1">البرنامج</p>
-                                <p class="font-bold text-(--text-primary) truncate">{{ $program->program_name }}</p>
-                                <span class="text-xs px-2 py-0.5 rounded-md bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-500/20 inline-block mt-1">
-                                    {{ match($program->degree_level) {
-                                        'diploma' => 'دبلوم',
-                                        'bachelor' => 'بكالوريوس',
-                                        'master' => 'ماجستير',
-                                        'phd' => 'دكتوراه',
-                                        default => $program->degree_level
-                                    } }}
-                                </span>
-                            </div>
+                                    {{-- 2. Evaluator Response --}}
+                                    @if($invitation->member_responded_at)
+                                        @php $mApproved = !in_array($invitation->member_status, ['declined_by_member']); @endphp
+                                        <div class="relative ps-8">
+                                            <div class="absolute right-0 top-1.5 w-6 h-6 rounded-full {{ $mApproved ? 'bg-indigo-100 dark:bg-indigo-500/10 border-2 border-indigo-500' : 'bg-red-100 dark:bg-red-500/10 border-2 border-red-500' }} flex items-center justify-center z-10">
+                                                <i class="fa-solid fa-{{ $mApproved ? 'check' : 'xmark' }} text-[10px] {{ $mApproved ? 'text-indigo-600' : 'text-red-600' }}"></i>
+                                            </div>
+                                            <div class="flex flex-col">
+                                                <div class="flex items-center gap-2">
+                                                    <span class="text-sm font-bold text-(--text-primary)">ردك على الدعوة:</span>
+                                                    <span class="text-xs font-black {{ $mApproved ? 'text-indigo-600' : 'text-red-600' }}">({{ $mApproved ? 'بالموافقة' : 'بالاعتذار' }})</span>
+                                                </div>
+                                                <span class="text-[11px] text-(--text-secondary)">{{ $invitation->member_responded_at->format('Y/m/d H:i') }}</span>
+                                                @if(!$mApproved && $invitation->reject_reason)
+                                                    <p class="text-xs text-red-500/80 mt-1 italic">الأسباب: {{ implode('، ', $invitation->reject_reason) }}</p>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    @endif
 
-                            {{-- Date --}}
-                            <div class="bg-(--bg-main) rounded-xl p-4 border border-(--border-primary)">
-                                <p class="text-xs font-bold text-(--text-secondary) uppercase tracking-wider mb-1">تاريخ الدعوة</p>
-                                <p class="font-bold text-(--text-primary)">{{ $invitation->invite_sent_at?->format('Y/m/d') }}</p>
-                                <p class="text-xs text-(--text-secondary)">{{ $invitation->invite_sent_at?->diffForHumans() }}</p>
+                                    {{-- 3. University Response --}}
+                                    @if($invitation->university_responded_at)
+                                        @php $uApproved = !in_array($invitation->member_status, ['declined_by_uni']); @endphp
+                                        <div class="relative ps-8">
+                                            <div class="absolute right-0 top-1.5 w-6 h-6 rounded-full {{ $uApproved ? 'bg-green-100 dark:bg-green-500/10 border-2 border-green-500' : 'bg-red-100 dark:bg-red-500/10 border-2 border-red-500' }} flex items-center justify-center z-10">
+                                                <i class="fa-solid fa-building-circle-{{ $uApproved ? 'check' : 'xmark' }} text-[10px] {{ $uApproved ? 'text-green-600' : 'text-red-600' }}"></i>
+                                            </div>
+                                            <div class="flex flex-col">
+                                                <div class="flex items-center gap-2">
+                                                    <span class="text-sm font-bold text-(--text-primary)">رد الجامعة (منسق البرنامج):</span>
+                                                    <span class="text-xs font-black {{ $uApproved ? 'text-green-600' : 'text-red-600' }}">({{ $uApproved ? 'بالموافقة' : 'بالرفض' }})</span>
+                                                </div>
+                                                <span class="text-[11px] text-(--text-secondary)">{{ $invitation->university_responded_at->format('Y/m/d H:i') }}</span>
+                                                @if(!$uApproved && $invitation->reject_reason)
+                                                    <p class="text-xs text-red-500/80 mt-1 italic">الأسباب: {{ is_array($invitation->reject_reason) ? implode('، ', $invitation->reject_reason) : $invitation->reject_reason }}</p>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    @endif
+
+                                    {{-- 4. Final Steps - Waiting for Secretariat vs Official Approval --}}
+                                    @if($invitation->member_status === 'accepted')
+                                        @if($invitation->committee->status === 'forming')
+                                            <div class="relative ps-8">
+                                                <div class="absolute right-0 top-1.5 w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-500/10 border-2 border-blue-500 flex items-center justify-center z-10">
+                                                    <i class="fa-solid fa-hourglass-start text-[10px] text-blue-600"></i>
+                                                </div>
+                                                <div class="flex flex-col">
+                                                    <span class="text-sm font-bold text-blue-600">وافقت الجامعة - بانتظار اعتماد الأمانة النهائي</span>
+                                                    <span class="text-[11px] text-(--text-secondary)">تم استكمال موافقات الأطراف وبانتظار الإجراء الإداري الأخير</span>
+                                                </div>
+                                            </div>
+                                        @else
+                                            <div class="relative ps-8">
+                                                <div class="absolute right-0 top-1.5 w-6 h-6 rounded-full bg-green-600 border-2 border-green-600 flex items-center justify-center z-10 shadow-lg shadow-green-500/40">
+                                                    <i class="fa-solid fa-flag-checkered text-[10px] text-white"></i>
+                                                </div>
+                                                <div class="flex flex-col">
+                                                    <span class="text-sm font-black text-green-600">تم اعتمادك عضواً نهائياً في اللجنة</span>
+                                                    <span class="text-[11px] text-(--text-secondary)">اكتملت جميع مراحل الموافقة واعتماد اللجنة</span>
+                                                </div>
+                                            </div>
+                                        @endif
+                                    @endif
+
+                                    {{-- 5. Cancellation (If happened) --}}
+                                    @if($invitation->member_status === 'canceled')
+                                        <div class="relative ps-8">
+                                            <div class="absolute right-0 top-1.5 w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-500/10 border-2 border-gray-500 flex items-center justify-center z-10">
+                                                <i class="fa-solid fa-ban text-[10px] text-gray-600"></i>
+                                            </div>
+                                            <div class="flex flex-col">
+                                                <span class="text-sm font-bold text-gray-600">إلغاء الطلب من قبل الأمانة</span>
+                                                <span class="text-[11px] text-(--text-secondary)">{{ $invitation->updated_at->format('Y/m/d H:i') }}</span>
+                                            </div>
+                                        </div>
+                                    @endif
+
+                                </div>
                             </div>
-                        </div>
 
                         {{-- Action buttons for pending_invite --}}
                         @if($invitation->member_status === 'pending_invite')
@@ -163,10 +261,17 @@
                             </div>
                         @elseif($invitation->member_status === 'accepted')
                             <div class="flex items-center gap-3 pt-4 border-t border-(--border-primary)">
-                                <div class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-500/20">
-                                    <i class="fa-solid fa-circle-check text-green-500 dark:text-green-400"></i>
-                                    <p class="text-sm font-bold text-green-700 dark:text-green-300">تم قبولك عضواً في اللجنة بنجاح</p>
-                                </div>
+                                @if($invitation->committee->status === 'forming')
+                                    <div class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20">
+                                        <i class="fa-solid fa-clock text-blue-500 dark:text-blue-400"></i>
+                                        <p class="text-sm font-bold text-blue-700 dark:text-blue-300">وافقت الجامعة بنجاح — في انتظار اعتماد الأمانة النهائي للجنة</p>
+                                    </div>
+                                @else
+                                    <div class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-500/20">
+                                        <i class="fa-solid fa-circle-check text-green-500 dark:text-green-400"></i>
+                                        <p class="text-sm font-bold text-green-700 dark:text-green-300">تم اعتمادك عضواً في اللجنة بنجاح</p>
+                                    </div>
+                                @endif
                             </div>
                         @endif
                     </div>

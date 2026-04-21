@@ -168,18 +168,16 @@ class StageFourController extends Controller
 
         $committee = $accreditationRequest->committee;
 
-        // Prevent replacement if replacing non-declined member
-        $replaceable = in_array($committeeMember->member_status, [
-            'declined_by_member',
-            'declined_by_uni',
-        ]);
-        if (! $replaceable) {
-            return back()->with('error', 'لا يمكن استبدال هذا العضو حالياً.');
+        if ($committee->status === 'approved') {
+            return back()->with('error', 'لا يمكن استبدال الأعضاء بعد اعتماد اللجنة.');
         }
 
         DB::transaction(function () use ($committeeMember, $committee, $validated) {
-            // Deactivate the old declined member
-            $committeeMember->update(['is_active' => false]);
+            // Mark the old record as canceled and inactive
+            $committeeMember->update([
+                'member_status' => 'canceled',
+                'is_active' => false,
+            ]);
 
             // Create a new invitation for the replacement evaluator
             $committee->members()->create([
@@ -193,7 +191,27 @@ class StageFourController extends Controller
             ]);
         });
 
-        return back()->with('success', 'تم استبدال العضو وإرسال دعوة للمقيم الجديد.');
+        return back()->with('success', 'تم استبدال العضو بنجاح وإرسال دعوة للمقيم الجديد.');
+    }
+
+    /**
+     * Cancel an invitation without replacing it.
+     */
+    public function cancelMember(AccreditationRequest $accreditationRequest, CommitteeMember $committeeMember)
+    {
+        $this->authorizeSecretariat();
+
+        $committee = $accreditationRequest->committee;
+        if ($committee->status === 'approved') {
+            return back()->with('error', 'لا يمكن إلغاء الأعضاء بعد اعتماد اللجنة.');
+        }
+
+        $committeeMember->update([
+            'member_status' => 'canceled',
+            'is_active' => false,
+        ]);
+
+        return back()->with('success', 'تم إلغاء طلب المشاركة للمقيم بنجاح.');
     }
 
     /**

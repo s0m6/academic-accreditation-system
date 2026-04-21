@@ -32,6 +32,7 @@
         'declined_by_member' => ['label' => 'رفض المقيم', 'color' => 'red'],
         'declined_by_uni'    => ['label' => 'رفضت الجامعة', 'color' => 'red'],
         'accepted'           => ['label' => 'مقبول', 'color' => 'green'],
+        'canceled'           => ['label' => 'تم الإلغاء (المجلس)', 'color' => 'gray'],
     ];
 @endphp
 
@@ -66,9 +67,11 @@
     showApproveCommitteeModal: false,
     chairEvaluatorId: '',
 
-    // Approve member confirmation modal
+    // Approve/Cancel member confirmation modals
     showApproveMemberModal: false,
     approveMemberUrl: '',
+    showCancelMemberModal: false,
+    cancelMemberUrl: '',
 
     // View reject reasons modal
     showViewReasonsModal: false,
@@ -339,40 +342,57 @@
                                 </div>
                             </div>
 
-                            {{-- Reject reasons (view) --}}
-                            @if(in_array($member->member_status, ['declined_by_member', 'declined_by_uni']) && $member->reject_reason)
-                                @php $isMemberReject = $member->member_status === 'declined_by_member'; @endphp
-                                <button type="button"
-                                    @click="showViewReasonsModal = true; viewReasons = {{ json_encode($member->reject_reason) }}"
-                                    class="w-full text-xs text-red-600 dark:text-red-400 font-bold flex items-center gap-1.5 hover:underline cursor-pointer py-1">
-                                    <i class="fa-solid fa-triangle-exclamation"></i> 
-                                    عرض أسباب الرفض ({{ $isMemberReject ? 'المقيم' : 'الجامعة' }})
-                                </button>
-                            @endif
+                                {{-- Reject reasons (view) --}}
+                                @if(in_array($member->member_status, ['declined_by_member', 'declined_by_uni']) && $member->reject_reason)
+                                    @php $isMemberReject = $member->member_status === 'declined_by_member'; @endphp
+                                    <button type="button"
+                                        @click="showViewReasonsModal = true; viewReasons = {{ json_encode($member->reject_reason) }}"
+                                        class="w-full text-xs text-red-600 dark:text-red-400 font-bold flex items-center gap-1.5 hover:underline cursor-pointer py-1">
+                                        <i class="fa-solid fa-triangle-exclamation"></i> 
+                                        عرض أسباب الرفض ({{ $isMemberReject ? 'المقيم' : 'الجامعة' }})
+                                    </button>
+                                @endif
 
-                            {{-- Actions --}}
-                            @if($isSecretariat && !$committeeApproved)
-                                {{-- Replace/Reinvite actions --}}
-                                @php $isMemberReject = in_array($member->member_status, ['declined_by_member', 'declined_by_uni']); @endphp
-                                
-                                @if($isMemberReject)
-                                    <div class="flex flex-col gap-2 mt-auto">
-                                        <form method="POST" action="{{ route('requests.stage_four.reinvite_member', [$accreditationRequest, $member]) }}" class="w-full">
-                                            @csrf
-                                            <button type="submit"
-                                                class="w-full inline-flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-orange-100 hover:bg-orange-200 text-orange-700 dark:bg-orange-500/10 dark:hover:bg-orange-500/20 dark:text-orange-400 text-xs font-bold transition-colors border border-orange-200 dark:border-orange-500/20 cursor-pointer">
-                                                <i class="fa-solid fa-paper-plane"></i> إعادة إرسال الدعوة
-                                            </button>
-                                        </form>
+                                {{-- Canceled status display --}}
+                                @if($member->member_status === 'canceled')
+                                    <div class="flex flex-col gap-1 text-gray-500 mt-2 border-t border-(--border-primary) pt-2">
+                                        <div class="flex items-center gap-2">
+                                            <i class="fa-solid fa-ban w-3.5"></i>
+                                            <span class="font-medium text-xs">تم الإلغاء بواسطة الأمانة:</span>
+                                        </div>
+                                        <div class="ps-5.5 opacity-80 text-[10px]">{{ $member->updated_at->format('Y/m/d H:i') }}</div>
+                                    </div>
+                                @endif
 
+                                {{-- Actions --}}
+                                @if($isSecretariat && !$committeeApproved)
+                                    <div class="flex flex-col gap-2 mt-auto pt-3">
+                                        {{-- Re-invite only for declined ones --}}
+                                        @if(in_array($member->member_status, ['declined_by_member', 'declined_by_uni']))
+                                            <form method="POST" action="{{ route('requests.stage_four.reinvite_member', [$accreditationRequest, $member]) }}" class="w-full">
+                                                @csrf
+                                                <button type="submit"
+                                                    class="w-full inline-flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-orange-100 hover:bg-orange-200 text-orange-700 dark:bg-orange-500/10 dark:hover:bg-orange-500/20 dark:text-orange-400 text-xs font-bold transition-colors border border-orange-200 dark:border-orange-500/20 cursor-pointer">
+                                                    <i class="fa-solid fa-paper-plane"></i> إعادة إرسال الدعوة
+                                                </button>
+                                            </form>
+                                        @endif
+
+                                        {{-- Cancel (Just Cancel) --}}
+                                        <button type="button"
+                                            @click="showCancelMemberModal = true; cancelMemberUrl = '{{ route('requests.stage_four.cancel_member', [$accreditationRequest, $member]) }}'"
+                                            class="w-full inline-flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-red-50 dark:bg-red-500/10 hover:bg-red-100 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-500/20 text-xs font-bold transition-colors cursor-pointer">
+                                            <i class="fa-solid fa-xmark"></i> إلغاء الطلب (بدون استبدال)
+                                        </button>
+
+                                        {{-- Replace --}}
                                         <button type="button"
                                             @click="openPicker({{ $member->id }}, true)"
                                             class="w-full inline-flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold transition-colors shadow-sm cursor-pointer">
-                                            <i class="fa-solid fa-arrows-rotate"></i> استبدال المقيم بمقيم آخر
+                                            <i class="fa-solid fa-arrows-rotate"></i> استبدال بمقيم آخر
                                         </button>
                                     </div>
                                 @endif
-                            @endif
 
                             {{-- Program coord actions —  pending_uni only --}}
                             @if($isProgramCoord && $member->member_status === 'pending_uni')
@@ -998,6 +1018,51 @@
                             <button type="submit"
                                 class="px-6 py-2.5 rounded-xl bg-green-600 hover:bg-green-700 text-white text-sm font-black shadow-lg shadow-green-500/20 transition cursor-pointer">
                                 <i class="fa-solid fa-check me-1"></i> موافقة وتأكيد
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    {{-- MODAL: تأكيد إلغاء طلب المشاركة --}}
+    <template x-teleport="body">
+        <div x-show="showCancelMemberModal" style="display:none" class="relative z-[200]" role="dialog" aria-modal="true">
+            <div class="fixed inset-0 bg-black/60 backdrop-blur-sm"></div>
+            <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
+                <div x-show="showCancelMemberModal"
+                    x-transition:enter="ease-out duration-200" x-transition:enter-start="opacity-0 scale-95"
+                    x-transition:enter-end="opacity-100 scale-100"
+                    @click.away="showCancelMemberModal = false"
+                    class="relative w-full max-w-md rounded-2xl bg-(--surface-card) border border-(--border-primary) shadow-2xl text-start overflow-hidden">
+                    
+                    <div class="px-6 py-5 border-b border-(--border-primary) bg-(--bg-main) flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-2xl bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 flex items-center justify-center border border-red-100 dark:border-red-500/20">
+                            <i class="fa-solid fa-circle-xmark text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-(--text-primary)">تأكيد إلغاء الطلب</h3>
+                            <p class="text-xs text-(--text-secondary)">سيتم إلغاء مشاركة هذا المقيم نهائياً</p>
+                        </div>
+                    </div>
+
+                    <div class="p-6">
+                        <p class="text-sm text-(--text-primary) leading-relaxed">
+                            هل أنت متأكد من رغبتك في إلغاء طلب مشاركة هذا المقيم؟ سيؤدي هذا الإجراء إلى أرشفة الطلب وتحويل حالته إلى "ملغي" وإتاحة الخانة لمقيم جديد.
+                        </p>
+                    </div>
+
+                    <form method="POST" :action="cancelMemberUrl">
+                        @csrf @method('PATCH')
+                        <div class="px-6 py-4 border-t border-(--border-primary) bg-(--bg-main) flex justify-end gap-3">
+                            <button type="button" @click="showCancelMemberModal = false"
+                                class="px-5 py-2.5 rounded-xl border border-(--border-primary) text-(--text-primary) text-sm font-bold hover:bg-(--bg-main) transition cursor-pointer">
+                                تراجع
+                            </button>
+                            <button type="submit"
+                                class="px-6 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-black shadow-lg shadow-red-500/20 transition cursor-pointer">
+                                <i class="fa-solid fa-trash-can me-1"></i> نعم، إلغاء الطلب
                             </button>
                         </div>
                     </form>

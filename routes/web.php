@@ -124,6 +124,8 @@ Route::middleware('auth')->group(function () {
         ->name('requests.stage_four.invite_member');
     Route::patch('/requests/{accreditationRequest}/stage-four/replace-member/{committeeMember}', [StageFourController::class, 'replaceMember'])
         ->name('requests.stage_four.replace_member');
+    Route::patch('/requests/{accreditationRequest}/stage-four/cancel-member/{committeeMember}', [StageFourController::class, 'cancelMember'])
+        ->name('requests.stage_four.cancel_member');
     Route::post('/requests/{accreditationRequest}/stage-four/reinvite-member/{committeeMember}', [StageFourController::class, 'reinviteMember'])
         ->name('requests.stage_four.reinvite_member');
     Route::patch('/requests/{accreditationRequest}/stage-four/approve-committee', [StageFourController::class, 'approveCommittee'])
