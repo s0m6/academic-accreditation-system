@@ -64,4 +64,12 @@ class Evaluator extends Model
     {
         return $this->hasMany(EvaluatorAttachment::class);
     }
+
+    /**
+     * Get the committee memberships for the evaluator.
+     */
+    public function committeeMemberships(): HasMany
+    {
+        return $this->hasMany(CommitteeMember::class);
+    }
 }

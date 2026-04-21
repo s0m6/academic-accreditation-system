@@ -21,4 +21,12 @@ class Committee extends Model
     {
         return $this->belongsTo(Evaluator::class, 'chair_evaluator_id');
     }
+
+    /**
+     * Get the members for the committee.
+     */
+    public function members()
+    {
+        return $this->hasMany(CommitteeMember::class);
+    }
 }
