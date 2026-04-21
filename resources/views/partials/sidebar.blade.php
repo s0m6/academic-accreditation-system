@@ -108,7 +108,37 @@
                     <a href="{{ route('council_secretariat.requests.stage_three') }}" 
                         class="flex items-center gap-2 py-2 text-sm font-medium transition-all hover:text-orange-600 dark:hover:text-orange-400 {{ request()->routeIs('council_secretariat.requests.stage_three') ? 'text-orange-600 dark:text-orange-400 font-bold translate-x-1' : 'text-(--text-secondary)' }}">
                         <span class="w-6 h-6 flex items-center justify-center rounded-full bg-orange-100 text-orange-700 text-[12px] font-black dark:bg-orange-500/20 dark:text-orange-400 border border-orange-200 dark:border-orange-500/30">3</span>
-                        تقرير الدراسة الذاتيه
+                        تقرير الدراسة الذاتية
+                    </a>
+
+                    <a href="{{ route('council_secretariat.requests.stage_four') }}" 
+                        class="flex items-center gap-2 py-2 text-sm font-medium transition-all hover:text-orange-600 dark:hover:text-orange-400 {{ request()->routeIs('council_secretariat.requests.stage_four') ? 'text-orange-600 dark:text-orange-400 font-bold translate-x-1' : 'text-(--text-secondary)' }}">
+                        <span class="w-6 h-6 flex items-center justify-center rounded-full bg-orange-100 text-orange-700 text-[12px] font-black dark:bg-orange-500/20 dark:text-orange-400 border border-orange-200 dark:border-orange-500/30">4</span>
+                        اختيار لجنة التقييم
+                    </a>
+
+                    <a href="{{ route('council_secretariat.requests.stage_five') }}" 
+                        class="flex items-center gap-2 py-2 text-sm font-medium transition-all hover:text-orange-600 dark:hover:text-orange-400 {{ request()->routeIs('council_secretariat.requests.stage_five') ? 'text-orange-600 dark:text-orange-400 font-bold translate-x-1' : 'text-(--text-secondary)' }}">
+                        <span class="w-6 h-6 flex items-center justify-center rounded-full bg-orange-100 text-orange-700 text-[12px] font-black dark:bg-orange-500/20 dark:text-orange-400 border border-orange-200 dark:border-orange-500/30">5</span>
+                        تحديد جدول الزيارة
+                    </a>
+
+                    <a href="{{ route('council_secretariat.requests.stage_six') }}" 
+                        class="flex items-center gap-2 py-2 text-sm font-medium transition-all hover:text-orange-600 dark:hover:text-orange-400 {{ request()->routeIs('council_secretariat.requests.stage_six') ? 'text-orange-600 dark:text-orange-400 font-bold translate-x-1' : 'text-(--text-secondary)' }}">
+                        <span class="w-6 h-6 flex items-center justify-center rounded-full bg-orange-100 text-orange-700 text-[12px] font-black dark:bg-orange-500/20 dark:text-orange-400 border border-orange-200 dark:border-orange-500/30">6</span>
+                        تقارير نتائج التقييم(الأولية)
+                    </a>
+
+                    <a href="{{ route('council_secretariat.requests.stage_seven') }}" 
+                        class="flex items-center gap-2 py-2 text-sm font-medium transition-all hover:text-orange-600 dark:hover:text-orange-400 {{ request()->routeIs('council_secretariat.requests.stage_seven') ? 'text-orange-600 dark:text-orange-400 font-bold translate-x-1' : 'text-(--text-secondary)' }}">
+                        <span class="w-6 h-6 flex items-center justify-center rounded-full bg-orange-100 text-orange-700 text-[12px] font-black dark:bg-orange-500/20 dark:text-orange-400 border border-orange-200 dark:border-orange-500/30">7</span>
+                        توصيات اللجنة والرد عليها
+                    </a>
+
+                    <a href="{{ route('council_secretariat.requests.stage_eight') }}" 
+                        class="flex items-center gap-2 py-2 text-sm font-medium transition-all hover:text-orange-600 dark:hover:text-orange-400 {{ request()->routeIs('council_secretariat.requests.stage_eight') ? 'text-orange-600 dark:text-orange-400 font-bold translate-x-1' : 'text-(--text-secondary)' }}">
+                        <span class="w-6 h-6 flex items-center justify-center rounded-full bg-orange-100 text-orange-700 text-[12px] font-black dark:bg-orange-500/20 dark:text-orange-400 border border-orange-200 dark:border-orange-500/30">8</span>
+                        تقارير نتائج التقييم(الختامية)
                     </a>
                 </div>
             </div>
