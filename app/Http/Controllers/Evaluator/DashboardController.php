@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Evaluator;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
+use App\Models\CommitteeMember;
 
 class DashboardController extends Controller
 {
@@ -11,6 +13,30 @@ class DashboardController extends Controller
      */
     public function index()
     {
-        return view('evaluator.dashboard');
+        $user = Auth::user();
+        if (!$user->evaluator) {
+             return view('evaluator.dashboard', [
+                'activeEvaluations' => collect(),
+                'stats' => ['active_count' => 0, 'completed_count' => 0, 'upcoming_count' => 0]
+            ]);
+        }
+        $evaluatorId = $user->evaluator->id;
+
+        // Fetch active evaluations (Accepted member AND Approved committee)
+        $activeEvaluations = CommitteeMember::where('evaluator_id', $evaluatorId)
+            ->where('member_status', 'accepted')
+            ->whereHas('committee', function ($query) {
+                $query->where('status', 'approved');
+            })
+            ->with(['committee.accreditationRequest.program.department.college.university'])
+            ->get();
+
+        $stats = [
+            'active_count' => $activeEvaluations->count(),
+            'completed_count' => 0,
+            'upcoming_count' => 0,
+        ];
+
+        return view('evaluator.dashboard', compact('activeEvaluations', 'stats'));
     }
 }

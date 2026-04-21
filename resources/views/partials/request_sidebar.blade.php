@@ -59,11 +59,21 @@
         <div class="relative">
             @foreach ($stages as $stageKey => $stageName)
                 @php
+                    // If user is evaluator, only allow stage_one, stage_two, stage_three
+                    if (auth()->user()->role === 'evaluator' && !in_array($stageKey, ['stage_one', 'stage_two', 'stage_three'])) {
+                        continue;
+                    }
+
                     $index = array_search($stageKey, $stageOrder);
                     $state = stageState($index, $currentStageIndex);
                     $isActive = $activeStage === $stageKey;
                     $stageUrl = route('requests.stage', ['accreditationRequest' => $accreditationRequest->id, 'stage' => $stageKey]);
                     $isLast = $index === count($stageOrder) - 1;
+
+                    // Re-calculate isLast for evaluator if they only see 3 stages
+                    if (auth()->user()->role === 'evaluator' && $stageKey === 'stage_three') {
+                         $isLast = true;
+                    }
                 @endphp
 
                 <div class="relative flex gap-4 {{ $isLast ? '' : 'pb-6' }}">

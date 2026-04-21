@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\CommitteeMember;
 use App\Models\Evaluator;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\View\View;
 
 class InvitationController extends Controller
 {
@@ -20,9 +22,14 @@ class InvitationController extends Controller
         $evaluator = Evaluator::where('user_id', $user->id)->firstOrFail();
 
         // Load active invitations with full committee/request/program chain
+        // Also eagerly load other committee members for the "View Members" feature
         $invitations = CommitteeMember::where('evaluator_id', $evaluator->id)
             ->with([
                 'committee.accreditationRequest.program.department.college.university',
+                'committee.members' => function($q) {
+                    $q->where('member_status', 'accepted')
+                      ->with('evaluator.user');
+                }
             ])
             ->orderByDesc('invite_sent_at')
             ->get();
@@ -83,5 +90,27 @@ class InvitationController extends Controller
         if (! $evaluator || $committeeMember->evaluator_id !== $evaluator->id) {
             abort(403, 'ليس لديك صلاحية للوصول إلى هذا الطلب.');
         }
+    }
+
+    /**
+     * Display the list of active evaluations (Approved only).
+     */
+    public function myEvaluations(): View
+    {
+        $evaluatorId = Auth::user()->evaluator->id;
+
+        $evaluations = CommitteeMember::where('evaluator_id', $evaluatorId)
+            ->where('member_status', 'accepted')
+            ->whereHas('committee', function ($query) {
+                $query->where('status', 'approved');
+            })
+            ->with([
+                'committee.accreditationRequest.program.department.college.university',
+                'committee.members.evaluator.user'
+            ])
+            ->latest()
+            ->get();
+
+        return view('evaluator.evaluations', compact('evaluations'));
     }
 }

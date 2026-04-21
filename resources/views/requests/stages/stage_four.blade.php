@@ -293,53 +293,50 @@
                             </div>
 
                             {{-- Details --}}
-                            <div class="space-y-2 text-xs text-(--text-secondary)">
-                                <div class="flex items-center gap-2">
-                                    <i class="fa-solid fa-graduation-cap w-3.5"></i>
-                                    <span class="truncate">{{ $member->evaluator->general_specialty }}</span>
+                            <div class="space-y-3 border-t border-(--border-primary) pt-3 mt-2">
+                                {{-- Invitation --}}
+                                <div class="flex items-center justify-between gap-3">
+                                    <div class="flex items-center gap-2 text-(--text-secondary)">
+                                        <i class="fa-solid fa-calendar-plus w-3.5 text-amber-500"></i>
+                                        <span class="font-bold">طلب المشاركة</span>
+                                    </div>
+                                    <span class="text-xs font-bold text-(--text-secondary) bg-(--bg-main) px-2 py-0.5 rounded border border-(--border-primary) shrink-0" dir="ltr">{{ $member->invite_sent_at?->format('Y/m/d - H:i') ?: '—' }}</span>
                                 </div>
-                                @if($member->evaluator->city)
-                                    <div class="flex items-center gap-2">
-                                        <i class="fa-solid fa-location-dot w-3.5"></i>
-                                        <span>{{ $member->evaluator->city->city_name }}</span>
+
+                                {{-- Evaluator Response --}}
+                                @if($member->member_responded_at)
+                                    @php $mApproved = !in_array($member->member_status, ['declined_by_member']); @endphp
+                                    <div class="flex items-center justify-between gap-3">
+                                        <div class="flex items-center gap-2 {{ $mApproved ? 'text-indigo-600 dark:text-indigo-400' : 'text-red-600 dark:text-red-400' }}">
+                                            <i class="fa-solid fa-{{ $mApproved ? 'calendar-check' : 'calendar-xmark' }} w-3.5"></i>
+                                            <span class="font-bold">رد المقيم</span>
+                                        </div>
+                                        <span class="text-xs font-bold text-(--text-secondary) bg-(--bg-main) px-2 py-0.5 rounded border border-(--border-primary) shrink-0" dir="ltr">{{ $member->member_responded_at->format('Y/m/d - H:i') }}</span>
                                     </div>
                                 @endif
 
-                                <div class="space-y-1.5 border-t border-(--border-primary) pt-2 mt-2">
-                                    <div class="flex items-center gap-2">
-                                        <i class="fa-solid fa-calendar-plus w-3.5 text-amber-500"></i>
-                                        <span class="font-medium">طلب المشاركة:</span>
-                                        <span>{{ $member->invite_sent_at?->format('Y/m/d H:i') ?: '—' }}</span>
+                                {{-- University Response --}}
+                                @if($member->university_responded_at)
+                                    @php $uApproved = $member->member_status === 'accepted'; @endphp
+                                    <div class="flex items-center justify-between gap-3">
+                                        <div class="flex items-center gap-2 {{ $uApproved ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
+                                            <i class="fa-solid fa-{{ $uApproved ? 'building-circle-check' : 'building-circle-xmark' }} w-3.5"></i>
+                                            <span class="font-bold">رد الجامعة</span>
+                                        </div>
+                                        <span class="text-xs font-bold text-(--text-secondary) bg-(--bg-main) px-2 py-0.5 rounded border border-(--border-primary) shrink-0" dir="ltr">{{ $member->university_responded_at->format('Y/m/d - H:i') }}</span>
                                     </div>
+                                @endif
 
-                                    @if($member->member_responded_at)
-                                        @php
-                                            $mApproved = !in_array($member->member_status, ['declined_by_member']);
-                                        @endphp
-                                        <div class="flex flex-col gap-1">
-                                            <div class="flex items-center gap-2 {{ $mApproved ? 'text-indigo-600 dark:text-indigo-400' : 'text-red-600 dark:text-red-400' }}">
-                                                <i class="fa-solid fa-calendar-check w-3.5"></i>
-                                                <span class="font-medium">رد المقيم:</span>
-                                                <span class="font-bold">({{ $mApproved ? 'بالموافقة' : 'بالرفض' }})</span>
-                                            </div>
-                                            <div class="ps-5.5 opacity-80">{{ $member->member_responded_at->format('Y/m/d H:i') }}</div>
+                                {{-- Cancellation --}}
+                                @if($member->member_status === 'canceled')
+                                    <div class="flex items-center justify-between gap-3">
+                                        <div class="flex items-center gap-2 text-gray-500">
+                                            <i class="fa-solid fa-ban w-3.5"></i>
+                                            <span class="font-bold">تم الإلغاء</span>
                                         </div>
-                                    @endif
-
-                                    @if($member->university_responded_at)
-                                        @php
-                                            $uApproved = $member->member_status === 'accepted';
-                                        @endphp
-                                        <div class="flex flex-col gap-1">
-                                            <div class="flex items-center gap-2 {{ $uApproved ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
-                                                <i class="fa-solid fa-building-circle-check w-3.5"></i>
-                                                <span class="font-medium">رد الجامعة:</span>
-                                                <span class="font-bold">({{ $uApproved ? 'بالموافقة' : 'بالرفض' }})</span>
-                                            </div>
-                                            <div class="ps-5.5 opacity-80">{{ $member->university_responded_at->format('Y/m/d H:i') }}</div>
-                                        </div>
-                                    @endif
-                                </div>
+                                        <span class="text-xs font-bold text-gray-400 bg-(--bg-main) px-2 py-0.5 rounded border border-(--border-primary) shrink-0" dir="ltr">{{ $member->updated_at->format('Y/m/d - H:i') }}</span>
+                                    </div>
+                                @endif
                             </div>
 
                                 {{-- Reject reasons (view) --}}
@@ -351,17 +348,6 @@
                                         <i class="fa-solid fa-triangle-exclamation"></i> 
                                         عرض أسباب الرفض ({{ $isMemberReject ? 'المقيم' : 'الجامعة' }})
                                     </button>
-                                @endif
-
-                                {{-- Canceled status display --}}
-                                @if($member->member_status === 'canceled')
-                                    <div class="flex flex-col gap-1 text-gray-500 mt-2 border-t border-(--border-primary) pt-2">
-                                        <div class="flex items-center gap-2">
-                                            <i class="fa-solid fa-ban w-3.5"></i>
-                                            <span class="font-medium text-xs">تم الإلغاء بواسطة الأمانة:</span>
-                                        </div>
-                                        <div class="ps-5.5 opacity-80 text-[10px]">{{ $member->updated_at->format('Y/m/d H:i') }}</div>
-                                    </div>
                                 @endif
 
                                 {{-- Actions --}}
@@ -382,7 +368,7 @@
                                         <button type="button"
                                             @click="showCancelMemberModal = true; cancelMemberUrl = '{{ route('requests.stage_four.cancel_member', [$accreditationRequest, $member]) }}'"
                                             class="w-full inline-flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-red-50 dark:bg-red-500/10 hover:bg-red-100 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-500/20 text-xs font-bold transition-colors cursor-pointer">
-                                            <i class="fa-solid fa-xmark"></i> إلغاء الطلب (بدون استبدال)
+                                            <i class="fa-solid fa-xmark"></i> إلغاء طلب المشاركة 
                                         </button>
 
                                         {{-- Replace --}}

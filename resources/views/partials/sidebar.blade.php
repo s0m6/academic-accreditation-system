@@ -265,8 +265,8 @@
             </a>
 
             <!-- My Evaluations / تقييماتي -->
-            <a href="#"
-                class="sidebar-link group">
+            <a href="{{ route('evaluator.evaluations') }}"
+                class="sidebar-link {{ request()->routeIs('evaluator.evaluations') ? 'sidebar-link-active' : '' }} group">
                 <div class="sidebar-icon-wrapper">
                     <i class="fa-solid fa-clipboard-check"></i>
                 </div>

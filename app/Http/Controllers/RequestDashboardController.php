@@ -100,6 +100,9 @@ class RequestDashboardController extends Controller
             ->where('stage', $activeStage)
             ->with(['submitter', 'decider'])
             ->orderByDesc('id')
+            ->when(auth()->user()->role === 'evaluator', function($q) {
+                return $q->where('status', 'approved');
+            })
             ->get();
 
         // Load committee data with active members for stage four panel
@@ -140,6 +143,10 @@ class RequestDashboardController extends Controller
             'accreditation_officer' => $accreditationRequest->program->department->college->university->accreditation_officer_id === $user->id,
             'program_coordinator' => $accreditationRequest->program_coord_id === $user->id,
             'council_coordinator' => $accreditationRequest->council_coord_id === $user->id,
+            'evaluator' => $accreditationRequest->committee && $accreditationRequest->committee->members()
+                ->where('evaluator_id', $user->evaluator->id ?? 0)
+                ->where('member_status', 'accepted')
+                ->exists(),
             default => false,
         };
 
