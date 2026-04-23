@@ -21,6 +21,7 @@ return new class extends Migration
                 'declined_by_member',
                 'declined_by_uni',
                 'accepted',
+                'canceled',
             ])->default('pending_invite');
             $table->timestamp('invite_sent_at')->nullable();
             $table->timestamp('member_responded_at')->nullable();
