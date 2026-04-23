@@ -2,8 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class CouncilCoordinatorSeeder extends Seeder
 {
@@ -12,19 +13,11 @@ class CouncilCoordinatorSeeder extends Seeder
      */
     public function run(): void
     {
-        $names = [
-            'محمد أحمد العتيبي',
-            'سارة علي القحطاني',
-            'فهد إبراهيم الزهراني',
-        ];
-
-        foreach ($names as $index => $name) {
-            \App\Models\User::factory()
-                ->coordinator()
-                ->create([
-                    'name' => $name,
-                    'email' => 'coordinator' . ($index + 1) . '@example.com',
-                ]);
-        }
+        User::factory()
+            ->coordinator()
+            ->count(10)
+            ->create([
+                'password' => Hash::make('123456789'),
+            ]);
     }
 }

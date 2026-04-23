@@ -27,6 +27,8 @@ class EvaluatorFactory extends Factory
                 'role' => 'evaluator',
                 'password' => Hash::make('123456789'),
                 'email_verified_at' => now(),
+                'mobile' => fake()->phoneNumber(),
+                'phone' => fake()->phoneNumber(),
             ]),
             'city_id' => City::inRandomOrder()->first()?->id ?? City::factory(),
             'general_specialty' => fake()->randomElement(['علوم الحاسب', 'نظم المعلومات', 'هندسة البرمجيات', 'الذكاء الاصطناعي', 'الأمن السيبراني', 'إدارة الأعمال', 'المحاسبة', 'القانون', 'الطب البشري', 'الهندسة المدنية']),

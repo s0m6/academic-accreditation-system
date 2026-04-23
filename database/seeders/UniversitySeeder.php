@@ -13,9 +13,9 @@ class UniversitySeeder extends Seeder
     public function run(): void
     {
         $universities = [
+            ['name' => 'جامعة العلوم والتكنولوجيا', 'type' => 'private'],
             ['name' => 'جامعة صنعاء', 'type' => 'government'],
             ['name' => 'جامعة عدن', 'type' => 'government'],
-            ['name' => 'جامعة العلوم والتكنولوجيا', 'type' => 'private'],
             ['name' => 'جامعة تعز', 'type' => 'government'],
             ['name' => 'الجامعة الوطنية', 'type' => 'private'],
             ['name' => 'جامعة حضرموت', 'type' => 'government'],

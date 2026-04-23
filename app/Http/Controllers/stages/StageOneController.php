@@ -14,6 +14,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
@@ -164,67 +165,78 @@ class StageOneController extends Controller
         $this->authorizeSecretary($user);
         $this->ensureBelongs($accreditationRequest, $formSubmission);
 
-        // Approve the submission
-        $formSubmission->update([
-            'status' => 'approved',
-            'decided_by' => $user->id,
-            'decision_at' => Carbon::now(),
-        ]);
+        DB::beginTransaction();
 
-        // Extract coordinator data from the stored form_data
-        $formData = $formSubmission->form_data;
-        $coordData = $formData['section_two']['program_coordinator'] ?? [];
-        $coordEmail = $coordData['email'] ?? null;
-        $coordName = $coordData['name'] ?? 'منسق البرنامج';
-        $coordPhone = $coordData['phone'] ?? null;
-        $coordMobile = $coordData['mobile'] ?? null;
-
-        // Check if a coordinator with this email already exists
-        $existingCoord = User::where('email', $coordEmail)->first();
-
-        if (! $existingCoord) {
-            $password = Str::random(10);
-
-            $coordinator = User::create([
-                'name' => $coordName,
-                'email' => $coordEmail,
-                'password' => Hash::make($password),
-                'role' => 'program_coordinator',
-                'phone' => $coordPhone,
-                'mobile' => $coordMobile,
+        try {
+            // Approve the submission
+            $formSubmission->update([
+                'status' => 'approved',
+                'decided_by' => $user->id,
+                'decision_at' => Carbon::now(),
             ]);
 
-            // Generate email verification link
-            $verificationUrl = URL::temporarySignedRoute(
-                'verification.verify',
-                Carbon::now()->addMinutes(Config::get('auth.verification.expire', 60)),
-                [
-                    'id' => $coordinator->getKey(),
-                    'hash' => sha1($coordinator->getEmailForVerification()),
-                ]
-            );
+            // Extract coordinator data from the stored form_data
+            $formData = $formSubmission->form_data;
+            $coordData = $formData['section_two']['program_coordinator'] ?? [];
+            $coordEmail = $coordData['email'] ?? null;
+            $coordName = $coordData['name'] ?? 'منسق البرنامج';
+            $coordPhone = $coordData['phone'] ?? null;
+            $coordMobile = $coordData['mobile'] ?? null;
 
-            $programName = $accreditationRequest->program->program_name ?? '';
+            // Check if a coordinator with this email already exists
+            $existingCoord = User::where('email', $coordEmail)->first();
 
-            Mail::to($coordinator->email)->send(
-                new ProgramCoordinatorCreated($coordinator, $password, $verificationUrl, $programName)
-            );
-        } else {
-            $coordinator = $existingCoord;
+            if (! $existingCoord) {
+                $password = Str::random(10);
+
+                $coordinator = User::create([
+                    'name' => $coordName,
+                    'email' => $coordEmail,
+                    'password' => Hash::make($password),
+                    'role' => 'program_coordinator',
+                    'phone' => $coordPhone,
+                    'mobile' => $coordMobile,
+                ]);
+
+                // Generate email verification link
+                $verificationUrl = URL::temporarySignedRoute(
+                    'verification.verify',
+                    Carbon::now()->addMinutes(Config::get('auth.verification.expire', 60)),
+                    [
+                        'id' => $coordinator->getKey(),
+                        'hash' => sha1($coordinator->getEmailForVerification()),
+                    ]
+                );
+
+                $programName = $accreditationRequest->program->program_name ?? '';
+
+                Mail::to($coordinator->email)->send(
+                    new ProgramCoordinatorCreated($coordinator, $password, $verificationUrl, $programName)
+                );
+            } else {
+                $coordinator = $existingCoord;
+            }
+
+            // Link coordinator to the request and advance to stage two
+            $accreditationRequest->update([
+                'program_coord_id' => $coordinator->id,
+                'current_stage' => 'stage_two',
+            ]);
+
+            DB::commit();
+
+            $message = $existingCoord
+                ? 'تمت الموافقة على الطلب وإسناده للمنسق الحالي.'
+                : 'تمت الموافقة على الطلب وتم إنشاء حساب منسق البرنامج وإرسال بريد التفعيل.';
+
+            return redirect()->route('requests.stage', [$accreditationRequest, 'stage_one'])
+                ->with('success', $message);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return redirect()->back()->with('error', 'حدث خطأ أثناء الموافقة على الطلب. قد تكون هناك مشكلة في إرسال البريد الإلكتروني للمنسق. تفاصيل الخطأ: '.$e->getMessage());
         }
-
-        // Link coordinator to the request and advance to stage two
-        $accreditationRequest->update([
-            'program_coord_id' => $coordinator->id,
-            'current_stage' => 'stage_two',
-        ]);
-
-        $message = $existingCoord
-            ? 'تمت الموافقة على الطلب وإسناده للمنسق الحالي.'
-            : 'تمت الموافقة على الطلب وتم إنشاء حساب منسق البرنامج وإرسال بريد التفعيل.';
-
-        return redirect()->route('requests.stage', [$accreditationRequest, 'stage_one'])
-            ->with('success', $message);
     }
 
     // ─── Helpers ──────────────────────────────────────────────────────────────

@@ -17,9 +17,13 @@ class DatabaseSeeder extends Seeder
         $this->call([
             AdminUserSeeder::class,
             CitySeeder::class,
+            StandardSeeder::class,
             UniversitySeeder::class,
             AccreditationOfficerSeeder::class,
-            StandardSeeder::class,
+            AcademicStructureSeeder::class,
+            CouncilCoordinatorSeeder::class,
+            EvaluatorSeeder::class,
+
         ]);
     }
 }
