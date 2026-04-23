@@ -169,7 +169,7 @@ class ProgramController extends Controller
         $accreditationRequest = $program->accreditationRequests()->create([
             'current_stage' => 'stage_one',
             'request_status' => 'draft',
-            'program_coord_id' => request()->user()->id,
+            'program_coord_id' => null,
         ]);
 
         Storage::makeDirectory("req_{$accreditationRequest->id}");

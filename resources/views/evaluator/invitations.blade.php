@@ -263,6 +263,24 @@
                                                 </div>
                                             </div>
                                         @endif
+
+                                        {{-- 5. CANCELED --}}
+                                        @if($invitation->member_status === 'canceled')
+                                            <div class="relative ps-12">
+                                                <div class="absolute right-0 top-1 w-8 h-8 rounded-xl bg-gray-500 text-white flex items-center justify-center z-10 shadow-lg shadow-gray-500/40 ring-4 ring-gray-50 dark:ring-gray-500/10">
+                                                    <i class="fa-solid fa-ban text-xs"></i>
+                                                </div>
+                                                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-[1.5rem] bg-(--bg-main) border border-(--border-primary) border-r-4 border-r-gray-500 shadow-sm">
+                                                    <div>
+                                                        <p class="text-sm font-black text-gray-600 dark:text-gray-400">تم إلغاء الدعوة</p>
+                                                        <p class="text-xs text-(--text-secondary) mt-1 font-bold">من قبل أمانة المجلس</p>
+                                                    </div>
+                                                    <span class="px-4 py-1.5 rounded-xl bg-(--surface-card) border border-(--border-primary) text-xs font-black text-(--text-secondary) shadow-inner" dir="ltr">
+                                                        {{ $invitation->updated_at->format('Y/m/d - H:i') }}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        @endif
                                     </div>
                                 </div>
 

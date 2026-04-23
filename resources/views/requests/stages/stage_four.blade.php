@@ -309,7 +309,7 @@
                                     <div class="flex items-center justify-between gap-3">
                                         <div class="flex items-center gap-2 {{ $mApproved ? 'text-indigo-600 dark:text-indigo-400' : 'text-red-600 dark:text-red-400' }}">
                                             <i class="fa-solid fa-{{ $mApproved ? 'calendar-check' : 'calendar-xmark' }} w-3.5"></i>
-                                            <span class="font-bold">رد المقيم</span>
+                                            <span class="font-bold">رد المقيم ({{ $mApproved ? 'بالموافقة' : 'بالاعتذار' }})</span>
                                         </div>
                                         <span class="text-xs font-bold text-(--text-secondary) bg-(--bg-main) px-2 py-0.5 rounded border border-(--border-primary) shrink-0" dir="ltr">{{ $member->member_responded_at->format('Y/m/d - H:i') }}</span>
                                     </div>
@@ -365,11 +365,13 @@
                                         @endif
 
                                         {{-- Cancel (Just Cancel) --}}
-                                        <button type="button"
-                                            @click="showCancelMemberModal = true; cancelMemberUrl = '{{ route('requests.stage_four.cancel_member', [$accreditationRequest, $member]) }}'"
-                                            class="w-full inline-flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-red-50 dark:bg-red-500/10 hover:bg-red-100 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-500/20 text-xs font-bold transition-colors cursor-pointer">
-                                            <i class="fa-solid fa-xmark"></i> إلغاء طلب المشاركة 
-                                        </button>
+                                        @if(!in_array($member->member_status, ['declined_by_member', 'declined_by_uni']))
+                                            <button type="button"
+                                                @click="showCancelMemberModal = true; cancelMemberUrl = '{{ route('requests.stage_four.cancel_member', [$accreditationRequest, $member]) }}'"
+                                                class="w-full inline-flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-red-50 dark:bg-red-500/10 hover:bg-red-100 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-500/20 text-xs font-bold transition-colors cursor-pointer">
+                                                <i class="fa-solid fa-xmark"></i> إلغاء طلب المشاركة 
+                                            </button>
+                                        @endif
 
                                         {{-- Replace --}}
                                         <button type="button"

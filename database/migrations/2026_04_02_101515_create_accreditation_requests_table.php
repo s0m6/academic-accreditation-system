@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('program_id')->constrained()->cascadeOnDelete();
             $table->enum('current_stage', ['stage_one', 'stage_two', 'stage_three', 'stage_four', 'stage_five', 'stage_six', 'stage_seven', 'stage_eight', 'stage_nine']);
             $table->foreignId('council_coord_id')->nullable()->default(null)->constrained('users')->nullOnDelete();
-            $table->foreignId('program_coord_id')->constrained('users')->cascadeOnDelete();
+            $table->foreignId('program_coord_id')->nullable()->default(null)->constrained('users')->nullOnDelete();
             $table->enum('request_status', ['draft', 'Active', 'completed', 'canceled']);
             $table->timestamps();
         });
