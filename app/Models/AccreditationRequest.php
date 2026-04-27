@@ -52,4 +52,12 @@ class AccreditationRequest extends Model
     {
         return $this->hasOne(Committee::class);
     }
+
+    /**
+     * Get the visit schedule for this request.
+     */
+    public function visitSchedule()
+    {
+        return $this->hasOne(VisitSchedule::class);
+    }
 }
