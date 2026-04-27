@@ -34,6 +34,9 @@ Route::get('/app', function () {
 Route::get('/blank', function () {
     return view('partials.blank');
 });
+Route::get('/test/visit-schedule', function () {
+    return view('test.visit_schedule_design');
+})->name('test.visit_schedule');
 require __DIR__.'/auth.php';
 require __DIR__.'/council_coordinator.php';
 
