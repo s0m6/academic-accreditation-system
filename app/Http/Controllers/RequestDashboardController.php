@@ -100,7 +100,7 @@ class RequestDashboardController extends Controller
             ->where('stage', $activeStage)
             ->with(['submitter', 'decider'])
             ->orderByDesc('id')
-            ->when(auth()->user()->role === 'evaluator', function($q) {
+            ->when(auth()->user()->role === 'evaluator', function ($q) {
                 return $q->where('status', 'approved');
             })
             ->get();
@@ -120,6 +120,9 @@ class RequestDashboardController extends Controller
             ->orderBy('name')
             ->get(['id', 'name', 'email']);
 
+        // Load visit schedules for stage five
+        $visitSchedules = $accreditationRequest->visitSchedules()->orderByDesc('id')->get();
+
         return [
             'accreditationRequest' => $accreditationRequest,
             'stages' => self::STAGES,
@@ -128,6 +131,7 @@ class RequestDashboardController extends Controller
             'activeStageSubmissions' => $activeStageSubmissions,
             'committee' => $committee,
             'coordinators' => $coordinators,
+            'visitSchedules' => $visitSchedules,
         ];
     }
 

@@ -56,4 +56,12 @@ class Committee extends Model
             ->where('is_active', true)
             ->where('member_status', 'accepted');
     }
+
+    /**
+     * Get the visit schedule for this committee.
+     */
+    public function visitSchedule()
+    {
+        return $this->hasOne(VisitSchedule::class);
+    }
 }

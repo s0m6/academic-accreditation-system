@@ -34,6 +34,9 @@ Route::get('/app', function () {
 Route::get('/blank', function () {
     return view('partials.blank');
 });
+Route::get('/test/visit-schedule', function () {
+    return view('test.visit_schedule_design');
+})->name('test.visit_schedule');
 require __DIR__.'/auth.php';
 require __DIR__.'/council_coordinator.php';
 
@@ -41,6 +44,7 @@ require __DIR__.'/council_coordinator.php';
 // Accreditation Request Dashboard — accessible to multiple roles
 // ------------------------------------------------------------------
 use App\Http\Controllers\RequestDashboardController;
+use App\Http\Controllers\stages\StageFiveController;
 use App\Http\Controllers\stages\StageFourController;
 use App\Http\Controllers\stages\StageOneController;
 use App\Http\Controllers\stages\StageThreeController;
@@ -130,5 +134,25 @@ Route::middleware('auth')->group(function () {
         ->name('requests.stage_four.reinvite_member');
     Route::patch('/requests/{accreditationRequest}/stage-four/approve-committee', [StageFourController::class, 'approveCommittee'])
         ->name('requests.stage_four.approve_committee');
+
+    // Stage Five actions
+    Route::post('/requests/{accreditationRequest}/stage-five/draft', [StageFiveController::class, 'createDraft'])
+        ->name('requests.stage_five.draft');
+    Route::get('/requests/{accreditationRequest}/stage-five/{visitSchedule}/edit', [StageFiveController::class, 'edit'])
+        ->name('requests.stage_five.edit');
+    Route::get('/requests/{accreditationRequest}/stage-five/{visitSchedule}/show', [StageFiveController::class, 'show'])
+        ->name('requests.stage_five.show');
+    Route::post('/requests/{accreditationRequest}/stage-five/{visitSchedule}/save', [StageFiveController::class, 'saveDraft'])
+        ->name('requests.stage_five.save');
+    Route::patch('/requests/{accreditationRequest}/stage-five/{visitSchedule}/submit', [StageFiveController::class, 'submit'])
+        ->name('requests.stage_five.submit');
+    Route::post('/requests/{accreditationRequest}/stage-five/{visitSchedule}/council-forward', [StageFiveController::class, 'councilForward'])
+        ->name('requests.stage_five.council_forward');
+    Route::patch('/requests/{accreditationRequest}/stage-five/{visitSchedule}/university-reject', [StageFiveController::class, 'universityReject'])
+        ->name('requests.stage_five.university_reject');
+    Route::patch('/requests/{accreditationRequest}/stage-five/{visitSchedule}/university-accept', [StageFiveController::class, 'universityAccept'])
+        ->name('requests.stage_five.university_accept');
+    Route::get('/requests/{accreditationRequest}/stage-five/{visitSchedule}/view-pdf', [StageFiveController::class, 'viewPdf'])
+        ->name('requests.stage_five.view_pdf');
 
 });
