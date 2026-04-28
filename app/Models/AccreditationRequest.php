@@ -54,10 +54,10 @@ class AccreditationRequest extends Model
     }
 
     /**
-     * Get the visit schedule for this request.
+     * Get the visit schedules for this request (multiple versions allowed).
      */
-    public function visitSchedule()
+    public function visitSchedules()
     {
-        return $this->hasOne(VisitSchedule::class);
+        return $this->hasMany(VisitSchedule::class);
     }
 }

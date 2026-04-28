@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl" x-data="visitSchedule()" :class="darkMode ? 'dark' : ''">
+<html lang="ar" dir="rtl" x-data="visitSchedule({{ $readonly ?? 'false' }})" :class="darkMode ? 'dark' : ''">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>جدول الزيارة الميدانية | نظام الاعتماد الأكاديمي</title>
+    <title>تعديل جدول الزيارة الميدانية | نظام الاعتماد الأكاديمي</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
         .btn-gradient {
@@ -47,17 +47,22 @@
         <div class="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
 
             <div class="flex items-center gap-3">
+                <a href="{{ route('requests.show', $accreditationRequest->id) }}?stage=stage_five" class="w-9 h-9 rounded-xl bg-(--bg-main) border border-(--border-primary) flex items-center justify-center shrink-0 hover:bg-(--surface-card) transition-colors cursor-pointer" title="العودة للوحة الطلب">
+                    <i class="fa-solid fa-arrow-right text-(--text-secondary)"></i>
+                </a>
                 <div class="w-9 h-9 rounded-xl btn-gradient flex items-center justify-center shrink-0">
                     <i class="fa-solid fa-calendar-days text-white text-sm"></i>
                 </div>
                 <div>
-                    <h1 class="text-base font-bold" style="color:var(--text-primary);">جدول الزيارة الميدانية</h1>
-                    <p class="text-xs" style="color:var(--text-secondary);">نظام الاعتماد الأكاديمي</p>
+                    <h1 class="text-base font-bold" style="color:var(--text-primary);">
+                        <span x-text="readonly ? 'عرض جدول الزيارة الميدانية' : 'تعديل جدول الزيارة الميدانية'"></span>
+                    </h1>
+                    <p class="text-xs" style="color:var(--text-secondary);">طلب الاعتماد الأكاديمي #{{ $accreditationRequest->id }}</p>
                 </div>
             </div>
 
-            <div class="flex items-center gap-2">
-                {{-- Dark mode --}}
+            <div class="flex items-center gap-2" x-show="!readonly">
+                {{-- Dark mode (moved inside if needed, or keep outside) --}}
                 <button type="button" @click="darkMode = !darkMode"
                     class="w-9 h-9 rounded-xl border flex items-center justify-center transition-colors cursor-pointer"
                     style="border-color:var(--border-primary); background:var(--bg-main); color:var(--text-secondary);">
@@ -65,11 +70,30 @@
                 </button>
 
                 {{-- Save --}}
-                <button type="button" @click="saveSchedule()"
-                    class="btn-gradient text-white px-5 py-2 rounded-xl font-bold text-sm flex items-center gap-2 cursor-pointer">
-                    <i class="fa-solid fa-floppy-disk"></i>
-                    حفظ الجدول
+                <button type="button" @click="saveSchedule()" :disabled="isSaving"
+                    class="btn-gradient text-white px-5 py-2 rounded-xl font-bold text-sm flex items-center gap-2 cursor-pointer disabled:opacity-70">
+                    <i x-show="!isSaving" class="fa-solid fa-floppy-disk"></i>
+                    <i x-show="isSaving" class="fa-solid fa-spinner fa-spin"></i>
+                    <span x-text="isSaving ? 'جاري الحفظ...' : 'حفظ مسودة'"></span>
                 </button>
+
+                @if($visitSchedule->status === 'draft' || $visitSchedule->status === 'rejected_uni')
+                    <button type="button" @click="showSubmitModal = true"
+                        class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-xl font-bold text-sm flex items-center gap-2 cursor-pointer transition shadow-sm">
+                        <i class="fa-solid fa-paper-plane"></i>
+                        إرسال للمجلس
+                    </button>
+                @endif
+            </div>
+            <div x-show="readonly" class="flex items-center gap-2">
+                 <button type="button" @click="darkMode = !darkMode"
+                    class="w-9 h-9 rounded-xl border flex items-center justify-center transition-colors cursor-pointer"
+                    style="border-color:var(--border-primary); background:var(--bg-main); color:var(--text-secondary);">
+                    <i :class="darkMode ? 'fa-solid fa-sun' : 'fa-solid fa-moon'" class="text-sm"></i>
+                </button>
+                <div class="px-4 py-2 rounded-xl bg-blue-50 text-blue-700 border border-blue-100 text-sm font-bold flex items-center gap-2">
+                    <i class="fa-solid fa-eye"></i> وضع العرض فقط
+                </div>
             </div>
         </div>
     </header>
@@ -107,8 +131,8 @@
                         <label class="text-sm font-bold shrink-0" style="color:var(--text-primary);">
                             تاريخ <span x-text="day.label"></span>
                         </label>
-                        <input type="date" x-model="day.date"
-                            class="px-4 py-2 rounded-xl border text-sm font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all ms-auto"
+                        <input type="date" x-model="day.date" :disabled="readonly"
+                            class="px-4 py-2 rounded-xl border text-sm font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all ms-auto disabled:opacity-70"
                             style="border-color:var(--border-primary); background:var(--surface-card); color:var(--text-primary);">
                     </div>
 
@@ -122,7 +146,7 @@
                             <div class="col-span-3 px-4 py-3 border-s" style="border-color:var(--border-primary);">التوقيت</div>
                             <div class="col-span-5 px-4 py-3 border-s" style="border-color:var(--border-primary);">المهمة / النشاط</div>
                             <div class="col-span-2 px-4 py-3 border-s" style="border-color:var(--border-primary);">التوضيح</div>
-                            <div class="col-span-1 px-2 py-3 border-s" style="border-color:var(--border-primary);"></div>
+                            <div class="col-span-1 px-2 py-3 border-s" style="border-color:var(--border-primary);" x-show="!readonly"></div>
                         </div>
 
                         {{-- Empty State --}}
@@ -149,31 +173,31 @@
 
                                     {{-- Time --}}
                                     <div class="col-span-3 px-3 py-3 border-s" style="border-color:var(--border-primary);">
-                                        <input type="text" x-model="row.time"
+                                        <input type="text" x-model="row.time" :disabled="readonly"
                                             placeholder="08:00 – 09:30"
                                             dir="ltr"
-                                            class="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                                            class="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all disabled:opacity-70"
                                             style="border-color:var(--border-primary); background:var(--surface-card); color:var(--text-primary);">
                                     </div>
 
                                     {{-- Task --}}
                                     <div class="col-span-5 px-3 py-3 border-s" style="border-color:var(--border-primary);">
-                                        <input type="text" x-model="row.task"
+                                        <input type="text" x-model="row.task" :disabled="readonly"
                                             placeholder="المهمة أو النشاط المقرر"
-                                            class="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                                            class="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all disabled:opacity-70"
                                             style="border-color:var(--border-primary); background:var(--surface-card); color:var(--text-primary);">
                                     </div>
 
                                     {{-- Notes --}}
-                                    <div class="col-span-2 px-3 py-3 border-s" style="border-color:var(--border-primary);">
-                                        <input type="text" x-model="row.notes"
+                                    <div :class="readonly ? 'col-span-3' : 'col-span-2'" class="px-3 py-3 border-s" style="border-color:var(--border-primary);">
+                                        <input type="text" x-model="row.notes" :disabled="readonly"
                                             placeholder="ملاحظات"
-                                            class="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                                            class="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all disabled:opacity-70"
                                             style="border-color:var(--border-primary); background:var(--surface-card); color:var(--text-primary);">
                                     </div>
 
                                     {{-- Delete --}}
-                                    <div class="col-span-1 px-2 py-3 flex items-center justify-center border-s" style="border-color:var(--border-primary);">
+                                    <div class="col-span-1 px-2 py-3 flex items-center justify-center border-s" style="border-color:var(--border-primary);" x-show="!readonly">
                                         <button type="button" @click="day.rows.splice(rowIdx, 1)"
                                             class="w-7 h-7 rounded-lg text-red-400 hover:text-white hover:bg-red-500 flex items-center justify-center transition-all cursor-pointer opacity-0 group-hover:opacity-100 text-xs">
                                             <i class="fa-solid fa-xmark"></i>
@@ -185,7 +209,7 @@
                     </div>
 
                     {{-- Add Row --}}
-                    <button type="button" @click="day.rows.push({ time: '', task: '', notes: '' })"
+                    <button type="button" @click="day.rows.push({ time: '', task: '', notes: '' })" x-show="!readonly"
                         class="w-full py-2.5 rounded-xl border-2 border-dashed font-bold text-sm flex items-center justify-center gap-2 transition-all cursor-pointer"
                         style="border-color:var(--border-primary); color:var(--text-secondary);"
                         @mouseenter="$el.style.borderColor='#2563eb'; $el.style.color='#2563eb'; $el.style.backgroundColor='var(--bg-main)'"
@@ -198,24 +222,65 @@
             </template>
 
         </div>
-
-        {{-- Footer Actions --}}
-        <div class="flex items-center justify-between pb-8">
-            <button type="button" @click="resetAll()"
-                class="px-5 py-2.5 rounded-xl border font-bold text-sm transition-colors cursor-pointer flex items-center gap-2"
-                style="border-color:var(--border-primary); color:var(--text-secondary); background:var(--surface-card);">
-                <i class="fa-solid fa-rotate-left text-xs"></i>
-                إعادة تعيين
-            </button>
-
-            <button type="button" @click="saveSchedule()"
-                class="btn-gradient text-white px-8 py-2.5 rounded-xl font-bold text-sm shadow-lg cursor-pointer flex items-center gap-2">
-                <i class="fa-solid fa-floppy-disk"></i>
-                حفظ جدول الزيارة
-            </button>
-        </div>
-
     </main>
+
+    {{-- MODAL: Submit to Council --}}
+    <template x-teleport="body">
+        <div x-show="showSubmitModal" style="display:none" class="relative z-[200]" role="dialog" aria-modal="true">
+            <div x-show="showSubmitModal"
+                x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+                x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+                class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"></div>
+
+            <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+                <div class="flex min-h-full items-center justify-center p-4 text-center">
+                    <div x-show="showSubmitModal"
+                        x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                        x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+                        @click.away="showSubmitModal = false"
+                        class="relative transform overflow-hidden rounded-2xl bg-(--surface-card) border border-(--border-primary) shadow-2xl w-full max-w-md text-start">
+
+                        <div class="p-6">
+                            <div class="flex items-center gap-4 mb-4">
+                                <div class="w-12 h-12 rounded-full bg-indigo-100 dark:bg-indigo-500/10 flex items-center justify-center shrink-0">
+                                    <i class="fa-solid fa-paper-plane text-indigo-600 dark:text-indigo-400 text-xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-(--text-primary)">إرسال الجدول للمجلس</h3>
+                                    <p class="text-xs text-(--text-secondary) mt-1">
+                                        سيتم تحويل الجدول للمجلس تمهيداً لرفعه للجامعة لاعتماده.
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-xl p-4">
+                                <div class="flex gap-3">
+                                    <i class="fa-solid fa-circle-exclamation text-amber-600 dark:text-amber-400 mt-0.5"></i>
+                                    <p class="text-[11px] text-amber-800 dark:text-amber-300 leading-relaxed font-medium">
+                                        بمجرد الإرسال، سيتم قفل الجدول ولن تتمكن من تعديله إلا في حال رفضه من قبل الجامعة أو المجلس.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="px-6 py-4 border-t border-(--border-primary) bg-(--bg-main) flex justify-end gap-3">
+                            <button type="button" @click="showSubmitModal = false"
+                                class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-(--surface-card) border border-(--border-primary) text-(--text-primary) text-sm font-bold hover:bg-(--bg-main) transition-all cursor-pointer">
+                                إلغاء
+                            </button>
+                            <form method="POST" action="{{ route('requests.stage_five.submit', [$accreditationRequest, $visitSchedule]) }}" class="inline">
+                                @csrf
+                                @method('PATCH')
+                                <button type="submit"
+                                    class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-black shadow-lg shadow-indigo-500/20 transition-all cursor-pointer">
+                                    <i class="fa-solid fa-circle-check"></i> تأكيد الرفع للمجلس
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
 
     {{-- Toast --}}
     <div x-show="toast.show" style="display:none"
@@ -230,41 +295,52 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" defer></script>
     <script>
-        function visitSchedule() {
+        function visitSchedule(readonly = false) {
             return {
+                readonly: readonly,
                 darkMode: localStorage.getItem('vs-dark') === 'true'
                     || (!localStorage.getItem('vs-dark') && window.matchMedia('(prefers-color-scheme: dark)').matches),
                 activeDay: 0,
                 toast: { show: false, message: '', type: 'success' },
-                days: [
-                    { label: 'اليوم الأول',  date: '', rows: [] },
-                    { label: 'اليوم الثاني', date: '', rows: [] },
-                    { label: 'اليوم الثالث', date: '', rows: [] },
-                ],
+                isSaving: false,
+                showSubmitModal: false,
+                days: {!! json_encode(is_array($visitSchedule->schedule_data) && isset($visitSchedule->schedule_data['days']) ? $visitSchedule->schedule_data['days'] : [
+                    ['label' => 'اليوم الأول',  'date' => '', 'rows' => []],
+                    ['label' => 'اليوم الثاني', 'date' => '', 'rows' => []],
+                    ['label' => 'اليوم الثالث', 'date' => '', 'rows' => []],
+                ]) !!},
                 init() {
                     this.$watch('darkMode', val => localStorage.setItem('vs-dark', val));
-                    const saved = localStorage.getItem('vs-draft');
-                    if (saved) {
-                        try { const d = JSON.parse(saved); if (d.days) this.days = d.days; } catch(e) {}
-                    }
                 },
-                saveSchedule() {
+                async saveSchedule() {
                     const hasAny = this.days.some(d => d.rows.length > 0);
                     if (!hasAny) {
-                        this.showToast('أضف نشاطاً واحداً على الأقل', 'error');
+                        this.showToast('أضف نشاطاً واحداً على الأقل قبل الحفظ', 'error');
                         return;
                     }
-                    localStorage.setItem('vs-draft', JSON.stringify({ days: this.days }));
-                    this.showToast('تم حفظ الجدول بنجاح', 'success');
-                },
-                resetAll() {
-                    this.days = [
-                        { label: 'اليوم الأول',  date: '', rows: [] },
-                        { label: 'اليوم الثاني', date: '', rows: [] },
-                        { label: 'اليوم الثالث', date: '', rows: [] },
-                    ];
-                    localStorage.removeItem('vs-draft');
-                    this.showToast('تم إعادة تعيين الجدول', 'success');
+                    
+                    this.isSaving = true;
+                    try {
+                        const response = await fetch('{{ route("requests.stage_five.save", [$accreditationRequest, $visitSchedule]) }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            },
+                            body: JSON.stringify({ days: this.days })
+                        });
+                        
+                        if (response.ok) {
+                            this.showToast('تم حفظ مسودة الجدول بنجاح', 'success');
+                        } else {
+                            const data = await response.json();
+                            this.showToast(data.message || 'حدث خطأ أثناء الحفظ', 'error');
+                        }
+                    } catch (error) {
+                        this.showToast('حدث خطأ بالاتصال أثناء الحفظ', 'error');
+                    }
+                    this.isSaving = false;
                 },
                 showToast(message, type = 'success') {
                     this.toast = { show: true, message, type };
