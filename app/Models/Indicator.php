@@ -40,4 +40,12 @@ class Indicator extends Model
     {
         return $this->hasMany(Evidence::class);
     }
+
+    /**
+     * Get the report scores for the indicator.
+     */
+    public function reportScores()
+    {
+        return $this->hasMany(ReportScore::class);
+    }
 }

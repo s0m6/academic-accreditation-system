@@ -60,4 +60,12 @@ class AccreditationRequest extends Model
     {
         return $this->hasMany(VisitSchedule::class);
     }
+
+    /**
+     * Get the committee report for this request.
+     */
+    public function committeeReport()
+    {
+        return $this->hasOne(CommitteeReport::class);
+    }
 }

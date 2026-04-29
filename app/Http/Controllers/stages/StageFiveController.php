@@ -5,6 +5,9 @@ namespace App\Http\Controllers\stages;
 use App\Http\Controllers\Controller;
 use App\Models\AccreditationRequest;
 use App\Models\VisitSchedule;
+use App\Models\CommitteeReport;
+use App\Models\ReportScore;
+use App\Models\Indicator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -231,6 +234,31 @@ class StageFiveController extends Controller
                 'current_stage' => 'stage_six',
             ]);
 
+            // Create a draft committee report
+            $committeeReport = CommitteeReport::create([
+                'accreditation_request_id' => $accreditationRequest->id,
+                'status' => 'draft',
+            ]);
+
+            // Get all indicators to create initial report scores
+            $indicators = Indicator::all();
+            $reportScores = [];
+
+            foreach ($indicators as $indicator) {
+                $reportScores[] = [
+                    'report_id' => $committeeReport->id,
+                    'indicator_id' => $indicator->id,
+                    'score' => null,
+                    'score_type' => 'Initial',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+            }
+
+            // Insert all scores at once
+            if (!empty($reportScores)) {
+                ReportScore::insert($reportScores);
+            }
         });
 
         return back()->with('success', 'تم الموافقة على جدول الزيارة وانتقل الطلب للمرحلة السادسة.');
