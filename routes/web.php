@@ -156,3 +156,6 @@ Route::middleware('auth')->group(function () {
         ->name('requests.stage_five.view_pdf');
 
 });
+
+Route::view('test-rubrics', 'requests.stage_six_rubrics_form');
+Route::view('test2', 'requests.stage_six_visit_report');
