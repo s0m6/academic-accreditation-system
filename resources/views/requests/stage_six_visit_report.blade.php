@@ -100,10 +100,14 @@
     .alert-toast.removing { animation: slideOut 0.3s ease forwards; }
     @keyframes slideIn { from { opacity: 0; transform: translateX(400px); } to { opacity: 1; transform: translateX(0); } }
     @keyframes slideOut { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(400px); } }
+
+    /* View Mode overrides */
+    .view-mode input, .view-mode textarea { pointer-events: none; opacity: 0.8; }
+    .view-mode .btn-del, .view-mode .results-add-btn, .view-mode button[onclick^="addInterviewRow"], .view-mode button[onclick^="addResultItem"] { display: none !important; }
   </style>
 </head>
 
-<body class="min-h-screen p-4 md:p-8 transition-colors duration-300">
+<body class="min-h-screen p-4 md:p-8 transition-colors duration-300 {{ (!isset($isEditMode) || !$isEditMode) ? 'view-mode' : '' }}">
 
   <!-- Alert Container -->
   <div id="alert-container"></div>
@@ -129,7 +133,12 @@
           <h1 class="text-2xl md:text-3xl font-black text-(--text-primary)">نموذج تقرير الزيارة الميدانية</h1>
         </div>
       </div>
-    
+      <div>
+         <a href="{{ route('requests.stage', ['accreditationRequest' => $accreditationRequest, 'stage' => 'stage_six']) }}" 
+            class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-bold rounded-xl border border-(--border-primary) bg-(--bg-main) text-(--text-primary) hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+             العودة للوحة الطلب <i class="fa-solid fa-arrow-left text-xs ms-1"></i>
+         </a>
+      </div>
     </div>
 
     <!-- ======= TABS NAVIGATION ======= -->
@@ -695,10 +704,12 @@
         </div>
         <!-- Save/Submit -->
         <div class="flex gap-3">
+          @if(isset($isEditMode) && $isEditMode)
           <button id="save-draft"
             class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-bold rounded-xl border cursor-pointer transition-all hover:shadow-sm active:scale-95 bg-(--surface-card) border-(--border-primary) text-(--text-secondary)">
-            <i class="fa-solid fa-floppy-disk text-xs"></i> حفظ كمسودة
+            <i class="fa-solid fa-floppy-disk text-xs"></i> حفظ التغييرات
           </button>
+          @endif
         </div>
       </div>
     </div><!-- end main card -->
@@ -717,6 +728,20 @@
         (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
       document.documentElement.classList.add('dark');
     }
+
+    /* ======================================================
+       UNSAVED CHANGES WARNING
+    ====================================================== */
+    let isDirty = false;
+    document.addEventListener('input', () => { isDirty = true; });
+    document.addEventListener('change', () => { isDirty = true; });
+
+    window.addEventListener('beforeunload', function (e) {
+      if (isDirty) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    });
 
     /* ======================================================
        TABS
@@ -864,28 +889,166 @@
       }, 3500);
     }
 
-    document.getElementById('save-draft').addEventListener('click', () =>
-      showAlert('تم حفظ النموذج كمسودة بنجاح')
-    );
-
     /* ======================================================
-       CANCELABLE RADIO BUTTONS (TAB 1)
+       COLLECT AND SUBMIT DATA
     ====================================================== */
-    document.querySelectorAll('#tab-1 input[type="radio"]').forEach(radio => {
-      radio.addEventListener('click', function() {
-        if (this.getAttribute('data-was-checked') === 'true') {
-          this.checked = false;
-          this.setAttribute('data-was-checked', 'false');
-        } else {
-          // Reset other radios in the same group (same name)
-          document.querySelectorAll(`input[name="${this.name}"]`).forEach(r => {
-            r.setAttribute('data-was-checked', 'false');
+    function collectData() {
+      const data = {
+        general_notes: {},
+        interviews: [],
+        interview_positives: [],
+        interview_negatives: [],
+        tours_date: document.getElementById('tours-date').value,
+        tours: [],
+        docs_date: document.getElementById('docs-date').value,
+        docs_positives: [],
+        docs_negatives: []
+      };
+
+      // Tab 1
+      for(let i=1; i<=7; i++) {
+        const radio = document.querySelector(`input[name="q${i}"]:checked`);
+        if(radio) data.general_notes[`q${i}`] = radio.value;
+      }
+
+      // Tab 2
+      const interviewRows = document.querySelectorAll('#interviews-body tr');
+      interviewRows.forEach(row => {
+        const inputs = row.querySelectorAll('input, textarea');
+        if(inputs.length >= 4) {
+          data.interviews.push({
+            name: inputs[0].value,
+            from: inputs[1].value,
+            to: inputs[2].value,
+            date: inputs[3].value,
+            notes: inputs[4].value
           });
-          this.setAttribute('data-was-checked', 'true');
         }
       });
-    });
+
+      // Tab 3
+      document.querySelectorAll('#positives-list input').forEach(inp => { if(inp.value) data.interview_positives.push(inp.value) });
+      document.querySelectorAll('#negatives-list input').forEach(inp => { if(inp.value) data.interview_negatives.push(inp.value) });
+
+      // Tab 4
+      const tourRows = document.querySelectorAll('#tab-4 tbody tr');
+      tourRows.forEach(row => {
+        const facility = row.querySelector('td:nth-child(2)').innerText;
+        const inputs = row.querySelectorAll('input, textarea');
+        if(inputs.length >= 2) {
+          data.tours.push({
+            facility: facility,
+            count: inputs[0].value,
+            notes: inputs[1].value
+          });
+        }
+      });
+
+      // Tab 5
+      document.querySelectorAll('#docs-positives-list input').forEach(inp => { if(inp.value) data.docs_positives.push(inp.value) });
+      document.querySelectorAll('#docs-negatives-list input').forEach(inp => { if(inp.value) data.docs_negatives.push(inp.value) });
+
+      return data;
+    }
+
+    const saveBtn = document.getElementById('save-draft');
+    if (saveBtn) {
+      saveBtn.addEventListener('click', () => {
+          isDirty = false; // Reset dirty flag before submit
+          const data = collectData();
+          document.getElementById('report_data_input').value = JSON.stringify(data);
+          document.getElementById('report-form').submit();
+      });
+    }
+
+    /* ======================================================
+       PREFILL DATA
+    ====================================================== */
+    const existingData = @json($report->form5_data ?? []);
+    if (Object.keys(existingData).length > 0) {
+      // Tab 1
+      if (existingData.general_notes) {
+        for(let i=1; i<=7; i++) {
+          if(existingData.general_notes[`q${i}`]) {
+            const radio = document.querySelector(`input[name="q${i}"][value="${existingData.general_notes[`q${i}`]}"]`);
+            if(radio) { radio.checked = true; radio.setAttribute('data-was-checked', 'true'); }
+          }
+        }
+      }
+      
+      // Tab 2
+      if (existingData.interviews && existingData.interviews.length > 0) {
+        const tbody = document.getElementById('interviews-body');
+        tbody.innerHTML = '';
+        existingData.interviews.forEach((inv, idx) => {
+          addInterviewRow();
+          const row = tbody.lastElementChild;
+          const inputs = row.querySelectorAll('input, textarea');
+          inputs[0].value = inv.name || '';
+          inputs[1].value = inv.from || '';
+          inputs[2].value = inv.to || '';
+          inputs[3].value = inv.date || '';
+          inputs[4].value = inv.notes || '';
+        });
+      }
+
+      // Tab 3
+      if (existingData.interview_positives && existingData.interview_positives.length > 0) {
+        document.getElementById('positives-list').innerHTML = '';
+        existingData.interview_positives.forEach(val => {
+          addResultItem('positives-list', 'positive-num', 'positive');
+          const list = document.getElementById('positives-list');
+          list.lastElementChild.querySelector('input').value = val;
+        });
+      }
+      if (existingData.interview_negatives && existingData.interview_negatives.length > 0) {
+        document.getElementById('negatives-list').innerHTML = '';
+        existingData.interview_negatives.forEach(val => {
+          addResultItem('negatives-list', 'negative-num', 'negative');
+          const list = document.getElementById('negatives-list');
+          list.lastElementChild.querySelector('input').value = val;
+        });
+      }
+
+      // Tab 4
+      if (existingData.tours_date) document.getElementById('tours-date').value = existingData.tours_date;
+      if (existingData.tours && existingData.tours.length > 0) {
+        const tourRows = document.querySelectorAll('#tab-4 tbody tr');
+        existingData.tours.forEach((tour, i) => {
+          if (tourRows[i]) {
+            const inputs = tourRows[i].querySelectorAll('input, textarea');
+            inputs[0].value = tour.count || '';
+            inputs[1].value = tour.notes || '';
+          }
+        });
+      }
+
+      // Tab 5
+      if (existingData.docs_date) document.getElementById('docs-date').value = existingData.docs_date;
+      if (existingData.docs_positives && existingData.docs_positives.length > 0) {
+        document.getElementById('docs-positives-list').innerHTML = '';
+        existingData.docs_positives.forEach(val => {
+          addResultItem('docs-positives-list', 'docs-positive-num', 'positive');
+          const list = document.getElementById('docs-positives-list');
+          list.lastElementChild.querySelector('input').value = val;
+        });
+      }
+      if (existingData.docs_negatives && existingData.docs_negatives.length > 0) {
+        document.getElementById('docs-negatives-list').innerHTML = '';
+        existingData.docs_negatives.forEach(val => {
+          addResultItem('docs-negatives-list', 'docs-negative-num', 'negative');
+          const list = document.getElementById('docs-negatives-list');
+          list.lastElementChild.querySelector('input').value = val;
+        });
+      }
+    }
+
   </script>
+
+  <form id="report-form" method="POST" action="{{ route('requests.stage_six.save', $accreditationRequest) }}">
+      @csrf
+      <input type="hidden" name="report_data" id="report_data_input">
+  </form>
 
 </body>
 </html>

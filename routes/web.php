@@ -155,7 +155,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/requests/{accreditationRequest}/stage-five/{visitSchedule}/view-pdf', [StageFiveController::class, 'viewPdf'])
         ->name('requests.stage_five.view_pdf');
 
+    // Stage Six actions
+    Route::get('/requests/{accreditationRequest}/stage-six/edit', [App\Http\Controllers\stages\StageSixController::class, 'edit'])
+        ->name('requests.stage_six.edit');
+    Route::get('/requests/{accreditationRequest}/stage-six/show', [App\Http\Controllers\stages\StageSixController::class, 'show'])
+        ->name('requests.stage_six.show');
+    Route::post('/requests/{accreditationRequest}/stage-six/save', [App\Http\Controllers\stages\StageSixController::class, 'save'])
+        ->name('requests.stage_six.save');
+
 });
 
 Route::view('test-rubrics', 'requests.stage_six_rubrics_form');
-Route::view('test2', 'requests.stage_six_visit_report');
