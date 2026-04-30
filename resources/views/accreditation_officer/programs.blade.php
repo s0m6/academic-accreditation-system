@@ -69,7 +69,6 @@
                         <th scope="col" class="px-6 py-4 font-bold tracking-wider">القسم / الكلية</th>
                         <th scope="col" class="px-6 py-4 font-bold tracking-wider text-center">المستوى الدراسي</th>
                         <th scope="col" class="px-6 py-4 font-bold tracking-wider text-center">حالة الاعتماد</th>
-                        <th scope="col" class="px-6 py-4 font-bold tracking-wider text-center">عدد الساعات</th>
                         <th scope="col" class="px-6 py-4 font-bold tracking-wider">العمليات</th>
                     </tr>
                 </thead>
@@ -206,9 +205,7 @@
                                     </template>
                                 </div>
                             </td>
-                            <td class="px-6 py-5 text-center font-bold text-(--text-primary) whitespace-nowrap">
-                                {{ $program->program_details['credit_hours'] }} ساعة
-                            </td>
+                            
                             <td class="px-6 py-5 whitespace-nowrap">
                                 <div class="flex justify-center gap-2">
                                     <button @click="openRequests({{ $program->id }}, {{ json_encode($program->accreditationRequests) }})"

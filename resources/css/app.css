@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap');
 @import "tailwindcss";
+@import '@fortawesome/fontawesome-free/css/all.min.css';
 /* start flyonui */
 @plugin "flyonui";
 @import "flyonui/variants.css";
@@ -9,6 +10,8 @@
 /* start iconify */
 @plugin "@iconify/tailwind4";
 /* end iconify */
+
+
 
 /* Override default system dark mode to use class-based toggling */
 @custom-variant dark (&:where(.dark, .dark *));
