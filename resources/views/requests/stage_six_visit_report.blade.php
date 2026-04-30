@@ -1045,7 +1045,7 @@
 
   </script>
 
-  <form id="report-form" method="POST" action="{{ route('requests.stage_six.save', $accreditationRequest) }}">
+  <form id="report-form" method="POST" action="{{ route('requests.stage_six.visit_report.save', $accreditationRequest) }}">
       @csrf
       <input type="hidden" name="report_data" id="report_data_input">
   </form>

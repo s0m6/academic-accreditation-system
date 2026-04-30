@@ -47,6 +47,7 @@ use App\Http\Controllers\RequestDashboardController;
 use App\Http\Controllers\stages\StageFiveController;
 use App\Http\Controllers\stages\StageFourController;
 use App\Http\Controllers\stages\StageOneController;
+use App\Http\Controllers\stages\StageSixController;
 use App\Http\Controllers\stages\StageThreeController;
 use App\Http\Controllers\stages\StageTwoController;
 use Illuminate\Http\Request;
@@ -155,14 +156,22 @@ Route::middleware('auth')->group(function () {
     Route::get('/requests/{accreditationRequest}/stage-five/{visitSchedule}/view-pdf', [StageFiveController::class, 'viewPdf'])
         ->name('requests.stage_five.view_pdf');
 
-    // Stage Six actions
-    Route::get('/requests/{accreditationRequest}/stage-six/edit', [App\Http\Controllers\stages\StageSixController::class, 'edit'])
-        ->name('requests.stage_six.edit');
-    Route::get('/requests/{accreditationRequest}/stage-six/show', [App\Http\Controllers\stages\StageSixController::class, 'show'])
-        ->name('requests.stage_six.show');
-    Route::post('/requests/{accreditationRequest}/stage-six/save', [App\Http\Controllers\stages\StageSixController::class, 'save'])
-        ->name('requests.stage_six.save');
+    // Stage Six Visit Report actions
+    Route::get('/requests/{accreditationRequest}/stage-six/visit-report/edit', [StageSixController::class, 'edit'])
+        ->name('requests.stage_six.visit_report.edit');
+    Route::get('/requests/{accreditationRequest}/stage-six/visit-report/show', [StageSixController::class, 'show'])
+        ->name('requests.stage_six.visit_report.show');
+    Route::post('/requests/{accreditationRequest}/stage-six/visit-report/save', [StageSixController::class, 'save'])
+        ->name('requests.stage_six.visit_report.save');
+
+    // Stage Six rubrics form actions
+    Route::get('/requests/{accreditationRequest}/stage-six/rubrics/edit', [StageSixController::class, 'editRubrics'])
+        ->name('requests.stage_six.rubrics_edit');
+    Route::get('/requests/{accreditationRequest}/stage-six/rubrics/show', [StageSixController::class, 'showRubrics'])
+        ->name('requests.stage_six.rubrics_show');
+    Route::post('/requests/{accreditationRequest}/stage-six/rubrics/save', [StageSixController::class, 'saveRubrics'])
+        ->name('requests.stage_six.rubrics_save');
 
 });
 
-Route::view('test-rubrics', 'requests.stage_six_rubrics_form');
+
