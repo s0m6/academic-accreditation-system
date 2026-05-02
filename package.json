@@ -20,6 +20,7 @@
     },
     "dependencies": {
         "@fortawesome/fontawesome-free": "^7.2.0",
-        "flyonui": "^2.4.1"
+        "flyonui": "^2.4.1",
+        "signature_pad": "^5.1.3"
     }
 }
