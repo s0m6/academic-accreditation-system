@@ -72,4 +72,12 @@ class Evaluator extends Model
     {
         return $this->hasMany(CommitteeMember::class);
     }
+
+    /**
+     * Get the approvals made by the evaluator.
+     */
+    public function approvals(): HasMany
+    {
+        return $this->hasMany(CommitteeApproval::class, 'member_id');
+    }
 }
