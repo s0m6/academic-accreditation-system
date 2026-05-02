@@ -172,6 +172,18 @@ Route::middleware('auth')->group(function () {
     Route::post('/requests/{accreditationRequest}/stage-six/rubrics/save', [StageSixController::class, 'saveRubrics'])
         ->name('requests.stage_six.rubrics_save');
 
+    // Stage Six approval workflow actions
+    Route::patch('/requests/{accreditationRequest}/stage-six/request-approval', [StageSixController::class, 'requestMemberApproval'])
+        ->name('requests.stage_six.request_approval');
+    Route::post('/requests/{accreditationRequest}/stage-six/member-reject', [StageSixController::class, 'memberReject'])
+        ->name('requests.stage_six.member_reject');
+    Route::patch('/requests/{accreditationRequest}/stage-six/withdraw', [StageSixController::class, 'withdrawForEdit'])
+        ->name('requests.stage_six.withdraw');
+    Route::post('/requests/{accreditationRequest}/stage-six/member-approve', [StageSixController::class, 'memberApprove'])
+        ->name('requests.stage_six.member_approve');
+    Route::post('/requests/{accreditationRequest}/stage-six/submit-to-council', [StageSixController::class, 'submitToCouncil'])
+        ->name('requests.stage_six.submit_to_council');
+    Route::post('/requests/{accreditationRequest}/stage-six/council-upload', [StageSixController::class, 'uploadRecommendations'])
+        ->name('requests.stage_six.council_upload');
+
 });
-
-

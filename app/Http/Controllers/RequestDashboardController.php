@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AccreditationRequest;
+use App\Models\CommitteeApproval;
 use App\Models\User;
 use Illuminate\Http\Request;
 
@@ -123,6 +124,26 @@ class RequestDashboardController extends Controller
         // Load visit schedules for stage five
         $visitSchedules = $accreditationRequest->visitSchedules()->orderByDesc('id')->get();
 
+        // Load committee approvals for stage six
+        $report = $accreditationRequest->committeeReport;
+        $committeeApprovals = collect();
+        if ($report) {
+            // If iteration is 0 (submitted to council), get the latest iteration's approvals for this round
+            $iteration = $report->current_iteration > 0 
+                ? $report->current_iteration 
+                : CommitteeApproval::where('report_id', $report->id)
+                    ->where('review_round', 'stage6')
+                    ->max('iteration_number');
+
+            if ($iteration) {
+                $committeeApprovals = CommitteeApproval::where('report_id', $report->id)
+                    ->where('iteration_number', $iteration)
+                    ->where('review_round', 'stage6')
+                    ->with('member.user')
+                    ->get();
+            }
+        }
+
         return [
             'accreditationRequest' => $accreditationRequest,
             'stages' => self::STAGES,
@@ -132,6 +153,7 @@ class RequestDashboardController extends Controller
             'committee' => $committee,
             'coordinators' => $coordinators,
             'visitSchedules' => $visitSchedules,
+            'committeeApprovals' => $committeeApprovals,
         ];
     }
 

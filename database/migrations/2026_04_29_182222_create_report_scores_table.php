@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('report_id')->constrained('committee_reports')->onDelete('cascade');
             $table->foreignId('indicator_id')->constrained('indicators')->onDelete('cascade');
-            $table->tinyInteger('score');
+            $table->tinyInteger('score')->nullable();
             $table->enum('score_type', ['Initial', 'final']);
             $table->timestamps();
 

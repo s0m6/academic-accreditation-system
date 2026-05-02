@@ -179,7 +179,7 @@ class StageFiveController extends Controller
             return back()->with('error', 'عذراً، الملف المرفق غير موجود في نظام التخزين. يرجى التواصل مع الدعم الفني.');
         }
 
-        return Storage::disk('local')->download($visitSchedule->council_pdf_path, "visit_schedule_req_{$accreditationRequest->id}.pdf");
+        return response()->download(Storage::disk('local')->path($visitSchedule->council_pdf_path), "visit_schedule_req_{$accreditationRequest->id}.pdf");
     }
 
     /**
@@ -234,30 +234,27 @@ class StageFiveController extends Controller
                 'current_stage' => 'stage_six',
             ]);
 
-            // Create a draft committee report
-            $committeeReport = CommitteeReport::create([
-                'accreditation_request_id' => $accreditationRequest->id,
-                'status' => 'draft',
-            ]);
+            // Create or update a draft committee report
+            $committeeReport = CommitteeReport::updateOrCreate(
+                ['accreditation_request_id' => $accreditationRequest->id],
+                ['status' => 'draft']
+            );
 
             // Get all indicators to create initial report scores
             $indicators = Indicator::all();
-            $reportScores = [];
 
             foreach ($indicators as $indicator) {
-                $reportScores[] = [
-                    'report_id' => $committeeReport->id,
-                    'indicator_id' => $indicator->id,
+                // Use updateOrInsert to prevent duplicates if the university accepts multiple times
+                DB::table('report_scores')->updateOrInsert(
+                    [
+                        'report_id' => $committeeReport->id,
+                        'indicator_id' => $indicator->id,
                     'score' => null,
-                    'score_type' => 'Initial',
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ];
-            }
-
-            // Insert all scores at once
-            if (!empty($reportScores)) {
-                ReportScore::insert($reportScores);
+                        'score_type' => 'Initial',
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]
+                );
             }
         });
 

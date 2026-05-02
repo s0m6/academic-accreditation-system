@@ -4,23 +4,25 @@ namespace App\Http\Controllers\stages;
 
 use App\Http\Controllers\Controller;
 use App\Models\AccreditationRequest;
+use App\Models\CommitteeApproval;
 use App\Models\ReportScore;
+use App\Models\ReportSignature;
 use App\Models\Standard;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class StageSixController extends Controller
 {
     // Show the edit view for the visit report form (Form 5).
     public function edit(AccreditationRequest $accreditationRequest)
     {
-        $this->authorizeAccess($accreditationRequest);
+        $this->authorizeAccess($accreditationRequest, true);
 
         $report = $accreditationRequest->committeeReport()->firstOrCreate([
             'accreditation_request_id' => $accreditationRequest->id,
         ], [
             'status' => 'draft',
-            'current_iteration' => 1,
         ]);
 
         $isEditMode = true;
@@ -40,13 +42,12 @@ class StageSixController extends Controller
     // Save the visit report form data as JSON into form5_data.
     public function save(Request $request, AccreditationRequest $accreditationRequest)
     {
-        $this->authorizeAccess($accreditationRequest);
+        $this->authorizeAccess($accreditationRequest, true);
 
         $report = $accreditationRequest->committeeReport()->firstOrCreate([
             'accreditation_request_id' => $accreditationRequest->id,
         ], [
             'status' => 'draft',
-            'current_iteration' => 1,
         ]);
 
         $data = json_decode($request->input('report_data', '{}'), true);
@@ -62,13 +63,12 @@ class StageSixController extends Controller
     // Show the edit view for the program evaluation rubrics form (Form 6).
     public function editRubrics(AccreditationRequest $accreditationRequest)
     {
-        $this->authorizeAccess($accreditationRequest);
+        $this->authorizeAccess($accreditationRequest, true);
 
         $report = $accreditationRequest->committeeReport()->firstOrCreate([
             'accreditation_request_id' => $accreditationRequest->id,
         ], [
             'status' => 'draft',
-            'current_iteration' => 1,
         ]);
 
         $standards = Standard::with(['subStandards.indicators'])
@@ -127,13 +127,12 @@ class StageSixController extends Controller
     // Save the rubrics form: indicator scores into report_scores and text comments into form6_initial_data JSON.
     public function saveRubrics(Request $request, AccreditationRequest $accreditationRequest)
     {
-        $this->authorizeAccess($accreditationRequest);
+        $this->authorizeAccess($accreditationRequest, true);
 
         $report = $accreditationRequest->committeeReport()->firstOrCreate([
             'accreditation_request_id' => $accreditationRequest->id,
         ], [
             'status' => 'draft',
-            'current_iteration' => 1,
         ]);
 
         $scores = $request->input('scores', []);
@@ -171,14 +170,265 @@ class StageSixController extends Controller
         return response()->json(['success' => true, 'message' => 'تم حفظ التغييرات بنجاح.']);
     }
 
-    // Authorize that the current user is the committee chair evaluator.
-    private function authorizeAccess(AccreditationRequest $accreditationRequest): void
+    // Authorize that the current user is the committee chair evaluator and optionally check if report is editable.
+    private function authorizeAccess(AccreditationRequest $accreditationRequest, bool $checkEditable = false): void
     {
         $user = request()->user();
         $committee = $accreditationRequest->committee;
 
         if (! $committee || $committee->chair_evaluator_id !== $user->evaluator?->id) {
-            abort(403, 'غير مصرح لك بتعديل هذا النموذج.');
+            abort(403, 'غير مصرح لك بإجراء هذه العملية.');
+        }
+
+        // If checkEditable is true, prevent modification if already under review by members
+        if ($checkEditable) {
+            $report = $accreditationRequest->committeeReport;
+            if ($report && $report->status === 'under_review') {
+                abort(403, 'لا يمكن تعديل النماذج أثناء وجود طلب موافقة معلق للأعضاء. يجب سحب الطلب أولاً في حال الرغبة بالتعديل.');
+            }
+        }
+    }
+
+    // Request approval from committee members (PATCH)
+    public function requestMemberApproval(Request $request, AccreditationRequest $accreditationRequest)
+    {
+        $this->authorizeAccess($accreditationRequest);
+
+        $report = $accreditationRequest->committeeReport;
+
+        if (! $report) {
+            abort(404, 'التقرير غير موجود.');
+        }
+
+        DB::transaction(function () use ($report, $accreditationRequest) {
+            // Increment iteration explicitly
+            $newIteration = ($report->current_iteration ?? 0) + 1;
+            
+            // Get all committee members except chair
+            $committee = $accreditationRequest->committee;
+            $members = $committee->acceptedMembers()->where('evaluator_id', '!=', $committee->chair_evaluator_id)->get();
+            
+            foreach ($members as $member) {
+                CommitteeApproval::create([
+                    'report_id' => $report->id,
+                    'member_id' => $member->evaluator_id,
+                    'iteration_number' => $newIteration,
+                    'status' => 'pending',
+                    'review_round' => 'stage6',
+                ]);
+            }
+            
+            $report->update([
+                'current_iteration' => $newIteration,
+                'status' => 'under_review'
+            ]);
+        });
+
+        return redirect()->route('requests.stage', ['accreditationRequest' => $accreditationRequest, 'stage' => 'stage_six'])
+            ->with('success', 'تم طلب موافقة الأعضاء بنجاح.');
+    }
+
+    // Reject approval (POST)
+    public function memberReject(Request $request, AccreditationRequest $accreditationRequest)
+    {
+        $this->authorizeAsMember($accreditationRequest);
+
+        $request->validate([
+            'reject_reasons' => 'required|array',
+            'reject_reasons.*' => 'required|string|max:1000',
+        ]);
+
+        $report = $accreditationRequest->committeeReport;
+        $evaluatorId = request()->user()->evaluator->id;
+
+        $approval = CommitteeApproval::where('report_id', $report->id)
+            ->where('member_id', $evaluatorId)
+            ->where('iteration_number', $report->current_iteration)
+            ->where('review_round', 'stage6')
+            ->where('status', 'pending')
+            ->firstOrFail();
+
+        $approval->update([
+            'status' => 'rejected',
+            'reject_reason' => json_encode($request->reject_reasons), // Save as JSON string
+            'responded_at' => now(),
+        ]);
+
+        return redirect()->route('requests.stage', ['accreditationRequest' => $accreditationRequest, 'stage' => 'stage_six'])
+            ->with('error', 'تم إرسال الرفض والملاحظات لرئيس اللجنة.');
+    }
+
+    // Withdraw for edit (PATCH)
+    public function withdrawForEdit(Request $request, AccreditationRequest $accreditationRequest)
+    {
+        $this->authorizeAccess($accreditationRequest);
+
+        $report = $accreditationRequest->committeeReport;
+
+        DB::transaction(function () use ($report) {
+            // Cancel pending approvals for current iteration
+            CommitteeApproval::where('report_id', $report->id)
+                ->where('iteration_number', $report->current_iteration)
+                ->where('review_round', 'stage6')
+                ->where('status', 'pending')
+                ->update(['status' => 'canceled']);
+
+            $report->update(['status' => 'returned_for_edit']);
+        });
+
+        return redirect()->route('requests.stage', ['accreditationRequest' => $accreditationRequest, 'stage' => 'stage_six'])
+            ->with('success', 'تم سحب الطلب للتعديل.');
+    }
+
+    // Member approve with signatures (POST)
+    public function memberApprove(Request $request, AccreditationRequest $accreditationRequest)
+    {
+        $this->authorizeAsMember($accreditationRequest);
+
+        $request->validate([
+            'form_5_signature' => 'required|string', // Base64 SVG data
+            'form_6_signature' => 'required|string', // Base64 SVG data
+        ]);
+
+        $report = $accreditationRequest->committeeReport;
+        $evaluatorId = request()->user()->evaluator->id;
+
+        $approval = CommitteeApproval::where('report_id', $report->id)
+            ->where('member_id', $evaluatorId)
+            ->where('iteration_number', $report->current_iteration)
+            ->where('review_round', 'stage6')
+            ->where('status', 'pending')
+            ->firstOrFail();
+
+        DB::transaction(function () use ($request, $report, $approval, $accreditationRequest) {
+            // Save form 5 signature
+            $this->saveSignature($request->form_5_signature, $report->id, $accreditationRequest->id, $approval->id, 'form_5');
+            // Save form 6 initial signature
+            $this->saveSignature($request->form_6_signature, $report->id, $accreditationRequest->id, $approval->id, 'form_6_initial');
+
+            $approval->update([
+                'status' => 'approved',
+                'responded_at' => now(),
+            ]);
+        });
+
+        return redirect()->route('requests.stage', ['accreditationRequest' => $accreditationRequest, 'stage' => 'stage_six'])
+            ->with('success', 'تمت الموافقة وحفظ التوقيعات بنجاح.');
+    }
+
+    // Submit to council by chair (POST)
+    public function submitToCouncil(Request $request, AccreditationRequest $accreditationRequest)
+    {
+        $this->authorizeAccess($accreditationRequest);
+
+        $request->validate([
+            'form_5_signature' => 'required|string', // Base64 SVG data
+            'form_6_signature' => 'required|string', // Base64 SVG data
+        ]);
+
+        $report = $accreditationRequest->committeeReport;
+
+        // Ensure all members have approved
+        $pendingOrRejectedCount = CommitteeApproval::where('report_id', $report->id)
+            ->where('iteration_number', $report->current_iteration)
+            ->where('review_round', 'stage6')
+            ->where('status', '!=', 'approved')
+            ->count();
+
+        if ($pendingOrRejectedCount > 0) {
+            return back()->with('error', 'لا يمكن الرفع للمجلس قبل موافقة جميع أعضاء اللجنة.');
+        }
+
+        DB::transaction(function () use ($request, $report, $accreditationRequest) {
+            // Save chair signatures (approval_id = null)
+            $this->saveSignature($request->form_5_signature, $report->id, $accreditationRequest->id, null, 'form_5');
+            $this->saveSignature($request->form_6_signature, $report->id, $accreditationRequest->id, null, 'form_6_initial');
+
+            $report->update([
+                'status' => 'submitted_to_council',
+                'current_iteration' => 0, // Reset for stage 8
+                'stage6_submitted_at' => now(), // Submission timestamp
+            ]);
+        });
+
+        return redirect()->route('requests.stage', ['accreditationRequest' => $accreditationRequest, 'stage' => 'stage_six'])
+            ->with('success', 'تم رفع التقرير للمجلس بنجاح.');
+    }
+
+    // Council coordinator uploads recommendations letter (POST)
+    public function uploadRecommendations(Request $request, AccreditationRequest $accreditationRequest)
+    {
+        // Authorize council coordinator
+        if (request()->user()->role !== 'council_coordinator' || request()->user()->id !== $accreditationRequest->council_coord_id) {
+            abort(403, 'غير مصرح لك بإجراء هذه العملية.');
+        }
+
+        $report = $accreditationRequest->committeeReport;
+        if (!$report || $report->status !== 'submitted_to_council') {
+            return back()->with('error', 'لا يمكن رفع الخطاب في هذه الحالة.');
+        }
+
+        $validated = $request->validate([
+            'recommendations_pdf' => ['required', 'file', 'mimes:pdf', 'max:10240'],
+        ]);
+
+        $pdfPath = $validated['recommendations_pdf']->store("req_{$accreditationRequest->id}/council", 'local');
+
+        DB::transaction(function () use ($accreditationRequest, $report, $pdfPath) {
+            $report->update([
+                'status' => 'council_responded',
+                'form8_pdf_path' => $pdfPath,
+                'council_responded_at' => now(),
+            ]);
+
+            $accreditationRequest->update([
+                'current_stage' => 'stage_seven',
+            ]);
+        });
+
+        return redirect()->route('requests.stage', ['accreditationRequest' => $accreditationRequest, 'stage' => 'stage_seven'])
+            ->with('success', 'تم رفع خطاب التوصيات بنجاح وانتقل الطلب للمرحلة السابعة.');
+    }
+
+    // Helper: Save SVG signature and create ReportSignature record
+    private function saveSignature(string $base64Svg, int $reportId, int $requestId, ?int $approvalId, string $formType): void
+    {
+        // Extract the actual SVG content from the base64 data URI (data:image/svg+xml;base64,...)
+        if (strpos($base64Svg, 'data:image/svg+xml;base64,') === 0) {
+            $base64Svg = substr($base64Svg, strpos($base64Svg, ',') + 1);
+        }
+
+        $svgContent = base64_decode($base64Svg);
+        $fileName = uniqid("sig_{$formType}_").'.svg';
+        
+        // Path matches user request: req_{id}/signatures/
+        $path = "req_{$requestId}/signatures/{$fileName}";
+
+        Storage::disk('local')->put($path, $svgContent);
+
+        ReportSignature::create([
+            'report_id' => $reportId,
+            'approval_id' => $approvalId,
+            'form_type' => $formType,
+            'signature_path' => $path,
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+        ]);
+    }
+
+    // Authorize that the current user is a committee member (not chair)
+    private function authorizeAsMember(AccreditationRequest $accreditationRequest): void
+    {
+        $user = request()->user();
+        $committee = $accreditationRequest->committee;
+
+        $isMember = $user->role === 'evaluator' &&
+                    $committee &&
+                    $committee->chair_evaluator_id !== $user->evaluator?->id &&
+                    $committee->acceptedMembers->pluck('evaluator_id')->contains($user->evaluator?->id);
+
+        if (! $isMember) {
+            abort(403, 'غير مصرح لك بإجراء هذه العملية.');
         }
     }
 }

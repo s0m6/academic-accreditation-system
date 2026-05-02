@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('committee_reports', function (Blueprint $table) {
             $table->id(); 
+            $table->foreignId('accreditation_request_id')->constrained('accreditation_requests')->cascadeOnDelete();
             $table->enum('status', [
                 'draft',
                 'under_review',
@@ -23,7 +24,7 @@ return new class extends Migration
                 'final_under_review',
                 'completed',
             ])->default('draft');
-            $table->tinyInteger('current_iteration')->nullable();
+            $table->tinyInteger('current_iteration')->default(0);
             $table->json('form5_data')->nullable();
             $table->json('form6_initial_data')->nullable();
             $table->timestamp('stage6_submitted_at')->nullable();
