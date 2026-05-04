@@ -423,6 +423,32 @@ class StageSixController extends Controller
         ]);
     }
 
+    // Show the recommendations letter (Form 8).
+    public function showRecommendationsLetter(AccreditationRequest $accreditationRequest)
+    {
+        $report = $accreditationRequest->committeeReport;
+        if (! $report) {
+            abort(404, 'التقرير غير موجود.');
+        }
+
+        $program = $accreditationRequest->program;
+        $department = $program->department;
+        $college = $department->college;
+        $university = $college->university;
+
+        // Build detailed standards data for the assessment table.
+        $detailedStandards = $this->buildDetailedStandards($report);
+
+        return view('requests.eightForm', compact(
+            'accreditationRequest',
+            'program',
+            'department',
+            'college',
+            'university',
+            'detailedStandards'
+        ));
+    }
+
     // Show the final report of the reviewers committee (Form 7).
     public function showFinalReport(AccreditationRequest $accreditationRequest)
     {

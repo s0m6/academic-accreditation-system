@@ -287,10 +287,9 @@
                         </td>
                         <td class="px-5 py-4">
                             <div class="flex items-center justify-center gap-2">
-                                {{-- Placeholder buttons for now --}}
-                                <button type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-(--surface-card) border border-(--border-primary) hover:bg-(--bg-main) text-(--text-primary) text-xs font-bold transition cursor-not-allowed opacity-50">
+                                <a href="{{ route('requests.stage_six.recommendations_letter', $accreditationRequest) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-(--surface-card) border border-(--border-primary) hover:bg-(--bg-main) text-(--text-primary) text-xs font-bold transition">
                                     <i class="fa-solid fa-eye text-(--text-secondary)"></i> عرض
-                                </button>
+                                </a>
                                 <button type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-(--surface-card) border border-(--border-primary) hover:bg-(--bg-main) text-(--text-primary) text-xs font-bold transition cursor-not-allowed opacity-50">
                                     <i class="fa-solid fa-download text-(--text-secondary)"></i> تحميل
                                 </button>

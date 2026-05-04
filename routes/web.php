@@ -187,5 +187,7 @@ Route::middleware('auth')->group(function () {
         ->name('requests.stage_six.council_upload');
     Route::get('/requests/{accreditationRequest}/stage-six/final-report', [StageSixController::class, 'showFinalReport'])
         ->name('requests.stage_six.final_report');
+    Route::get('/requests/{accreditationRequest}/stage-six/recommendations-letter', [StageSixController::class, 'showRecommendationsLetter'])
+        ->name('requests.stage_six.recommendations_letter');
 
 });
