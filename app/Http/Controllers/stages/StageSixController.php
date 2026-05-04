@@ -5,6 +5,7 @@ namespace App\Http\Controllers\stages;
 use App\Http\Controllers\Controller;
 use App\Models\AccreditationRequest;
 use App\Models\CommitteeApproval;
+use App\Models\CommitteeReport;
 use App\Models\ReportScore;
 use App\Models\ReportSignature;
 use App\Models\Standard;
@@ -500,6 +501,9 @@ class StageSixController extends Controller
 
         $standardsScores = $this->calculateStandardsScores($report->id);
 
+        // Build detailed sub-standards data for the assessment table (Section 2 of Form 7).
+        $detailedStandards = $this->buildDetailedStandards($report);
+
         return view('requests.formSeven', compact(
             'accreditationRequest',
             'program',
@@ -507,7 +511,8 @@ class StageSixController extends Controller
             'college',
             'university',
             'membersData',
-            'standardsScores'
+            'standardsScores',
+            'detailedStandards'
         ));
     }
 
@@ -586,6 +591,79 @@ class StageSixController extends Controller
             'final_grade' => $finalGrade,
             'achievement_level' => $achievementLevel,
         ];
+    }
+
+    /**
+     * Build detailed standards data for Form 7 assessment table.
+     *
+     * Returns an array of standards, each with their sub-standards including:
+     *   - sub-standard name & number
+     *   - average score (indicators 1-5 only; 0 = non-compliant, excluded)
+     *   - strengths  (from form6_initial_data JSON, filtered by sub-standard id)
+     *   - improvements (from form6_initial_data JSON, filtered by sub-standard id)
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function buildDetailedStandards(CommitteeReport $report): array
+    {
+        $standards = Standard::with(['subStandards.indicators'])->orderBy('id')->get();
+
+        // Load all initial scores for this report keyed by indicator_id.
+        $scores = ReportScore::where('report_id', $report->id)
+            ->where('score_type', 'Initial')
+            ->pluck('score', 'indicator_id');
+
+        // Parse form6_initial_data – structure: { standards: { [stdId]: { strengths: [{text, subId}], improvements: [{text, subId}] } } }
+        $formData = $report->form6_initial_data ?? [];
+        $stdComments = $formData['standards'] ?? [];
+
+        $result = [];
+
+        foreach ($standards as $stdIndex => $standard) {
+            $subRows = [];
+            $stdCommentBlock = $stdComments[(string) $standard->id] ?? [];
+
+            $allStrengths = $stdCommentBlock['strengths'] ?? [];
+            $allImprovements = $stdCommentBlock['improvements'] ?? [];
+
+            foreach ($standard->subStandards as $subStandard) {
+                $subSum = 0;
+                $subCount = 0;
+
+                foreach ($subStandard->indicators as $indicator) {
+                    $score = $scores->get($indicator->id);
+                    if ($score !== null && $score >= 1 && $score <= 5) {
+                        $subSum += $score;
+                        $subCount += 1;
+                    }
+                    // 0 (non-compliant) is excluded from average per business rules
+                }
+
+                $subAverage = $subCount > 0 ? round($subSum / $subCount, 2) : null;
+
+                // Filter strengths/improvements that belong to this sub-standard
+                $subStrengths = array_values(array_filter($allStrengths, fn ($p) => (string) ($p['subId'] ?? '') === (string) $subStandard->id));
+                $subImprovements = array_values(array_filter($allImprovements, fn ($p) => (string) ($p['subId'] ?? '') === (string) $subStandard->id));
+
+                $subRows[] = [
+                    'id' => $subStandard->id,
+                    'number' => $subStandard->number ?? ($stdIndex + 1),
+                    'name' => $subStandard->name,
+                    'average' => $subAverage,
+                    'strengths' => array_column($subStrengths, 'text'),
+                    'improvements' => array_column($subImprovements, 'text'),
+                ];
+            }
+
+            $result[] = [
+                'id' => $standard->id,
+                'number' => $standard->number ?? ($stdIndex + 1),
+                'name' => $standard->name,
+                'subs' => $subRows,
+            ];
+        }
+
+        return $result;
     }
 
     /**

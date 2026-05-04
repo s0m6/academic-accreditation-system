@@ -214,6 +214,71 @@
             color: var(--primary-color);
         }
 
+        /* ── Detailed Assessment Table (Section 2) ── */
+        .detail-table .main-criterion-row td {
+            background: var(--primary-color);
+            color: #fff;
+            font-weight: 700;
+            text-align: right;
+            font-size: 15px;
+        }
+
+        .detail-table thead th {
+            background: var(--header-bg);
+            color: var(--primary-color);
+            font-weight: 700;
+            text-align: center;
+            vertical-align: middle;
+            font-size: 15px;
+        }
+
+        .detail-table .num-col {
+            text-align: center;
+            vertical-align: middle;
+            width: 55px;
+            font-weight: bold;
+        }
+
+        .detail-table .name-col {
+            width: 220px;
+            font-weight: 500;
+            vertical-align: top;
+        }
+
+        .detail-table .grade-col {
+            text-align: center;
+            vertical-align: middle;
+            width: 75px;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .detail-table .text-col {
+            vertical-align: top;
+            color: #444;
+            font-size: 13.5px;
+            line-height: 1.7;
+        }
+
+        .detail-table tr:not(.main-criterion-row):nth-child(even) {
+            background-color: var(--row-bg-alt);
+        }
+
+        .detail-table .text-col ul {
+            margin: 0;
+            padding-right: 18px;
+        }
+
+        .detail-table .text-col li {
+            margin-bottom: 3px;
+        }
+
+        .detail-table .text-col .empty-placeholder {
+            color: #aaa;
+            font-style: italic;
+            font-size: 12px;
+        }
+
         @media print {
             body {
                 background: #fff;
@@ -238,6 +303,13 @@
                 background: #d9d9d9 !important;
                 color: #000 !important;
                 border-color: #000 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .detail-table .main-criterion-row td {
+                background: #d9d9d9 !important;
+                color: #000 !important;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
             }
@@ -350,6 +422,74 @@
         </div>
     </div>
 
+    {{-- ===== Section 2: Detailed Assessment Table ===== --}}
+    <div class="page-container">
+        <div class="report-header">
+            <h1 class="report-title">جدول التقييم التفصيلي للمعايير</h1>
+        </div>
+
+        <div class="table-responsive">
+            <table class="detail-table">
+                <thead>
+                    <tr>
+                        <th class="num-col">ت</th>
+                        <th class="name-col">المعيار الفرعي</th>
+                        <th class="grade-col">الدرجة</th>
+                        <th>نقاط القوة</th>
+                        <th>فرص التحسين</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($detailedStandards as $stdIndex => $standard)
+                        {{-- Main Standard Row --}}
+                        <tr class="main-criterion-row">
+                            <td class="num-col">{{ $standard['number'] }}</td>
+                            <td colspan="4">{{ $standard['name'] }}</td>
+                        </tr>
+
+                        {{-- Sub-Standard Rows --}}
+                        @foreach($standard['subs'] as $subIndex => $sub)
+                            <tr>
+                                <td class="num-col">{{ $sub['number'] }}.{{ $stdIndex + 1 }}</td>
+                                <td class="name-col">{{ $sub['name'] }}</td>
+                                <td class="grade-col">
+                                    @if($sub['average'] !== null)
+                                        {{ number_format($sub['average'], 2) }}
+                                    @else
+                                        <span style="color:#aaa; font-size:12px;">—</span>
+                                    @endif
+                                </td>
+                                <td class="text-col">
+                                    @if(!empty($sub['strengths']))
+                                        <ul>
+                                            @foreach($sub['strengths'] as $point)
+                                                <li>{{ $point }}</li>
+                                            @endforeach
+                                        </ul>
+                                    @else
+                                        <span class="empty-placeholder">لا توجد ملاحظات</span>
+                                    @endif
+                                </td>
+                                <td class="text-col">
+                                    @if(!empty($sub['improvements']))
+                                        <ul>
+                                            @foreach($sub['improvements'] as $point)
+                                                <li>{{ $point }}</li>
+                                            @endforeach
+                                        </ul>
+                                    @else
+                                        <span class="empty-placeholder">لا توجد ملاحظات</span>
+                                    @endif
+                                </td>
+                            </tr>
+                        @endforeach
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+
     <div class="page-container">
         <div class="report-header">
             <h1 class="report-title">التقدير الكلي لبرنامج الاعتماد</h1>
@@ -424,7 +564,6 @@
             </table>
         </div>
     </div>
-
 
 </body>
 
