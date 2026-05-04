@@ -180,11 +180,17 @@ class StageSixController extends Controller
             abort(403, 'غير مصرح لك بإجراء هذه العملية.');
         }
 
-        // If checkEditable is true, prevent modification if already under review by members
+        // If checkEditable is true, prevent modification if not in draft or returned_for_edit status
         if ($checkEditable) {
             $report = $accreditationRequest->committeeReport;
-            if ($report && $report->status === 'under_review') {
-                abort(403, 'لا يمكن تعديل النماذج أثناء وجود طلب موافقة معلق للأعضاء. يجب سحب الطلب أولاً في حال الرغبة بالتعديل.');
+            if ($report && ! in_array($report->status, ['draft', 'returned_for_edit'])) {
+                $statusMsg = match ($report->status) {
+                    'under_review' => 'لا يمكن تعديل النماذج أثناء وجود طلب موافقة معلق للأعضاء. يجب سحب الطلب أولاً في حال الرغبة بالتعديل.',
+                    'submitted_to_council' => 'لا يمكن تعديل النماذج بعد رفع التقرير للمجلس.',
+                    'council_responded' => 'لا يمكن تعديل النماذج بعد صدور قرار المجلس.',
+                    default => 'لا يمكن تعديل النماذج في الحالة الحالية للتقرير.',
+                };
+                abort(403, $statusMsg);
             }
         }
     }
