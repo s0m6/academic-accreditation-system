@@ -289,6 +289,26 @@
                         </td>
                     </tr>
                     @endif
+
+                    {{-- Row 4: Final Report of Reviewers (Form 7) --}}
+                    <tr class="hover:bg-(--bg-main) transition-colors">
+                        <td class="px-5 py-4 text-center">
+                            <span class="w-7 h-7 rounded-lg bg-(--surface-card) border border-(--border-primary) inline-flex items-center justify-center font-black text-(--text-primary)">
+                                4
+                            </span>
+                        </td>
+                        <td class="px-5 py-4 font-bold text-(--text-primary)">
+                            التقرير النهائي للجنة المقيمين والتقدير الكلي
+                        </td>
+                        <td class="px-5 py-4">
+                            <div class="flex items-center justify-center gap-2">
+                                <a href="{{ route('requests.stage_six.final_report', $accreditationRequest) }}"
+                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-(--surface-card) border border-(--border-primary) hover:bg-(--bg-main) text-(--text-primary) text-xs font-bold transition cursor-pointer">
+                                    <i class="fa-solid fa-eye text-(--text-secondary)"></i> عرض
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>
@@ -328,7 +348,8 @@
                     <tbody class="divide-y divide-(--border-primary)">
                         @forelse($membersList as $index => $member)
                             @php
-                                $approval = $committeeApprovals->where('member_id', $member->evaluator_id)->first();
+                                $showApprovals = !in_array($currentStatus, ['draft', 'returned_for_edit']);
+                                $approval = $showApprovals ? $committeeApprovals->where('member_id', $member->evaluator_id)->first() : null;
                             @endphp
                             <tr class="hover:bg-(--bg-main) transition-colors">
                                 <td class="px-5 py-4 text-center text-(--text-secondary)">{{ $loop->iteration }}</td>

@@ -203,11 +203,11 @@ class StageSixController extends Controller
         DB::transaction(function () use ($report, $accreditationRequest) {
             // Increment iteration explicitly
             $newIteration = ($report->current_iteration ?? 0) + 1;
-            
+
             // Get all committee members except chair
             $committee = $accreditationRequest->committee;
             $members = $committee->acceptedMembers()->where('evaluator_id', '!=', $committee->chair_evaluator_id)->get();
-            
+
             foreach ($members as $member) {
                 CommitteeApproval::create([
                     'report_id' => $report->id,
@@ -217,10 +217,10 @@ class StageSixController extends Controller
                     'review_round' => 'stage6',
                 ]);
             }
-            
+
             $report->update([
                 'current_iteration' => $newIteration,
-                'status' => 'under_review'
+                'status' => 'under_review',
             ]);
         });
 
@@ -364,7 +364,7 @@ class StageSixController extends Controller
         }
 
         $report = $accreditationRequest->committeeReport;
-        if (!$report || $report->status !== 'submitted_to_council') {
+        if (! $report || $report->status !== 'submitted_to_council') {
             return back()->with('error', 'لا يمكن رفع الخطاب في هذه الحالة.');
         }
 
@@ -400,7 +400,7 @@ class StageSixController extends Controller
 
         $svgContent = base64_decode($base64Svg);
         $fileName = uniqid("sig_{$formType}_").'.svg';
-        
+
         // Path matches user request: req_{id}/signatures/
         $path = "req_{$requestId}/signatures/{$fileName}";
 
@@ -414,6 +414,92 @@ class StageSixController extends Controller
             'ip_address' => request()->ip(),
             'user_agent' => request()->userAgent(),
         ]);
+    }
+
+    // Show the final report of the reviewers committee (Form 7).
+    public function showFinalReport(AccreditationRequest $accreditationRequest)
+    {
+        $report = $accreditationRequest->committeeReport;
+        if (! $report) {
+            abort(404, 'التقرير غير موجود.');
+        }
+
+        $program = $accreditationRequest->program;
+        $department = $program->department;
+        $college = $department->college;
+        $university = $college->university;
+
+        $committee = $accreditationRequest->committee;
+
+        $membersData = [];
+
+        // Determine the relevant iteration
+        $currentIteration = $report->current_iteration;
+        // If submitted to council, current_iteration might be reset to 0, so find the last one for stage 6
+        if ($currentIteration == 0 && in_array($report->status, ['submitted_to_council', 'council_responded', 'uni_responded', 'final_under_review', 'completed'])) {
+            $currentIteration = CommitteeApproval::where('report_id', $report->id)
+                ->where('review_round', 'stage6')
+                ->max('iteration_number') ?? 0;
+        }
+
+        // 1. Get Chair
+        $chairEvaluator = $committee->chairEvaluator;
+        if ($chairEvaluator) {
+            $chairSig = ReportSignature::where('report_id', $report->id)
+                ->where('form_type', 'form_6_initial')
+                ->whereNull('approval_id')
+                ->first();
+
+            // Only show signature if not in draft/withdrawn state
+            $showChairSig = ! in_array($report->status, ['draft', 'returned_for_edit']);
+
+            $membersData[] = [
+                'name' => $chairEvaluator->user->name,
+                'signature_path' => $showChairSig ? $chairSig?->signature_path : null,
+                'is_chair' => true,
+            ];
+        }
+
+        // 2. Get ALL Accepted Members (excluding chair)
+        $committeeMembers = $committee->acceptedMembers()
+            ->where('evaluator_id', '!=', $committee->chair_evaluator_id)
+            ->get();
+
+        $canShowMemberSigs = ! in_array($report->status, ['draft', 'returned_for_edit']);
+
+        foreach ($committeeMembers as $member) {
+            $sigPath = null;
+
+            if ($canShowMemberSigs) {
+                // Find the signature for this member for Form 6 Initial IN THE CURRENT ITERATION
+                $sig = ReportSignature::where('report_signatures.report_id', $report->id)
+                    ->where('report_signatures.form_type', 'form_6_initial')
+                    ->join('committee_approvals', 'report_signatures.approval_id', '=', 'committee_approvals.id')
+                    ->where('committee_approvals.member_id', $member->evaluator_id)
+                    ->where('committee_approvals.status', 'approved')
+                    ->where('committee_approvals.review_round', 'stage6')
+                    ->where('committee_approvals.iteration_number', $currentIteration)
+                    ->select('report_signatures.*')
+                    ->first();
+
+                $sigPath = $sig?->signature_path;
+            }
+
+            $membersData[] = [
+                'name' => $member->evaluator->user->name,
+                'signature_path' => $sigPath,
+                'is_chair' => false,
+            ];
+        }
+
+        return view('requests.formSeven', compact(
+            'accreditationRequest',
+            'program',
+            'department',
+            'college',
+            'university',
+            'membersData'
+        ));
     }
 
     // Authorize that the current user is a committee member (not chair)
