@@ -61,6 +61,8 @@
 @else
 
 <div class="w-full text-start space-y-6" x-data="{
+    nullScoredIndicators: {{ Js::from($nullScoredIndicators ?? []) }},
+    showNullModal: false,
     showRequestModal: false,
     showWithdrawModal: false,
     showCouncilModal: false,
@@ -78,6 +80,13 @@
     pad6: null,
     submitType: 'member', // 'member' or 'chair'
     
+    tryRequestApproval() {
+        if (this.nullScoredIndicators.length > 0) {
+            this.showNullModal = true;
+        } else {
+            this.showRequestModal = true;
+        }
+    },
     init() {
         // Observe theme changes to update signature pad color in real-time
         const observer = new MutationObserver(() => {
@@ -431,7 +440,7 @@
     <div class="flex flex-wrap items-center gap-3 mt-6 border-t border-(--border-primary) pt-6">
         @if($isChairEvaluator)
             @if(in_array($currentStatus, ['draft', 'returned_for_edit']))
-                <button @click="showRequestModal = true" class="px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-md transition-colors flex items-center gap-2">
+                <button @click="tryRequestApproval()" class="px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-md transition-colors flex items-center gap-2">
                     <i class="fa-solid fa-paper-plane"></i> طلب موافقة الأعضاء
                 </button>
             @endif
@@ -465,6 +474,89 @@
             </button>
         @endif
     </div>
+
+    {{-- Null Indicators Warning Modal --}}
+    <template x-teleport="body">
+        <div x-show="showNullModal" style="display:none" class="relative z-[250]">
+            <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" @click="showNullModal = false"></div>
+            <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
+                <div @click.away="showNullModal = false"
+                     class="relative w-full max-w-2xl rounded-2xl bg-(--surface-card) shadow-2xl border border-(--border-primary) flex flex-col max-h-[85vh]">
+
+                    {{-- Header --}}
+                    <div class="px-6 py-5 border-b border-(--border-primary) bg-(--bg-main) flex items-center gap-3 shrink-0">
+                        <div class="w-10 h-10 rounded-xl bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 flex items-center justify-center border border-red-100 dark:border-red-500/20 shadow-inner shrink-0">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-(--text-primary)">مؤشرات غير مكتملة التقييم</h3>
+                            <p class="text-xs text-(--text-secondary)">يجب تقييم جميع المؤشرات قبل طلب موافقة الأعضاء</p>
+                        </div>
+                        <button @click="showNullModal = false" class="mr-auto text-(--text-secondary) hover:text-(--text-primary) transition">
+                            <i class="fa-solid fa-xmark text-xl"></i>
+                        </button>
+                    </div>
+
+                    {{-- Body --}}
+                    <div class="overflow-y-auto flex-1 p-6 space-y-4">
+                        <div class="p-3 rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 text-sm text-amber-800 dark:text-amber-300 flex items-start gap-2">
+                            <i class="fa-solid fa-circle-info shrink-0 mt-0.5"></i>
+                            <span>المؤشرات التالية لم يتم تقييمها بعد (قيمتها فارغة).</span>
+                        </div>
+
+                        <template x-for="(standard, si) in nullScoredIndicators" :key="si">
+                            <div class="rounded-xl border border-(--border-primary) overflow-hidden">
+                                {{-- Standard header --}}
+                                <div class="px-4 py-3 bg-blue-50 dark:bg-blue-500/10 border-b border-(--border-primary) flex items-center gap-2">
+                                    <i class="fa-solid fa-layer-group text-blue-600 dark:text-blue-400 text-sm"></i>
+                                    <span class="font-bold text-blue-700 dark:text-blue-300 text-sm" x-text="standard.standard_name"></span>
+                                </div>
+
+                                <div class="divide-y divide-(--border-primary)">
+                                    <template x-for="(sub, ssi) in standard.sub_groups" :key="ssi">
+                                        <div class="px-4 py-3">
+                                            {{-- Sub-standard --}}
+                                            <p class="text-xs font-bold text-(--text-secondary) mb-2 flex items-center gap-1.5">
+                                                <i class="fa-solid fa-chevron-left text-[10px]"></i>
+                                                <span x-text="sub.sub_standard_name"></span>
+                                            </p>
+                                            {{-- Indicators list --}}
+                                            <ul class="space-y-1.5 pr-4">
+                                                <template x-for="(ind, ii) in sub.indicators" :key="ii">
+                                                    <li class="flex items-start gap-2 text-sm text-(--text-primary)">
+                                                        <span class="mt-1 w-1.5 h-1.5 rounded-full bg-red-400 shrink-0"></span>
+                                                        <span x-text="ind"></span>
+                                                    </li>
+                                                </template>
+                                            </ul>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+
+                    {{-- Footer --}}
+                    <div class="px-6 py-4 border-t border-(--border-primary) bg-(--bg-main) flex justify-between items-center shrink-0">
+                        <span class="text-xs text-(--text-secondary)">
+                            <i class="fa-solid fa-circle-xmark text-red-500 ml-1"></i>
+                            لا يمكن طلب الموافقة حتى اكتمال التقييم
+                        </span>
+                        <div class="flex gap-3">
+                            <button @click="showNullModal = false"
+                                    class="px-5 py-2.5 rounded-xl border border-(--border-primary) font-bold text-(--text-primary) hover:bg-(--bg-main) transition">
+                                إغلاق
+                            </button>
+                            <a href="{{ route('requests.stage_six.rubrics_edit', $accreditationRequest) }}"
+                               class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold transition flex items-center gap-2">
+                                <i class="fa-solid fa-pen"></i> الانتقال للتقييم
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
 
     {{-- Chair Modals --}}
     @if($isChairEvaluator)
