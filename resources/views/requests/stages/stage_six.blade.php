@@ -81,8 +81,7 @@
     init() {
         // Observe theme changes to update signature pad color in real-time
         const observer = new MutationObserver(() => {
-            const isDark = document.documentElement.classList.contains('dark');
-            const color = isDark ? 'rgb(255, 255, 255)' : 'rgb(31, 41, 55)';
+            const color = 'rgb(0, 0, 0)';
             if (this.pad5) this.pad5.penColor = color;
             if (this.pad6) this.pad6.penColor = color;
         });
@@ -96,14 +95,16 @@
                 if (canvas) {
                     const padKey = 'pad' + refName.replace('canvas', '');
                     
-                    const isDark = document.documentElement.classList.contains('dark');
-                    const color = isDark ? 'rgb(255, 255, 255)' : 'rgb(31, 41, 55)';
+                    const color = 'rgb(0, 0, 0)';
 
                     // Create pad if doesn't exist
                     if (!this[padKey]) {
                         const pad = new window.SignaturePad(canvas, {
                             backgroundColor: 'rgba(255, 255, 255, 0)',
-                            penColor: color
+                            penColor: color,
+                            minWidth: 1.2,
+                            maxWidth: 4,
+                            velocityFilterWeight: 0.6,
                         });
                         this[padKey] = pad;
                     } else {
@@ -555,7 +556,7 @@
                             <h4 class="font-bold text-(--text-primary) mb-2">1. توقيع نموذج الزيارة الميدانية (Form 5)</h4>
                             <p class="text-sm text-(--text-secondary) mb-4">الرجاء رسم توقيعك أدناه لاعتماد نموذج الزيارة الميدانية.</p>
                             
-                            <div class="flex-1 border-2 border-dashed border-indigo-200 dark:border-indigo-500/20 rounded-2xl bg-white dark:bg-gray-900/50 relative">
+                            <div class="flex-1 border-2 border-dashed border-indigo-200 dark:border-indigo-500/20 rounded-2xl bg-white relative">
                                 <canvas x-ref="canvas5" class="w-full h-full cursor-crosshair rounded-2xl touch-none"></canvas>
                                 <button type="button" @click="clearPad(5)" class="absolute top-3 left-3 px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold transition">مسح <i class="fa-solid fa-eraser ml-1"></i></button>
                             </div>
@@ -567,7 +568,7 @@
                             <h4 class="font-bold text-(--text-primary) mb-2">2. توقيع نموذج تقييم المعايير (Form 6 - Initial)</h4>
                             <p class="text-sm text-(--text-secondary) mb-4">الرجاء رسم توقيعك لاعتماد نموذج تقييم البرنامج الأولي.</p>
                             
-                            <div class="flex-1 border-2 border-dashed border-indigo-200 dark:border-indigo-500/20 rounded-2xl bg-white dark:bg-gray-900/50 relative">
+                            <div class="flex-1 border-2 border-dashed border-indigo-200 dark:border-indigo-500/20 rounded-2xl bg-white relative">
                                 <canvas x-ref="canvas6" class="w-full h-full cursor-crosshair rounded-2xl touch-none"></canvas>
                                 <button type="button" @click="clearPad(6)" class="absolute top-3 left-3 px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold transition">مسح <i class="fa-solid fa-eraser ml-1"></i></button>
                             </div>
