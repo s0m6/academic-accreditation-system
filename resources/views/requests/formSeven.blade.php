@@ -367,61 +367,39 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {{-- Standard rows will go here --}}
-                    <tr>
-                        <td id="standard_num_1">1</td>
-                        <td class="standard-name" id="standard_name_1">الرسالة والأهداف ومخرجات التعلم</td>
-                        <td id="standard_sum_1"></td>
-                        <td id="standard_count_1"></td>
-                        <td id="standard_avg_1"></td>
-                    </tr>
-                    <tr>
-                        <td id="standard_num_2">2</td>
-                        <td class="standard-name" id="standard_name_2">إدارة البرنامج الأكاديمي</td>
-                        <td id="standard_sum_2"></td>
-                        <td id="standard_count_2"></td>
-                        <td id="standard_avg_2"></td>
-                    </tr>
-                    <tr>
-                        <td id="standard_num_3">3</td>
-                        <td class="standard-name" id="standard_name_3">المنهج الدراسي</td>
-                        <td id="standard_sum_3"></td>
-                        <td id="standard_count_3"></td>
-                        <td id="standard_avg_3"></td>
-                    </tr>
-                    <tr>
-                        <td id="standard_num_4">4</td>
-                        <td class="standard-name" id="standard_name_4">مرافق وتجهيزات البرنامج</td>
-                        <td id="standard_sum_4"></td>
-                        <td id="standard_count_4"></td>
-                        <td id="standard_avg_4"></td>
-                    </tr>
-                    <tr>
-                        <td id="standard_num_5">5</td>
-                        <td class="standard-name" id="standard_name_5">الطلبة</td>
-                        <td id="standard_sum_5"></td>
-                        <td id="standard_count_5"></td>
-                        <td id="standard_avg_5"></td>
-                    </tr>
-                    <tr>
-                        <td id="standard_num_6">6</td>
-                        <td class="standard-name" id="standard_name_6">هيئة التدريس</td>
-                        <td id="standard_sum_6"></td>
-                        <td id="standard_count_6"></td>
-                        <td id="standard_avg_6"></td>
-                    </tr>
-                    <tr>
-                        <td id="standard_num_7">7</td>
-                        <td class="standard-name" id="standard_name_7">التقييم والتحسين المستمر</td>
-                        <td id="standard_sum_7"></td>
-                        <td id="standard_count_7"></td>
-                        <td id="standard_avg_7"></td>
-                    </tr>
+                    @foreach($standardsScores['standards'] as $index => $row)
+                        <tr @if($row['has_null_indicators']) style="background-color: #ffe4e4;" @endif>
+                            <td id="standard_num_{{ $index + 1 }}">{{ $index + 1 }}</td>
+                            <td class="standard-name" id="standard_name_{{ $index + 1 }}">
+                                {{ $row['name'] }}
+                                @if($row['has_null_indicators'])
+                                    <span style="display:block; font-size:11px; color:#c0392b; font-weight:600; margin-top:2px;">
+                                        ⚠ يوجد مؤشرات غير مقيّمة
+                                    </span>
+                                @endif
+                            </td>
+                            <td id="standard_sum_{{ $index + 1 }}">
+                                {{ $row['count'] > 0 ? $row['sum'] : '—' }}
+                            </td>
+                            <td id="standard_count_{{ $index + 1 }}">
+                                {{ $row['count'] > 0 ? $row['count'] : '—' }}
+                            </td>
+                            <td id="standard_avg_{{ $index + 1 }}">
+                                {{ $row['average'] !== null ? $row['average'] : '—' }}
+                            </td>
+                        </tr>
+                    @endforeach
                     <tr class="total-row">
                         <td colspan="2" style="text-align: right; padding-right: 20px;">المجموع الكلي</td>
-                        <td id="total_sum_all"></td>
-                        <td id="total_count_all"></td>
-                        <td id="total_average_all"></td>
+                        <td id="total_sum_all">
+                            {{ $standardsScores['total']['count'] > 0 ? $standardsScores['total']['sum'] : '—' }}
+                        </td>
+                        <td id="total_count_all">
+                            {{ $standardsScores['total']['count'] > 0 ? $standardsScores['total']['count'] : '—' }}
+                        </td>
+                        <td id="total_average_all">
+                            {{ $standardsScores['total']['average'] !== null ? $standardsScores['total']['average'] : '—' }}
+                        </td>
                     </tr>
                 </tbody>
             </table>
@@ -432,60 +410,21 @@
                 <tbody>
                     <tr>
                         <th id="label_final_grade">الدرجة النهائية</th>
-                        <td id="value_final_grade"></td>
+                        <td id="value_final_grade">
+                            {{ $standardsScores['final_grade'] ?? '—' }}
+                        </td>
                     </tr>
                     <tr>
-                        <th id="label_achieved_level">المستوى المتحقق</th>
-                        <td id="value_achieved_level"></td>
+                        <th id="label_achieved_level">مستوى التحقق</th>
+                        <td id="value_achieved_level">
+                            {{ $standardsScores['achievement_level'] ?? '—' }}
+                        </td>
                     </tr>
                 </tbody>
             </table>
         </div>
     </div>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const indicatorsCount = [2, 2, 3, 2, 3, 3, 3];
-
-            let totalSum = 0;
-            let totalCount = 0;
-
-            for (let i = 1; i <= 7; i++) {
-                let count = indicatorsCount[i - 1];
-                let randomAvg = (Math.random() * 3 + 2).toFixed(2);
-                let sum = (randomAvg * count).toFixed(2);
-
-                document.getElementById("standard_count_" + i).textContent = count;
-                document.getElementById("standard_sum_" + i).textContent = sum;
-                document.getElementById("standard_avg_" + i).textContent = randomAvg;
-
-                totalSum += parseFloat(sum);
-                totalCount += count;
-            }
-
-            document.getElementById("total_count_all").textContent = totalCount;
-            document.getElementById("total_sum_all").textContent = totalSum.toFixed(2);
-
-            let finalAvg = (totalSum / totalCount).toFixed(2);
-            document.getElementById("total_average_all").textContent = finalAvg;
-
-            let finalGrade = Math.round(finalAvg);
-            document.getElementById("value_final_grade").textContent = finalGrade;
-
-            let achievedLevel = "";
-            if (finalGrade >= 5) {
-                achievedLevel = "متميز";
-            } else if (finalGrade == 4) {
-                achievedLevel = "متقن";
-            } else if (finalGrade == 3) {
-                achievedLevel = "مقبول";
-            } else {
-                achievedLevel = "غير مكتمل";
-            }
-
-            document.getElementById("value_achieved_level").textContent = achievedLevel;
-        });
-    </script>
 
 </body>
 

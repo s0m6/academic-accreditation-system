@@ -492,14 +492,125 @@ class StageSixController extends Controller
             ];
         }
 
+        $standardsScores = $this->calculateStandardsScores($report->id);
+
         return view('requests.formSeven', compact(
             'accreditationRequest',
             'program',
             'department',
             'college',
             'university',
-            'membersData'
+            'membersData',
+            'standardsScores'
         ));
+    }
+
+    /**
+     * Calculate per-standard scores from report_scores (initial type, scores 1-5 only).
+     *
+     * Returns an array with:
+     *   'standards' => [ ['id', 'name', 'sum', 'count', 'average', 'has_null_indicators'], ... ]
+     *   'total'     => [ 'sum', 'count', 'average' ]
+     *   'final_grade'         => int (1-5)
+     *   'achievement_level'   => string (Arabic label)
+     *
+     * @return array<string, mixed>
+     */
+    private function calculateStandardsScores(int $reportId): array
+    {
+        $standards = Standard::with(['subStandards.indicators'])->orderBy('id')->get();
+
+        // Load all initial scores for this report keyed by indicator_id.
+        $scores = ReportScore::where('report_id', $reportId)
+            ->where('score_type', 'Initial')
+            ->pluck('score', 'indicator_id');
+
+        $standardRows = [];
+        $grandSum = 0;
+        $grandCount = 0;
+
+        foreach ($standards as $standard) {
+            $stdSum = 0;
+            $stdCount = 0;
+            $hasNullIndicators = false;
+
+            foreach ($standard->subStandards as $sub) {
+                foreach ($sub->indicators as $indicator) {
+                    $score = $scores->get($indicator->id); // null if not scored yet
+
+                    if (is_null($score)) {
+                        // Indicator exists but has no score → incomplete
+                        $hasNullIndicators = true;
+                    } elseif ($score >= 1 && $score <= 5) {
+                        // Valid score 1-5: include in calculation
+                        $stdSum += $score;
+                        $stdCount += 1;
+                    }
+                    // Score 0 (non-compliant) is excluded from calculation per business rules
+                }
+            }
+
+            $stdAverage = $stdCount > 0 ? round($stdSum / $stdCount, 2) : null;
+
+            $standardRows[] = [
+                'id' => $standard->id,
+                'name' => $standard->name,
+                'sum' => $stdSum,
+                'count' => $stdCount,
+                'average' => $stdAverage,
+                'has_null_indicators' => $hasNullIndicators,
+            ];
+
+            $grandSum += $stdSum;
+            $grandCount += $stdCount;
+        }
+
+        $grandAverage = $grandCount > 0 ? round($grandSum / $grandCount, 2) : null;
+
+        // Determine final grade & achievement level using the specified rounding rules
+        [$finalGrade, $achievementLevel] = $this->resolveGradeAndLevel($grandAverage);
+
+        return [
+            'standards' => $standardRows,
+            'total' => [
+                'sum' => $grandSum,
+                'count' => $grandCount,
+                'average' => $grandAverage,
+            ],
+            'final_grade' => $finalGrade,
+            'achievement_level' => $achievementLevel,
+        ];
+    }
+
+    /**
+     * Resolve the final grade (1-5) and Arabic achievement level label
+     * based on the grand average using the specified rounding thresholds.
+     *
+     * @return array{0: int|null, 1: string}
+     */
+    private function resolveGradeAndLevel(?float $average): array
+    {
+        if ($average === null) {
+            return [null, '—'];
+        }
+
+        if ($average >= 4.5) {
+            return [5, 'محقق بامتياز'];
+        }
+
+        if ($average >= 3.5) {
+            return [4, 'محقق بإتقان'];
+        }
+
+        if ($average >= 2.5) {
+            return [3, 'محقق'];
+        }
+
+        if ($average >= 1.5) {
+            return [2, 'محقق جزئياً'];
+        }
+
+        return [1, 'غير محقق'];
     }
 
     // Authorize that the current user is a committee member (not chair)
