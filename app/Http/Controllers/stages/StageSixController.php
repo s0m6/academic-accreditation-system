@@ -77,7 +77,7 @@ class StageSixController extends Controller
 
         // Load all initial scores for this report keyed by indicator_id.
         $savedScores = ReportScore::where('report_id', $report->id)
-            ->where('score_type', 'initial')
+            ->where('score_type', 'Initial')
             ->pluck('score', 'indicator_id');
 
         $savedFormData = $report->form6_initial_data ?? [];
@@ -106,7 +106,7 @@ class StageSixController extends Controller
         // Load all initial scores keyed by indicator_id.
         $savedScores = $report
             ? ReportScore::where('report_id', $report->id)
-                ->where('score_type', 'initial')
+                ->where('score_type', 'Initial')
                 ->pluck('score', 'indicator_id')
             : collect();
 

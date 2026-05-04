@@ -66,7 +66,7 @@
     .rating-nc { background-color: #3730a3 !important; border-color: #312e81 !important; color: white !important; font-weight: 800 !important; box-shadow: 0 0 0 2px rgba(55, 48, 163, 0.2), 0 4px 6px -1px rgba(0, 0, 0, 0.3) !important; }
 
     .view-mode .rating-btn { pointer-events: none; }
-    .view-mode button:not(.std-tab-btn):not(#theme-toggle):not(.back-btn) { display: none !important; }
+    .view-mode button:not(.std-tab-btn):not(#theme-toggle):not(.back-btn):not(.rating-btn) { display: none !important; }
     .view-mode input, .view-mode select, .view-mode textarea { pointer-events: none; }
   </style>
 </head>
