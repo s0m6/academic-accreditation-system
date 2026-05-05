@@ -234,7 +234,7 @@
                         </td>
                         <td class="px-5 py-4">
                             <div class="flex items-center justify-center gap-2">
-                                @if($isChairEvaluator && in_array($currentStatus, ['draft', 'returned_for_edit']))
+                                @if($isChairEvaluator && in_array($currentStatus, ['draft', 'returned_for_edit']) && $accreditationRequest->current_stage === 'stage_six')
                                     <a href="{{ route('requests.stage_six.visit_report.edit', $accreditationRequest) }}"
                                         class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200 dark:bg-blue-500/10 dark:hover:bg-blue-500/20 dark:text-blue-400 dark:border-blue-500/20 text-xs font-bold transition cursor-pointer">
                                         <i class="fa-solid fa-pen"></i> تعديل
@@ -260,7 +260,7 @@
                         </td>
                         <td class="px-5 py-4">
                             <div class="flex items-center justify-center gap-2">
-                                @if($isChairEvaluator && in_array($currentStatus, ['draft', 'returned_for_edit']))
+                                @if($isChairEvaluator && in_array($currentStatus, ['draft', 'returned_for_edit']) && $accreditationRequest->current_stage === 'stage_six')
                                     <a href="{{ route('requests.stage_six.rubrics_edit', $accreditationRequest) }}"
                                         class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200 dark:bg-blue-500/10 dark:hover:bg-blue-500/20 dark:text-blue-400 dark:border-blue-500/20 text-xs font-bold transition cursor-pointer">
                                         <i class="fa-solid fa-pen"></i> تعديل
@@ -356,7 +356,10 @@
                     <tbody class="divide-y divide-(--border-primary)">
                         @forelse($membersList as $index => $member)
                             @php
-                                $showApprovals = !in_array($currentStatus, ['draft', 'returned_for_edit']);
+                                // If the request has moved past stage_six, always show the stage_6 approvals.
+                                // Otherwise, show them only if the report is not in draft/returned_for_edit.
+                                $isPastStageSix = $currentStageIndex > $thisStageIndex;
+                                $showApprovals = $isPastStageSix || !in_array($currentStatus, ['draft', 'returned_for_edit']);
                                 $approval = $showApprovals ? $committeeApprovals->where('member_id', $member->evaluator_id)->first() : null;
                             @endphp
                             <tr class="hover:bg-(--bg-main) transition-colors">
@@ -436,43 +439,45 @@
     @endif
 
     {{-- Call to Actions --}}
-    <div class="flex flex-wrap items-center gap-3 mt-6 border-t border-(--border-primary) pt-6">
-        @if($isChairEvaluator)
-            @if(in_array($currentStatus, ['draft', 'returned_for_edit']))
-                <button @click="tryRequestApproval()" class="px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-md transition-colors flex items-center gap-2">
-                    <i class="fa-solid fa-paper-plane"></i> طلب موافقة الأعضاء
+    @if(!$isLocked && $accreditationRequest->current_stage === 'stage_six')
+        <div class="flex flex-wrap items-center gap-3 mt-6 border-t border-(--border-primary) pt-6">
+            @if($isChairEvaluator)
+                @if(in_array($currentStatus, ['draft', 'returned_for_edit']))
+                    <button @click="tryRequestApproval()" class="px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-md transition-colors flex items-center gap-2">
+                        <i class="fa-solid fa-paper-plane"></i> طلب موافقة الأعضاء
+                    </button>
+                @endif
+
+                @if($currentStatus === 'under_review')
+                    <button @click="showWithdrawModal = true" class="px-6 py-3 rounded-xl bg-orange-100 text-orange-700 hover:bg-orange-200 font-bold border border-orange-200 transition-colors flex items-center gap-2">
+                        <i class="fa-solid fa-arrow-rotate-left"></i> سحب الطلب للتعديل
+                    </button>
+                @endif
+
+                @if($currentStatus === 'under_review' && $allMembersApproved)
+                    <button @click="showSignModal = true; submitType = 'chair'; resetSignatures();" class="px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-md transition-colors flex items-center gap-2">
+                        <i class="fa-solid fa-file-signature"></i> اعتماد ورفع التقرير للمجلس
+                    </button>
+                @endif
+            @endif
+
+            @if($isCommitteeMember && $memberApproval && $memberApproval->status === 'pending')
+                <button @click="showRejectModal = true; rejectReasons = [''];" class="px-6 py-3 rounded-xl bg-red-100 text-red-700 hover:bg-red-200 font-bold border border-red-200 transition-colors flex items-center gap-2">
+                    <i class="fa-solid fa-xmark"></i> رفض لوجود ملاحظات
+                </button>
+                
+                <button @click="showSignModal = true; submitType = 'member'; resetSignatures();" class="px-6 py-3 rounded-xl bg-green-600 hover:bg-green-700 text-white font-bold shadow-md transition-colors flex items-center gap-2">
+                    <i class="fa-solid fa-signature"></i> توقيع وموافقة
                 </button>
             @endif
 
-            @if($currentStatus === 'under_review')
-                <button @click="showWithdrawModal = true" class="px-6 py-3 rounded-xl bg-orange-100 text-orange-700 hover:bg-orange-200 font-bold border border-orange-200 transition-colors flex items-center gap-2">
-                    <i class="fa-solid fa-arrow-rotate-left"></i> سحب الطلب للتعديل
+            @if($isCouncilCoordinator && $currentStatus === 'submitted_to_council')
+                <button @click="showCouncilModal = true" class="px-6 py-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold shadow-md transition-colors flex items-center gap-2">
+                    <i class="fa-solid fa-file-arrow-up"></i> رفع خطاب التوصيات للمؤسسة التعليمية
                 </button>
             @endif
-
-            @if($currentStatus === 'under_review' && $allMembersApproved)
-                <button @click="showSignModal = true; submitType = 'chair'; resetSignatures();" class="px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-md transition-colors flex items-center gap-2">
-                    <i class="fa-solid fa-file-signature"></i> اعتماد ورفع التقرير للمجلس
-                </button>
-            @endif
-        @endif
-
-        @if($isCommitteeMember && $memberApproval && $memberApproval->status === 'pending')
-            <button @click="showRejectModal = true; rejectReasons = [''];" class="px-6 py-3 rounded-xl bg-red-100 text-red-700 hover:bg-red-200 font-bold border border-red-200 transition-colors flex items-center gap-2">
-                <i class="fa-solid fa-xmark"></i> رفض لوجود ملاحظات
-            </button>
-            
-            <button @click="showSignModal = true; submitType = 'member'; resetSignatures();" class="px-6 py-3 rounded-xl bg-green-600 hover:bg-green-700 text-white font-bold shadow-md transition-colors flex items-center gap-2">
-                <i class="fa-solid fa-signature"></i> توقيع وموافقة
-            </button>
-        @endif
-
-        @if($isCouncilCoordinator && $currentStatus === 'submitted_to_council')
-            <button @click="showCouncilModal = true" class="px-6 py-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold shadow-md transition-colors flex items-center gap-2">
-                <i class="fa-solid fa-file-arrow-up"></i> رفع خطاب التوصيات للمؤسسة التعليمية
-            </button>
-        @endif
-    </div>
+        </div>
+    @endif
 
     {{-- Null Indicators Warning Modal --}}
     <template x-teleport="body">

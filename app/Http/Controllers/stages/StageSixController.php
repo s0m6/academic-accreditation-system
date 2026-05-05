@@ -335,6 +335,11 @@ class StageSixController extends Controller
 
         $report = $accreditationRequest->committeeReport;
 
+        // Fetch all committee approvals for stage 6 to show in the dashboard
+        $committeeApprovals = CommitteeApproval::where('report_id', $report?->id)
+            ->where('review_round', 'stage6')
+            ->get();
+
         // Ensure all members have approved
         $pendingOrRejectedCount = CommitteeApproval::where('report_id', $report->id)
             ->where('iteration_number', $report->current_iteration)
@@ -464,57 +469,44 @@ class StageSixController extends Controller
 
         $committee = $accreditationRequest->committee;
 
+        // Build members data for the table/signatures
         $membersData = [];
-
-        // Determine the relevant iteration
-        $currentIteration = $report->current_iteration;
-        // If submitted to council, current_iteration might be reset to 0, so find the last one for stage 6
-        if ($currentIteration == 0 && in_array($report->status, ['submitted_to_council', 'council_responded', 'uni_responded', 'final_under_review', 'completed'])) {
-            $currentIteration = CommitteeApproval::where('report_id', $report->id)
-                ->where('review_round', 'stage6')
-                ->max('iteration_number') ?? 0;
-        }
 
         // 1. Get Chair
         $chairEvaluator = $committee->chairEvaluator;
         if ($chairEvaluator) {
+            // 1. Add Chair (Signature where approval_id is NULL)
             $chairSig = ReportSignature::where('report_id', $report->id)
-                ->where('form_type', 'form_6_initial')
                 ->whereNull('approval_id')
+                ->where('form_type', 'form_6_initial')
+                ->latest()
                 ->first();
-
-            // Only show signature if not in draft/withdrawn state
-            $showChairSig = ! in_array($report->status, ['draft', 'returned_for_edit']);
 
             $membersData[] = [
                 'name' => $chairEvaluator->user->name,
-                'signature_path' => $showChairSig ? $chairSig?->signature_path : null,
+                'signature_path' => $chairSig?->signature_path,
                 'is_chair' => true,
             ];
         }
 
-        // 2. Get ALL Accepted Members (excluding chair)
-        $committeeMembers = $committee->acceptedMembers()
-            ->where('evaluator_id', '!=', $committee->chair_evaluator_id)
-            ->get();
+        // 2. Add Members (Latest approved signature for stage6)
+        $members = $committee->activeMembers->filter(fn($m) => $m->evaluator_id !== $committee->chair_evaluator_id);
 
-        $canShowMemberSigs = ! in_array($report->status, ['draft', 'returned_for_edit']);
+        foreach ($members as $member) {
+            // Find latest approved record for stage6
+            $latestApproval = CommitteeApproval::where('report_id', $report->id)
+                ->where('member_id', $member->evaluator_id)
+                ->where('review_round', 'stage6')
+                ->where('status', 'approved')
+                ->latest()
+                ->first();
 
-        foreach ($committeeMembers as $member) {
             $sigPath = null;
-
-            if ($canShowMemberSigs) {
-                // Find the signature for this member for Form 6 Initial IN THE CURRENT ITERATION
-                $sig = ReportSignature::where('report_signatures.report_id', $report->id)
-                    ->where('report_signatures.form_type', 'form_6_initial')
-                    ->join('committee_approvals', 'report_signatures.approval_id', '=', 'committee_approvals.id')
-                    ->where('committee_approvals.member_id', $member->evaluator_id)
-                    ->where('committee_approvals.status', 'approved')
-                    ->where('committee_approvals.review_round', 'stage6')
-                    ->where('committee_approvals.iteration_number', $currentIteration)
-                    ->select('report_signatures.*')
+            if ($latestApproval) {
+                $sig = ReportSignature::where('approval_id', $latestApproval->id)
+                    ->where('form_type', 'form_6_initial')
+                    ->latest()
                     ->first();
-
                 $sigPath = $sig?->signature_path;
             }
 
