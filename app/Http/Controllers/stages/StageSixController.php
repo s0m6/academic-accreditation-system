@@ -280,6 +280,11 @@ class StageSixController extends Controller
                 ->where('status', 'pending')
                 ->update(['status' => 'canceled']);
 
+            // Delete any existing signatures for initial report forms
+            ReportSignature::where('report_id', $report->id)
+                ->whereIn('form_type', ['form_5', 'form_6_initial'])
+                ->delete();
+
             $report->update(['status' => 'returned_for_edit']);
         });
 
@@ -490,7 +495,7 @@ class StageSixController extends Controller
         }
 
         // 2. Add Members (Latest approved signature for stage6)
-        $members = $committee->activeMembers->filter(fn($m) => $m->evaluator_id !== $committee->chair_evaluator_id);
+        $members = $committee->activeMembers->filter(fn ($m) => $m->evaluator_id !== $committee->chair_evaluator_id);
 
         foreach ($members as $member) {
             // Find latest approved record for stage6

@@ -219,5 +219,7 @@ Route::middleware('auth')->group(function () {
         ->name('requests.stage_eight.member_approve');
     Route::post('/requests/{accreditationRequest}/stage-eight/final-submit', [StageEightController::class, 'finalSubmit'])
         ->name('requests.stage_eight.final_submit');
+    Route::get('/requests/{accreditationRequest}/stage-eight/final-report', [StageEightController::class, 'showFinalReport'])
+        ->name('requests.stage_eight.final_report');
 
 });

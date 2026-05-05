@@ -208,7 +208,8 @@ class StageEightController extends Controller
             // Save form 6 final signature
             $this->saveSignature($request->form_6_signature, $report->id, $accreditationRequest->id, $approval->id, 'form_6_final');
             // Save final decision signature
-            $this->saveSignature($request->final_decision_signature, $report->id, $accreditationRequest->id, $approval->id, 'form_10');
+            $this->saveSignature($request->final_decision_signature, $report->id, $accreditationRequest->id, $approval->id, '
+            ');
 
             $approval->update([
                 'status' => 'approved',
@@ -265,6 +266,11 @@ class StageEightController extends Controller
                 ->where('status', 'pending')
                 ->update(['status' => 'canceled']);
 
+            // Delete any existing signatures for final report forms
+            ReportSignature::where('report_id', $report->id)
+                ->whereIn('form_type', ['form_6_final', 'form_10'])
+                ->delete();
+
             $report->update(['status' => 'returned_for_edit']);
         });
 
@@ -298,7 +304,7 @@ class StageEightController extends Controller
         DB::transaction(function () use ($request, $report, $accreditationRequest) {
             // Save chair signatures (approval_id = null)
             $this->saveSignature($request->form_6_signature, $report->id, $accreditationRequest->id, null, 'form_6_final');
-            $this->saveSignature($request->final_decision_signature, $report->id, $accreditationRequest->id, null, 'final_decision');
+            $this->saveSignature($request->final_decision_signature, $report->id, $accreditationRequest->id, null, 'form_10');
 
             $report->update([
                 'status' => 'completed',
@@ -312,6 +318,246 @@ class StageEightController extends Controller
 
         return redirect()->route('requests.stage', ['accreditationRequest' => $accreditationRequest, 'stage' => 'stage_eight'])
             ->with('success', 'تم الاعتماد النهائي للتقرير وانتقل الطلب للمرحلة التاسعة.');
+    }
+
+    // Show the final report of the reviewers committee (Stage 8).
+    public function showFinalReport(AccreditationRequest $accreditationRequest)
+    {
+        $report = $accreditationRequest->committeeReport;
+        if (! $report) {
+            abort(404, 'التقرير غير موجود.');
+        }
+
+        $program = $accreditationRequest->program;
+        $department = $program->department;
+        $college = $department->college;
+        $university = $college->university;
+
+        $committee = $accreditationRequest->committee;
+
+        // Build members data for the table/signatures
+        $membersData = [];
+
+        // 1. Get Chair
+        $chairEvaluator = $committee->chairEvaluator;
+        if ($chairEvaluator) {
+            // 1. Add Chair (Signature where approval_id is NULL)
+            $chairSig = ReportSignature::where('report_id', $report->id)
+                ->whereNull('approval_id')
+                ->where('form_type', 'form_6_final')
+                ->latest()
+                ->first();
+
+            $membersData[] = [
+                'name' => $chairEvaluator->user->name,
+                'signature_path' => $chairSig?->signature_path,
+                'is_chair' => true,
+            ];
+        }
+
+        // 2. Add Members (Latest approved signature for stage8)
+        $members = $committee->activeMembers->filter(fn ($m) => $m->evaluator_id !== $committee->chair_evaluator_id);
+
+        foreach ($members as $member) {
+            // Find latest approved record for stage8
+            $latestApproval = CommitteeApproval::where('report_id', $report->id)
+                ->where('member_id', $member->evaluator_id)
+                ->where('review_round', 'stage8')
+                ->where('status', 'approved')
+                ->latest()
+                ->first();
+
+            $sigPath = null;
+            if ($latestApproval) {
+                $sig = ReportSignature::where('approval_id', $latestApproval->id)
+                    ->where('form_type', 'form_6_final')
+                    ->latest()
+                    ->first();
+                $sigPath = $sig?->signature_path;
+            }
+
+            $membersData[] = [
+                'name' => $member->evaluator->user->name,
+                'signature_path' => $sigPath,
+                'is_chair' => false,
+            ];
+        }
+
+        $standardsScores = $this->calculateStandardsScores($report->id);
+
+        // Build detailed sub-standards data for the assessment table (Section 2 of Form 7).
+        $detailedStandards = $this->buildDetailedStandards($report);
+
+        return view('requests.formSevenFinal', compact(
+            'accreditationRequest',
+            'program',
+            'department',
+            'college',
+            'university',
+            'membersData',
+            'standardsScores',
+            'detailedStandards'
+        ));
+    }
+
+    /**
+     * Calculate per-standard scores from report_scores (final type, scores 1-5 only).
+     */
+    private function calculateStandardsScores(int $reportId): array
+    {
+        $standards = Standard::with(['subStandards.indicators'])->orderBy('id')->get();
+
+        // Load all final scores for this report keyed by indicator_id.
+        $scores = ReportScore::where('report_id', $reportId)
+            ->where('score_type', 'final')
+            ->pluck('score', 'indicator_id');
+
+        $standardRows = [];
+        $grandSum = 0;
+        $grandCount = 0;
+
+        foreach ($standards as $standard) {
+            $stdSum = 0;
+            $stdCount = 0;
+            $hasNullIndicators = false;
+
+            foreach ($standard->subStandards as $sub) {
+                foreach ($sub->indicators as $indicator) {
+                    $score = $scores->get($indicator->id); // null if not scored yet
+
+                    if (is_null($score)) {
+                        // Indicator exists but has no score → incomplete
+                        $hasNullIndicators = true;
+                    } elseif ($score >= 1 && $score <= 5) {
+                        // Valid score 1-5: include in calculation
+                        $stdSum += $score;
+                        $stdCount += 1;
+                    }
+                }
+            }
+
+            $stdAverage = $stdCount > 0 ? round($stdSum / $stdCount, 2) : null;
+
+            $standardRows[] = [
+                'id' => $standard->id,
+                'name' => $standard->name,
+                'sum' => $stdSum,
+                'count' => $stdCount,
+                'average' => $stdAverage,
+                'has_null_indicators' => $hasNullIndicators,
+            ];
+
+            $grandSum += $stdSum;
+            $grandCount += $stdCount;
+        }
+
+        $grandAverage = $grandCount > 0 ? round($grandSum / $grandCount, 2) : null;
+
+        // Determine final grade & achievement level using the specified rounding rules
+        [$finalGrade, $achievementLevel] = $this->resolveGradeAndLevel($grandAverage);
+
+        return [
+            'standards' => $standardRows,
+            'total' => [
+                'sum' => $grandSum,
+                'count' => $grandCount,
+                'average' => $grandAverage,
+            ],
+            'final_grade' => $finalGrade,
+            'achievement_level' => $achievementLevel,
+        ];
+    }
+
+    /**
+     * Build detailed standards data for Form 7 assessment table.
+     */
+    private function buildDetailedStandards($report): array
+    {
+        $standards = Standard::with(['subStandards.indicators'])->orderBy('id')->get();
+
+        // Load all final scores for this report keyed by indicator_id.
+        $scores = ReportScore::where('report_id', $report->id)
+            ->where('score_type', 'final')
+            ->pluck('score', 'indicator_id');
+
+        // Parse form6_final_data
+        $formData = $report->form6_final_data ?? [];
+        $stdComments = $formData['standards'] ?? [];
+
+        $result = [];
+
+        foreach ($standards as $stdIndex => $standard) {
+            $subRows = [];
+            $stdCommentBlock = $stdComments[(string) $standard->id] ?? [];
+
+            $allStrengths = $stdCommentBlock['strengths'] ?? [];
+            $allImprovements = $stdCommentBlock['improvements'] ?? [];
+
+            foreach ($standard->subStandards as $subStandard) {
+                $subSum = 0;
+                $subCount = 0;
+
+                foreach ($subStandard->indicators as $indicator) {
+                    $score = $scores->get($indicator->id);
+                    if ($score !== null && $score >= 1 && $score <= 5) {
+                        $subSum += $score;
+                        $subCount += 1;
+                    }
+                }
+
+                $subAverage = $subCount > 0 ? round($subSum / $subCount, 2) : null;
+
+                // Filter strengths/improvements that belong to this sub-standard
+                $subStrengths = array_values(array_filter($allStrengths, fn ($p) => (string) ($p['subId'] ?? '') === (string) $subStandard->id));
+                $subImprovements = array_values(array_filter($allImprovements, fn ($p) => (string) ($p['subId'] ?? '') === (string) $subStandard->id));
+
+                $subRows[] = [
+                    'id' => $subStandard->id,
+                    'number' => $subStandard->number ?? ($stdIndex + 1),
+                    'name' => $subStandard->name,
+                    'average' => $subAverage,
+                    'strengths' => array_column($subStrengths, 'text'),
+                    'improvements' => array_column($subImprovements, 'text'),
+                ];
+            }
+
+            $result[] = [
+                'id' => $standard->id,
+                'number' => $standard->number ?? ($stdIndex + 1),
+                'name' => $standard->name,
+                'subs' => $subRows,
+            ];
+        }
+
+        return $result;
+    }
+
+    /**
+     * Resolve the final grade (1-5) and Arabic achievement level label
+     */
+    private function resolveGradeAndLevel(?float $average): array
+    {
+        if ($average === null) {
+            return [null, '—'];
+        }
+
+        if ($average >= 4.5) {
+            return [5, 'محقق بامتياز'];
+        }
+
+        if ($average >= 3.5) {
+            return [4, 'محقق بإتقان'];
+        }
+
+        if ($average >= 2.5) {
+            return [3, 'محقق'];
+        }
+
+        if ($average >= 1.5) {
+            return [2, 'محقق جزئياً'];
+        }
+
+        return [1, 'غير محقق'];
     }
 
     // Helper: Save SVG signature and create ReportSignature record
