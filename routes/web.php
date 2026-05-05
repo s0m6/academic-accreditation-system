@@ -196,5 +196,7 @@ Route::middleware('auth')->group(function () {
         ->name('requests.stage_seven.recommendations.view');
     Route::get('/requests/{accreditationRequest}/stage-seven/recommendations/download', [StageSevenController::class, 'downloadRecommendations'])
         ->name('requests.stage_seven.recommendations.download');
+    Route::post('/requests/{accreditationRequest}/stage-seven/recommendations/submit', [StageSevenController::class, 'submitResponse'])
+        ->name('requests.stage_seven.recommendations.submit');
 
 });

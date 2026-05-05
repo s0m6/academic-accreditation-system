@@ -19,7 +19,7 @@
     $st = $statusMap[$currentStatus] ?? ['label' => 'قيد المعالجة', 'color' => 'purple'];
 @endphp
 
-<div class="w-full text-start space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+<div x-data="{ showUpload: false, confirmed: false }" class="w-full text-start space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
     
     {{-- Top Status Cards --}}
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -148,10 +148,17 @@
 
                                 {{-- Send Button (Coordinator only) --}}
                                 @if($isProgramCoord)
-                                    <button type="button" 
-                                        class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-green-600 hover:bg-green-700 text-white text-xs font-bold transition shadow-md shadow-green-500/20 cursor-default">
-                                        <i class="fa-solid fa-paper-plane"></i> ارسال الرد
-                                    </button>
+                                    @if($report && $report->status === 'council_responded')
+                                        <button type="button" @click="showUpload = true"
+                                            class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-green-600 hover:bg-green-700 text-white text-xs font-bold transition shadow-md shadow-green-500/20">
+                                            <i class="fa-solid fa-paper-plane"></i> ارسال الرد
+                                        </button>
+                                    @else
+                                        <button type="button" disabled
+                                            class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 text-slate-400 border border-slate-200 text-xs font-bold transition cursor-not-allowed">
+                                            <i class="fa-solid fa-paper-plane"></i> تم الارسال مسبقاً
+                                        </button>
+                                    @endif
                                 @endif
                             </div>
                         </td>
@@ -169,5 +176,86 @@
             </div>
         </div>
     </div>
+
+    {{-- Upload Modal --}}
+    <template x-teleport="body">
+        <div x-show="showUpload" style="display:none" class="relative z-[200]">
+            <div class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" x-show="showUpload" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"></div>
+            
+            <div class="fixed inset-0 z-10 overflow-y-auto">
+                <div class="flex min-h-full items-center justify-center p-4 text-center">
+                    <div @click.away="showUpload = false" class="relative w-full max-w-lg transform overflow-hidden rounded-3xl bg-(--surface-card) p-8 text-start shadow-2xl transition-all" x-show="showUpload" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95">
+                        
+                        {{-- Close Button --}}
+                        <button @click="showUpload = false" class="absolute left-6 top-6 w-10 h-10 rounded-full hover:bg-(--bg-main) flex items-center justify-center text-(--text-secondary) transition-colors">
+                            <i class="fa-solid fa-xmark text-lg"></i>
+                        </button>
+
+                        {{-- Header --}}
+                        <div class="flex items-center gap-4 mb-8">
+                            <div class="w-14 h-14 rounded-2xl bg-green-50 dark:bg-green-500/10 text-green-600 dark:text-green-400 flex items-center justify-center border border-green-100 dark:border-green-500/20 shadow-inner">
+                                <i class="fa-solid fa-file-arrow-up text-2xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-black text-(--text-primary)">إرسال الرد الرسمي</h3>
+                                <p class="text-sm text-(--text-secondary)">يرجى إرفاق ملف الرد على التوصيات بصيغة PDF</p>
+                            </div>
+                        </div>
+
+                        {{-- Form --}}
+                        <form action="{{ route('requests.stage_seven.recommendations.submit', $accreditationRequest) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+                            @csrf
+                            
+                            <div class="space-y-4">
+                                <label class="block">
+                                    <span class="block text-sm font-bold text-(--text-primary) mb-2">ملف الرد على التوصيات</span>
+                                    <div class="relative group">
+                                        <input type="file" name="response_pdf" accept=".pdf" required
+                                            class="block w-full text-sm text-(--text-secondary)
+                                            file:mr-4 file:py-3 file:px-6
+                                            file:rounded-xl file:border-0
+                                            file:text-xs file:font-black
+                                            file:bg-indigo-50 file:text-indigo-700
+                                            hover:file:bg-indigo-100
+                                            file:transition-colors file:cursor-pointer
+                                            border border-(--border-primary) rounded-2xl bg-(--bg-main) p-2 group-hover:border-indigo-300 transition-all">
+                                    </div>
+                                    <p class="mt-2 text-[10px] text-(--text-secondary) flex items-center gap-1.5">
+                                        <i class="fa-solid fa-circle-info text-indigo-400"></i>
+                                        يسمح فقط بملفات PDF بحجم أقصى 10 ميجابايت.
+                                    </p>
+                                </label>
+                            </div>
+
+                            {{-- Confirmation Checkbox --}}
+                            <div class="p-4 rounded-2xl bg-amber-50 dark:bg-amber-500/5 border border-amber-100 dark:border-amber-500/20">
+                                <label class="flex items-start gap-3 cursor-pointer">
+                                    <input type="checkbox" x-model="confirmed" required class="mt-1 w-4 h-4 rounded border-amber-300 text-amber-600 focus:ring-amber-500 transition-all">
+                                    <span class="text-xs font-bold text-amber-800 dark:text-amber-400 leading-relaxed">
+                                        أقر بأن الملف المرفق هو الرد الرسمي المعتمد من قبل البرنامج، وأدرك أنه لا يمكن التعديل عليه بعد الإرسال.
+                                    </span>
+                                </label>
+                            </div>
+
+                            {{-- Buttons --}}
+                            <div class="flex items-center gap-3 pt-2">
+                                <button type="submit" :disabled="!confirmed"
+                                    :class="confirmed ? 'bg-green-600 hover:bg-green-700 shadow-green-500/20' : 'bg-slate-300 cursor-not-allowed opacity-60'"
+                                    class="flex-1 px-6 py-4 rounded-2xl text-white font-black shadow-lg transition-all flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-check-circle"></i>
+                                    تأكيد وإرسال الرد
+                                </button>
+                                <button type="button" @click="showUpload = false"
+                                    class="px-6 py-4 rounded-2xl bg-(--bg-main) border border-(--border-primary) text-(--text-primary) font-black hover:bg-slate-50 transition-all">
+                                    إلغاء
+                                </button>
+                            </div>
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
 
 </div>
