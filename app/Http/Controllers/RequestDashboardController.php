@@ -130,17 +130,19 @@ class RequestDashboardController extends Controller
         $report = $accreditationRequest->committeeReport;
         $committeeApprovals = collect();
         if ($report) {
+            $round = $activeStage === 'stage_eight' ? 'stage8' : 'stage6';
+
             // If iteration is 0 (submitted to council), get the latest iteration's approvals for this round
             $iteration = $report->current_iteration > 0
                 ? $report->current_iteration
                 : CommitteeApproval::where('report_id', $report->id)
-                    ->where('review_round', 'stage6')
+                    ->where('review_round', $round)
                     ->max('iteration_number');
 
             if ($iteration) {
                 $committeeApprovals = CommitteeApproval::where('report_id', $report->id)
                     ->where('iteration_number', $iteration)
-                    ->where('review_round', 'stage6')
+                    ->where('review_round', $round)
                     ->with('member.user')
                     ->get();
             }
