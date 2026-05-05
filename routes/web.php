@@ -47,6 +47,7 @@ use App\Http\Controllers\RequestDashboardController;
 use App\Http\Controllers\stages\StageFiveController;
 use App\Http\Controllers\stages\StageFourController;
 use App\Http\Controllers\stages\StageOneController;
+use App\Http\Controllers\stages\StageSevenController;
 use App\Http\Controllers\stages\StageSixController;
 use App\Http\Controllers\stages\StageThreeController;
 use App\Http\Controllers\stages\StageTwoController;
@@ -189,5 +190,11 @@ Route::middleware('auth')->group(function () {
         ->name('requests.stage_six.final_report');
     Route::get('/requests/{accreditationRequest}/stage-six/recommendations-letter', [StageSixController::class, 'showRecommendationsLetter'])
         ->name('requests.stage_six.recommendations_letter');
+
+    // Stage Seven actions
+    Route::get('/requests/{accreditationRequest}/stage-seven/recommendations/view', [StageSevenController::class, 'viewRecommendations'])
+        ->name('requests.stage_seven.recommendations.view');
+    Route::get('/requests/{accreditationRequest}/stage-seven/recommendations/download', [StageSevenController::class, 'downloadRecommendations'])
+        ->name('requests.stage_seven.recommendations.download');
 
 });
