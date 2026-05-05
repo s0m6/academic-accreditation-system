@@ -208,4 +208,16 @@ Route::middleware('auth')->group(function () {
     Route::post('/requests/{accreditationRequest}/stage-eight/rubrics/save', [StageEightController::class, 'saveRubrics'])
         ->name('requests.stage_eight.rubrics_save');
 
+    // Stage Eight approval workflow actions
+    Route::patch('/requests/{accreditationRequest}/stage-eight/request-approval', [StageEightController::class, 'requestMemberApproval'])
+        ->name('requests.stage_eight.request_approval');
+    Route::post('/requests/{accreditationRequest}/stage-eight/member-reject', [StageEightController::class, 'memberReject'])
+        ->name('requests.stage_eight.member_reject');
+    Route::patch('/requests/{accreditationRequest}/stage-eight/withdraw', [StageEightController::class, 'withdrawForEdit'])
+        ->name('requests.stage_eight.withdraw');
+    Route::post('/requests/{accreditationRequest}/stage-eight/member-approve', [StageEightController::class, 'memberApprove'])
+        ->name('requests.stage_eight.member_approve');
+    Route::post('/requests/{accreditationRequest}/stage-eight/final-submit', [StageEightController::class, 'finalSubmit'])
+        ->name('requests.stage_eight.final_submit');
+
 });

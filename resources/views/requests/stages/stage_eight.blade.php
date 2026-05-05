@@ -62,14 +62,28 @@
 <div class="w-full text-start space-y-6" x-data="{
     showRequestModal: false,
     showWithdrawModal: false,
+    
+    showRejectModal: false,
+    rejectReasons: [''],
+    addReason() { this.rejectReasons.push(''); },
+    removeReason(i) { if (this.rejectReasons.length > 1) this.rejectReasons.splice(i, 1); },
+
     showSignModal: false,
     signStep: 1,
-    signature1: null,
-    signature2: null,
-    signature3: null,
-    signature4: null,
-    pad1: null, pad2: null, pad3: null, pad4: null,
+    signature6: null,
+    signatureFinal: null,
+    pad6: null,
+    padFinal: null,
     submitType: 'member',
+    
+    init() {
+        const observer = new MutationObserver(() => {
+            const color = 'rgb(0, 0, 0)';
+            if (this.pad6) this.pad6.penColor = color;
+            if (this.padFinal) this.padFinal.penColor = color;
+        });
+        observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    },
     
     initPad(refName) {
         this.$nextTick(() => {
@@ -77,12 +91,20 @@
                 const canvas = this.$refs[refName];
                 if (canvas) {
                     const padKey = 'pad' + refName.replace('canvas', '');
+                    const color = 'rgb(0, 0, 0)';
+
                     if (!this[padKey]) {
                         this[padKey] = new window.SignaturePad(canvas, {
                             backgroundColor: 'rgba(255, 255, 255, 0)',
-                            penColor: 'rgb(0, 0, 0)',
+                            penColor: color,
+                            minWidth: 1.2,
+                            maxWidth: 4,
+                            velocityFilterWeight: 0.6,
                         });
+                    } else {
+                        this[padKey].penColor = color;
                     }
+                    
                     const ratio = Math.max(window.devicePixelRatio || 1, 1);
                     canvas.width = canvas.offsetWidth * ratio;
                     canvas.height = canvas.offsetHeight * ratio;
@@ -95,15 +117,45 @@
     clearPad(num) {
         if (this['pad' + num]) this['pad' + num].clear();
     },
+    nextStep() {
+        if (this.signStep === 1) {
+            if (this.pad6 && this.pad6.isEmpty()) return alert('الرجاء توقيع نموذج مقاييس التقييم الختامي');
+            this.signature6 = this.pad6.toDataURL('image/svg+xml');
+            this.signStep = 2;
+        } else if (this.signStep === 2) {
+            if (this.padFinal && this.padFinal.isEmpty()) return alert('الرجاء التوقيع على القرار النهائي');
+            this.signatureFinal = this.padFinal.toDataURL('image/svg+xml');
+            this.signStep = 3;
+        }
+    },
+    prevStep() {
+        if (this.signStep > 1) this.signStep--;
+    },
     resetSignatures() {
         this.signStep = 1;
-        [1,2,3,4].forEach(i => { if(this['pad'+i]) this['pad'+i].clear(); });
+        this.signature6 = null;
+        this.signatureFinal = null;
+        if(this.pad6) this.pad6.clear();
+        if(this.padFinal) this.padFinal.clear();
     }
-}">
+}" x-init="$watch('showSignModal', value => { if(value && signStep === 1) initPad('canvas6') }); $watch('signStep', value => { if(value === 1) initPad('canvas6'); if(value === 2) initPad('canvasFinal'); })">
+
+    {{-- Flash alerts --}}
+    @if(session('success'))
+        <div class="flex items-center gap-3 p-4 rounded-xl bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-500/20 text-green-700 dark:text-green-400 font-bold shadow-sm">
+            <i class="fa-solid fa-circle-check text-xl shrink-0"></i>
+            <span>{{ session('success') }}</span>
+        </div>
+    @endif
+    @if(session('error'))
+        <div class="flex items-center gap-3 p-4 rounded-xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 text-red-700 dark:text-red-400 font-bold shadow-sm">
+            <i class="fa-solid fa-circle-xmark text-xl shrink-0"></i>
+            <span>{{ session('error') }}</span>
+        </div>
+    @endif
 
     {{-- Top Status Cards --}}
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {{-- Status Card --}}
         <div class="rounded-2xl border border-(--border-primary) bg-(--surface-card) shadow-sm p-5 flex items-center justify-between">
             <div class="flex items-center gap-3">
                 <div class="w-12 h-12 rounded-xl flex items-center justify-center text-lg shadow-inner
@@ -121,7 +173,6 @@
             </div>
         </div>
 
-        {{-- Date Card --}}
         <div class="rounded-2xl border border-(--border-primary) bg-(--surface-card) shadow-sm p-5 flex items-center justify-between">
             <div class="flex items-center gap-3">
                 <div class="w-12 h-12 rounded-xl flex items-center justify-center text-lg shadow-inner bg-indigo-50 text-indigo-600 border border-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-400 dark:border-indigo-500/20">
@@ -130,7 +181,7 @@
                 <div>
                     <h3 class="text-xs font-bold text-(--text-secondary) mb-1">تاريخ الرد النهائي</h3>
                     <p class="font-black text-(--text-primary) tracking-wide">
-                        {{ $report && $report->updated_at ? $report->updated_at->format('Y/m/d H:i') : 'جاري المعالجة...' }}
+                        {{ $report && $report->stage8_submitted_at ? $report->stage8_submitted_at->format('Y/m/d H:i') : ($report && $report->updated_at ? $report->updated_at->format('Y/m/d H:i') : 'جاري المعالجة...') }}
                     </p>
                 </div>
             </div>
@@ -138,7 +189,6 @@
     </div>
 
     <div class="rounded-2xl border border-(--border-primary) bg-(--surface-card) shadow-sm overflow-hidden mt-6">
-        {{-- Header --}}
         <div class="px-6 py-4 border-b border-(--border-primary) bg-(--bg-main) flex items-center gap-3">
             <div class="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center border border-blue-100 dark:border-blue-500/20 shadow-inner shrink-0">
                 <i class="fa-solid fa-copy text-lg"></i>
@@ -149,7 +199,6 @@
             </div>
         </div>
 
-        {{-- Content Table --}}
         <div class="p-0 overflow-x-auto">
             <table class="w-full text-sm text-start whitespace-nowrap">
                 <thead class="bg-(--bg-main) border-b border-(--border-primary) text-(--text-secondary) font-bold text-xs">
@@ -159,11 +208,8 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-(--border-primary)">
-                    {{-- Row 1: Institution Response --}}
                     <tr class="hover:bg-(--bg-main) transition-colors">
-                        <td class="px-5 py-6 font-bold text-(--text-primary)">
-                            نموذج رد المؤسسة التعليمية على التوصيات
-                        </td>
+                        <td class="px-5 py-6 font-bold text-(--text-primary)">نموذج رد المؤسسة التعليمية على التوصيات</td>
                         <td class="px-5 py-6">
                             <div class="flex items-center justify-center gap-2">
                                 <button type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-(--surface-card) border border-(--border-primary) hover:bg-(--bg-main) text-(--text-primary) text-xs font-bold transition">
@@ -175,15 +221,11 @@
                             </div>
                         </td>
                     </tr>
-
-                    {{-- Row 2: Final Assessment Metrics --}}
                     <tr class="hover:bg-(--bg-main) transition-colors">
-                        <td class="px-5 py-6 font-bold text-(--text-primary)">
-                            مقاييس تقييم البرنامج(التقييم الختامي)
-                        </td>
+                        <td class="px-5 py-6 font-bold text-(--text-primary)">مقاييس تقييم البرنامج(التقييم الختامي)</td>
                         <td class="px-5 py-6">
                             <div class="flex items-center justify-center gap-2">
-                                @if($isChairEvaluator)
+                                @if($isChairEvaluator && in_array($currentStatus, ['uni_responded', 'returned_for_edit']))
                                     <a href="{{ route('requests.stage_eight.rubrics_edit', $accreditationRequest) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200 dark:bg-blue-500/10 dark:hover:bg-blue-500/20 dark:text-blue-400 dark:border-blue-500/20 text-xs font-bold transition">
                                         <i class="fa-solid fa-pen"></i> تعديل
                                     </a>
@@ -197,12 +239,8 @@
                             </div>
                         </td>
                     </tr>
-
-                    {{-- Row 3: Final Committee Report --}}
                     <tr class="hover:bg-(--bg-main) transition-colors">
-                        <td class="px-5 py-6 font-bold text-(--text-primary)">
-                            التقرير النهائي للجنة المقيمين
-                        </td>
+                        <td class="px-5 py-6 font-bold text-(--text-primary)">التقرير النهائي للجنة المقيمين</td>
                         <td class="px-5 py-6">
                             <div class="flex items-center justify-center gap-2">
                                 <button type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-(--surface-card) border border-(--border-primary) hover:bg-(--bg-main) text-(--text-primary) text-xs font-bold transition">
@@ -214,12 +252,8 @@
                             </div>
                         </td>
                     </tr>
-
-                    {{-- Row 4: Final Decision and Recommendations --}}
                     <tr class="hover:bg-(--bg-main) transition-colors">
-                        <td class="px-5 py-6 font-bold text-(--text-primary)">
-                            القرار النهائي وتوصيات لجنة المقيمين بخصوص اعتماد البرنامج
-                        </td>
+                        <td class="px-5 py-6 font-bold text-(--text-primary)">القرار النهائي وتوصيات لجنة المقيمين بخصوص اعتماد البرنامج</td>
                         <td class="px-5 py-6">
                             <div class="flex items-center justify-center gap-2">
                                 <button type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-(--surface-card) border border-(--border-primary) hover:bg-(--bg-main) text-(--text-primary) text-xs font-bold transition">
@@ -236,7 +270,6 @@
         </div>
     </div>
 
-    {{-- Committee Approvals Table (Exactly as Phase 6) --}}
     @if($committee)
         @php
             $membersList = $committee->activeMembers->where('member_status', 'accepted')->filter(fn($m) => $m->evaluator_id !== $committee->chair_evaluator_id);
@@ -249,7 +282,7 @@
                     </div>
                     <div>
                         <h3 class="font-bold text-(--text-primary)">موافقات أعضاء اللجنة</h3>
-                        <p class="text-xs text-(--text-secondary)">متابعة توقيعات وموافقات الأعضاء في المرحلة الختامية</p>
+                        <p class="text-xs text-(--text-secondary)">متابعة توقيعات وموافقات الأعضاء في المراجعة النهائية @if($report && $report->current_iteration > 0) (الدورة رقم {{ $report->current_iteration }}) @endif</p>
                     </div>
                 </div>
             </div>
@@ -270,14 +303,12 @@
                     <tbody class="divide-y divide-(--border-primary)">
                         @forelse($membersList as $index => $member)
                             @php
-                                $showApprovals = !in_array($currentStatus, ['draft', 'returned_for_edit']);
+                                $showApprovals = !in_array($currentStatus, ['uni_responded', 'returned_for_edit']);
                                 $approval = $showApprovals ? $committeeApprovals->where('member_id', $member->evaluator_id)->first() : null;
                             @endphp
                             <tr class="hover:bg-(--bg-main) transition-colors">
                                 <td class="px-5 py-4 text-center text-(--text-secondary)">{{ $loop->iteration }}</td>
-                                <td class="px-5 py-4 font-bold text-(--text-primary)">
-                                    {{ $member->evaluator->user->name ?? 'عضو لجنة' }}
-                                </td>
+                                <td class="px-5 py-4 font-bold text-(--text-primary)">{{ $member->evaluator->user->name ?? 'عضو لجنة' }}</td>
                                 <td class="px-5 py-4">
                                     @if($approval)
                                         @if($approval->status === 'approved')
@@ -287,6 +318,10 @@
                                         @elseif($approval->status === 'rejected')
                                             <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-red-50 text-red-700 border border-red-200 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20">
                                                 <i class="fa-solid fa-xmark"></i> يوجد ملاحظات
+                                            </span>
+                                        @elseif($approval->status === 'canceled')
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-gray-100 text-gray-700 border border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700">
+                                                <i class="fa-solid fa-ban"></i> ملغي
                                             </span>
                                         @else
                                             <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20">
@@ -299,13 +334,32 @@
                                         </span>
                                     @endif
                                 </td>
-                                <td class="px-5 py-4 text-(--text-secondary)">
-                                    {{ $approval && $approval->responded_at ? $approval->responded_at->format('Y/m/d H:i') : '—' }}
-                                </td>
+                                <td class="px-5 py-4 text-(--text-secondary)">{{ $approval && $approval->responded_at ? $approval->responded_at->format('Y/m/d H:i') : '—' }}</td>
                                 @if($isChairEvaluator)
                                 <td class="px-5 py-4">
                                     @if($approval && $approval->status === 'rejected' && $approval->reject_reason)
-                                        <span class="text-xs font-bold text-blue-600 cursor-pointer hover:underline">عرض الملاحظات</span>
+                                        @php $reasons = json_decode($approval->reject_reason, true) ?? []; @endphp
+                                        <div x-data="{ showReason: false }" class="relative">
+                                            <button @click="showReason = true" class="text-xs font-bold text-blue-600 hover:text-blue-700 hover:underline">عرض الملاحظات ({{ count($reasons) }})</button>
+                                            <template x-teleport="body">
+                                                <div x-show="showReason" style="display:none" class="relative z-[200]">
+                                                    <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" @click="showReason = false"></div>
+                                                    <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
+                                                        <div @click.away="showReason = false" class="relative w-full max-w-md rounded-2xl bg-(--surface-card) shadow-2xl text-start">
+                                                            <div class="px-6 py-5 border-b border-(--border-primary) flex justify-between items-center bg-(--bg-main)">
+                                                                <h3 class="font-bold text-(--text-primary)">ملاحظات العضو الختامية</h3>
+                                                                <button @click="showReason = false"><i class="fa-solid fa-xmark"></i></button>
+                                                            </div>
+                                                            <div class="p-6 space-y-3">
+                                                                @foreach($reasons as $r)
+                                                                    <div class="p-4 rounded-xl bg-(--bg-main) border border-(--border-primary) text-sm text-(--text-secondary)">{{ $r }}</div>
+                                                                @endforeach
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </template>
+                                        </div>
                                     @else
                                         <span class="text-(--text-secondary)">—</span>
                                     @endif
@@ -321,80 +375,122 @@
         </div>
     @endif
 
-    {{-- Call to Actions (UI Only) --}}
     <div class="flex flex-wrap items-center gap-3 mt-6 border-t border-(--border-primary) pt-6">
         @if($isChairEvaluator)
-            <button @click="showRequestModal = true" type="button" class="px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-md transition-colors flex items-center gap-2">
-                <i class="fa-solid fa-paper-plane"></i> طلب موافقة الأعضاء (المرحلة الختامية)
-            </button>
+            @if(in_array($currentStatus, ['uni_responded', 'returned_for_edit']))
+                <button @click="showRequestModal = true" class="px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-md transition-colors flex items-center gap-2">
+                    <i class="fa-solid fa-paper-plane"></i> طلب موافقة الأعضاء (المراجعة النهائية)
+                </button>
+            @endif
+
+            @if($currentStatus === 'final_under_review')
+                <button @click="showWithdrawModal = true" class="px-6 py-3 rounded-xl bg-orange-100 text-orange-700 hover:bg-orange-200 font-bold border border-orange-200 transition-colors flex items-center gap-2">
+                    <i class="fa-solid fa-arrow-rotate-left"></i> سحب الطلب للتعديل
+                </button>
+            @endif
+
+            @if($currentStatus === 'final_under_review' && $allMembersApproved)
+                <button @click="showSignModal = true; submitType = 'chair'; resetSignatures();" class="px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-md transition-colors flex items-center gap-2">
+                    <i class="fa-solid fa-file-signature"></i> الاعتماد النهائي للتقرير
+                </button>
+            @endif
         @endif
 
-        @if($isCommitteeMember && (!$memberApproval || $memberApproval->status === 'pending'))
-            <button @click="showRejectModal = true" type="button" class="px-6 py-3 rounded-xl bg-red-100 text-red-700 hover:bg-red-200 font-bold border border-red-200 transition-colors flex items-center gap-2">
-                <i class="fa-solid fa-xmark"></i> رفض لوجود ملاحظات
+        @if($isCommitteeMember && $memberApproval && $memberApproval->status === 'pending')
+            <button @click="showRejectModal = true; rejectReasons = [''];" class="px-6 py-3 rounded-xl bg-red-100 text-red-700 hover:bg-red-200 font-bold border border-red-200 transition-colors flex items-center gap-2">
+                <i class="fa-solid fa-xmark"></i> رفض لوجود ملاحظات ختامية
             </button>
-            
-            <button @click="showSignModal = true; signStep = 1;" type="button" class="px-6 py-3 rounded-xl bg-green-600 hover:bg-green-700 text-white font-bold shadow-md transition-colors flex items-center gap-2">
+            <button @click="showSignModal = true; submitType = 'member'; resetSignatures();" class="px-6 py-3 rounded-xl bg-green-600 hover:bg-green-700 text-white font-bold shadow-md transition-colors flex items-center gap-2">
                 <i class="fa-solid fa-signature"></i> توقيع وموافقة نهائية
             </button>
         @endif
     </div>
 
-    {{-- Chair Modals (UI Only) --}}
-    <template x-teleport="body">
-        <div x-show="showRequestModal" style="display:none" class="relative z-[200]">
-            <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" @click="showRequestModal = false"></div>
-            <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
-                <div @click.away="showRequestModal = false" class="relative w-full max-w-md rounded-2xl bg-(--surface-card) shadow-2xl text-start border border-(--border-primary)">
-                    <div class="p-6 text-center">
-                        <div class="w-16 h-16 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-2xl mx-auto mb-4"><i class="fa-solid fa-paper-plane"></i></div>
-                        <h3 class="font-bold text-lg text-(--text-primary)">تأكيد طلب الموافقة الختامية</h3>
-                        <p class="text-sm text-(--text-secondary) mt-2">سيتم إرسال إشعار لأعضاء اللجنة للدخول وتوقيع التقارير الختامية.</p>
-                    </div>
-                    <div class="px-6 py-4 border-t border-(--border-primary) bg-(--bg-main) flex justify-end gap-3">
-                        <button @click="showRequestModal = false" class="px-5 py-2.5 rounded-xl border border-(--border-primary) font-bold">إلغاء</button>
-                        <button @click="showRequestModal = false" class="px-6 py-2.5 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700">تأكيد الطلب</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </template>
-
-    {{-- Member Reject Modal (UI Only) --}}
-    <template x-teleport="body">
-        <div x-show="showRejectModal" style="display:none" class="relative z-[200]">
-            <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" @click="showRejectModal = false"></div>
-            <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
-                <div @click.away="showRejectModal = false" class="relative w-full max-w-lg rounded-2xl bg-(--surface-card) shadow-2xl text-start border border-(--border-primary)">
-                    <div class="px-6 py-5 border-b border-(--border-primary) flex justify-between items-center bg-(--bg-main)">
-                        <h3 class="font-bold text-(--text-primary)"><i class="fa-solid fa-xmark text-red-600 ml-2"></i> إرسال ملاحظات ختامية</h3>
-                        <button @click="showRejectModal = false"><i class="fa-solid fa-xmark text-(--text-secondary)"></i></button>
-                    </div>
-                    <div class="p-6 space-y-4">
-                        <textarea rows="3" placeholder="اكتب ملاحظتك هنا..." class="w-full rounded-xl border border-(--border-primary) bg-(--bg-main) text-(--text-primary) px-4 py-3 text-sm"></textarea>
-                    </div>
-                    <div class="px-6 py-4 border-t border-(--border-primary) bg-(--bg-main) flex justify-end gap-3">
-                        <button @click="showRejectModal = false" class="px-5 py-2.5 rounded-xl border border-(--border-primary) font-bold">إلغاء</button>
-                        <button @click="showRejectModal = false" class="px-6 py-2.5 rounded-xl bg-red-600 text-white font-bold hover:bg-red-700">تأكيد الإرسال</button>
+    @if($isChairEvaluator)
+        <template x-teleport="body">
+            <div x-show="showRequestModal" style="display:none" class="relative z-[200]">
+                <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" @click="showRequestModal = false"></div>
+                <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
+                    <div @click.away="showRequestModal = false" class="relative w-full max-w-md rounded-2xl bg-(--surface-card) shadow-2xl text-start border border-(--border-primary)">
+                        <div class="p-6 text-center">
+                            <div class="w-16 h-16 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-2xl mx-auto mb-4"><i class="fa-solid fa-paper-plane"></i></div>
+                            <h3 class="font-bold text-lg text-(--text-primary)">تأكيد طلب الموافقة الختامية</h3>
+                            <p class="text-sm text-(--text-secondary) mt-2">سيتم إرسال إشعار لأعضاء اللجنة للدخول وتوقيع التقارير الختامية. لن تتمكن من التعديل أثناء المراجعة.</p>
+                        </div>
+                        <div class="px-6 py-4 border-t border-(--border-primary) bg-(--bg-main) flex justify-end gap-3">
+                            <button @click="showRequestModal = false" class="px-5 py-2.5 rounded-xl border border-(--border-primary) font-bold">إلغاء</button>
+                            <form method="POST" action="{{ route('requests.stage_eight.request_approval', $accreditationRequest) }}" class="inline">
+                                @csrf @method('PATCH')
+                                <button type="submit" class="px-6 py-2.5 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700">تأكيد الطلب</button>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </template>
+        </template>
+        <template x-teleport="body">
+            <div x-show="showWithdrawModal" style="display:none" class="relative z-[200]">
+                <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" @click="showWithdrawModal = false"></div>
+                <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
+                    <div @click.away="showWithdrawModal = false" class="relative w-full max-w-md rounded-2xl bg-(--surface-card) shadow-2xl text-start border border-(--border-primary)">
+                        <div class="p-6 text-center">
+                            <div class="w-16 h-16 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center text-2xl mx-auto mb-4"><i class="fa-solid fa-arrow-rotate-left"></i></div>
+                            <h3 class="font-bold text-lg text-(--text-primary)">سحب الطلب للتعديل</h3>
+                            <p class="text-sm text-(--text-secondary) mt-2">سيتم إلغاء الموافقات الختامية المعلقة حالياً للتمكن من تعديل التقارير الختامية.</p>
+                        </div>
+                        <div class="px-6 py-4 border-t border-(--border-primary) bg-(--bg-main) flex justify-end gap-3">
+                            <button @click="showWithdrawModal = false" class="px-5 py-2.5 rounded-xl border border-(--border-primary) font-bold">إلغاء</button>
+                            <form method="POST" action="{{ route('requests.stage_eight.withdraw', $accreditationRequest) }}" class="inline">
+                                @csrf @method('PATCH')
+                                <button type="submit" class="px-6 py-2.5 rounded-xl bg-orange-600 text-white font-bold hover:bg-orange-700">تأكيد السحب</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </template>
+    @endif
 
-    {{-- Signature Modal (UI Only) --}}
+    @if($isCommitteeMember)
+        <template x-teleport="body">
+            <div x-show="showRejectModal" style="display:none" class="relative z-[200]">
+                <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" @click="showRejectModal = false"></div>
+                <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
+                    <div @click.away="showRejectModal = false" class="relative w-full max-w-lg rounded-2xl bg-(--surface-card) shadow-2xl text-start border border-(--border-primary)">
+                        <div class="px-6 py-5 border-b border-(--border-primary) flex justify-between items-center bg-(--bg-main)">
+                            <h3 class="font-bold text-(--text-primary)"><i class="fa-solid fa-xmark text-red-600 ml-2"></i> إرسال ملاحظات ختامية</h3>
+                            <button @click="showRejectModal = false"><i class="fa-solid fa-xmark text-(--text-secondary)"></i></button>
+                        </div>
+                        <form method="POST" action="{{ route('requests.stage_eight.member_reject', $accreditationRequest) }}">
+                            @csrf
+                            <div class="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
+                                <template x-for="(reason, i) in rejectReasons" :key="i">
+                                    <div class="relative">
+                                        <textarea x-model="rejectReasons[i]" name="reject_reasons[]" rows="3" required placeholder="اكتب ملاحظتك الختامية هنا..." class="w-full rounded-xl border border-(--border-primary) bg-(--bg-main) text-(--text-primary) px-4 py-3 text-sm focus:ring-2 focus:ring-red-400"></textarea>
+                                        <button type="button" @click="removeReason(i)" x-show="rejectReasons.length > 1" class="absolute top-3 left-3 text-red-500 hover:text-red-700"><i class="fa-solid fa-trash"></i></button>
+                                    </div>
+                                </template>
+                                <button type="button" @click="addReason" class="text-sm font-bold text-blue-600 hover:text-blue-700"><i class="fa-solid fa-plus ml-1"></i> إضافة ملاحظة أخرى</button>
+                            </div>
+                            <div class="px-6 py-4 border-t border-(--border-primary) bg-(--bg-main) flex justify-end gap-3">
+                                <button type="button" @click="showRejectModal = false" class="px-5 py-2.5 rounded-xl border border-(--border-primary) font-bold">إلغاء</button>
+                                <button type="submit" class="px-6 py-2.5 rounded-xl bg-red-600 text-white font-bold hover:bg-red-700">تأكيد الرفض والإرسال</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </template>
+    @endif
+
     <template x-teleport="body">
         <div x-show="showSignModal" style="display:none" class="relative z-[300]">
             <div class="fixed inset-0 bg-black/60 backdrop-blur-md" @click="showSignModal = false"></div>
             <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
                 <div @click.away="showSignModal = false" class="relative w-full max-w-2xl bg-(--surface-card) shadow-2xl rounded-3xl border border-(--border-primary) overflow-hidden flex flex-col h-[80vh] max-h-[700px]">
-                    
-                    {{-- Header progress --}}
                     <div class="px-6 py-5 border-b border-(--border-primary) bg-(--bg-main) shrink-0">
                         <div class="flex justify-between items-center mb-4">
-                            <h3 class="font-black text-lg text-(--text-primary)">
-                                <i class="fa-solid fa-signature text-indigo-600 ml-2"></i> توقيع التقارير الختامية
-                            </h3>
+                            <h3 class="font-black text-lg text-(--text-primary)"><i class="fa-solid fa-signature text-indigo-600 ml-2"></i> اعتماد التقارير الختامية</h3>
                             <button @click="showSignModal = false" class="text-(--text-secondary) hover:text-(--text-primary) transition"><i class="fa-solid fa-xmark text-xl"></i></button>
                         </div>
                         <div class="flex gap-2">
@@ -404,21 +500,46 @@
                         </div>
                     </div>
 
-                    {{-- Body --}}
-                    <div class="flex-1 p-12 flex flex-col items-center justify-center text-center">
-                        <div class="w-20 h-20 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-4xl mb-6 shadow-inner"><i class="fa-solid fa-file-signature"></i></div>
-                        <h4 class="font-black text-2xl text-(--text-primary) mb-3">شاشة التوقيع الختامي</h4>
-                        <p class="text-(--text-secondary) max-w-sm leading-relaxed">هذه الشاشة مصممة لمحاكاة عملية التوقيع والاعتماد النهائي للتقارير في المرحلة الثامنة.</p>
+                    <div class="flex-1 relative overflow-hidden bg-(--surface-card)">
+                        <div class="absolute inset-0 p-6 flex flex-col transition-all duration-500 ease-in-out" :class="{ 'translate-x-0 opacity-100': signStep === 1, '-translate-x-full opacity-0 pointer-events-none': signStep > 1, 'translate-x-full opacity-0 pointer-events-none': signStep < 1 }">
+                            <h4 class="font-bold text-(--text-primary) mb-2">1. توقيع نموذج مقاييس تقييم البرنامج الختامي</h4>
+                            <p class="text-sm text-(--text-secondary) mb-4">الرجاء رسم توقيعك أدناه لاعتماد نتائج التقييم الختامية للبرنامج.</p>
+                            <div class="flex-1 border-2 border-dashed border-indigo-200 dark:border-indigo-500/20 rounded-2xl bg-white relative">
+                                <canvas x-ref="canvas6" class="w-full h-full cursor-crosshair rounded-2xl touch-none"></canvas>
+                                <button type="button" @click="clearPad(6)" class="absolute top-3 left-3 px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold transition">مسح <i class="fa-solid fa-eraser ml-1"></i></button>
+                            </div>
+                        </div>
+                        <div class="absolute inset-0 p-6 flex flex-col transition-all duration-500 ease-in-out" :class="{ 'translate-x-0 opacity-100': signStep === 2, '-translate-x-full opacity-0 pointer-events-none': signStep > 2, 'translate-x-full opacity-0 pointer-events-none': signStep < 2 }">
+                            <h4 class="font-bold text-(--text-primary) mb-2">2. التوقيع على القرار النهائي والتوصيات</h4>
+                            <p class="text-sm text-(--text-secondary) mb-4">الرجاء رسم توقيعك لاعتماد القرار النهائي بخصوص اعتماد البرنامج.</p>
+                            <div class="flex-1 border-2 border-dashed border-indigo-200 dark:border-indigo-500/20 rounded-2xl bg-white relative">
+                                <canvas x-ref="canvasFinal" class="w-full h-full cursor-crosshair rounded-2xl touch-none"></canvas>
+                                <button type="button" @click="clearPad('Final')" class="absolute top-3 left-3 px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold transition">مسح <i class="fa-solid fa-eraser ml-1"></i></button>
+                            </div>
+                        </div>
+                        <div class="absolute inset-0 p-6 flex flex-col transition-all duration-500 ease-in-out" :class="{ 'translate-x-0 opacity-100': signStep === 3, 'translate-x-full opacity-0 pointer-events-none': signStep < 3 }">
+                            <div class="flex-1 flex flex-col items-center justify-center text-center">
+                                <div class="w-20 h-20 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-4xl mb-6 shadow-inner"><i class="fa-solid fa-check-double"></i></div>
+                                <h4 class="font-black text-2xl text-(--text-primary) mb-3">تأكيد الاعتماد النهائي</h4>
+                                <p class="text-(--text-secondary) max-w-sm leading-relaxed" x-show="submitType === 'member'">بمجرد الضغط على تأكيد، سيتم حفظ توقيعاتك الختامية وإرسال الموافقة النهائية إلى رئيس اللجنة.</p>
+                                <p class="text-(--text-secondary) max-w-sm leading-relaxed" x-show="submitType === 'chair'">بمجرد الضغط على تأكيد، سيتم إنهاء المرحلة الثامنة واعتماد التقارير الختامية بشكل نهائي. سيتم تحويل الطلب للمرحلة التاسعة.</p>
+                            </div>
+                        </div>
                     </div>
 
-                    {{-- Footer --}}
-                    <div class="px-6 py-4 border-t border-(--border-primary) bg-(--bg-main) flex justify-end shrink-0">
-                        <button type="button" @click="showSignModal = false" class="px-6 py-2.5 rounded-xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 shadow-md">إغلاق المعاينة</button>
+                    <div class="px-6 py-4 border-t border-(--border-primary) bg-(--bg-main) flex justify-between shrink-0">
+                        <button type="button" @click="prevStep()" :class="signStep === 1 ? 'opacity-0 pointer-events-none' : ''" class="px-5 py-2.5 rounded-xl border border-(--border-primary) font-bold flex items-center gap-2"><i class="fa-solid fa-arrow-right"></i> السابق</button>
+                        <button type="button" @click="nextStep()" x-show="signStep < 3" class="px-6 py-2.5 rounded-xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 shadow-md flex items-center gap-2">التالي <i class="fa-solid fa-arrow-left"></i></button>
+                        <form x-show="signStep === 3" method="POST" :action="submitType === 'chair' ? '{{ route('requests.stage_eight.final_submit', $accreditationRequest) }}' : '{{ route('requests.stage_eight.member_approve', $accreditationRequest) }}'">
+                            @csrf
+                            <input type="hidden" name="form_6_signature" :value="signature6">
+                            <input type="hidden" name="final_decision_signature" :value="signatureFinal">
+                            <button type="submit" class="px-6 py-2.5 rounded-xl bg-green-600 text-white font-bold hover:bg-green-700 shadow-lg shadow-green-500/30 flex items-center gap-2"><i class="fa-solid fa-paper-plane"></i> تأكيد وإرسال</button>
+                        </form>
                     </div>
                 </div>
             </div>
         </div>
     </template>
-
 </div>
 @endif
