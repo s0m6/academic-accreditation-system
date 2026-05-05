@@ -184,13 +184,13 @@
                         <td class="px-5 py-6">
                             <div class="flex items-center justify-center gap-2">
                                 @if($isChairEvaluator)
-                                    <button type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200 dark:bg-blue-500/10 dark:hover:bg-blue-500/20 dark:text-blue-400 dark:border-blue-500/20 text-xs font-bold transition">
+                                    <a href="{{ route('requests.stage_eight.rubrics_edit', $accreditationRequest) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200 dark:bg-blue-500/10 dark:hover:bg-blue-500/20 dark:text-blue-400 dark:border-blue-500/20 text-xs font-bold transition">
                                         <i class="fa-solid fa-pen"></i> تعديل
-                                    </button>
+                                    </a>
                                 @endif
-                                <button type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-(--surface-card) border border-(--border-primary) hover:bg-(--bg-main) text-(--text-primary) text-xs font-bold transition">
+                                <a href="{{ route('requests.stage_eight.rubrics_show', $accreditationRequest) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-(--surface-card) border border-(--border-primary) hover:bg-(--bg-main) text-(--text-primary) text-xs font-bold transition">
                                     <i class="fa-solid fa-eye text-(--text-secondary)"></i> عرض
-                                </button>
+                                </a>
                                 <button type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-(--surface-card) border border-(--border-primary) hover:bg-(--bg-main) text-(--text-primary) text-xs font-bold transition">
                                     <i class="fa-solid fa-download text-(--text-secondary)"></i> تحميل
                                 </button>

@@ -44,6 +44,7 @@ require __DIR__.'/council_coordinator.php';
 // Accreditation Request Dashboard — accessible to multiple roles
 // ------------------------------------------------------------------
 use App\Http\Controllers\RequestDashboardController;
+use App\Http\Controllers\stages\StageEightController;
 use App\Http\Controllers\stages\StageFiveController;
 use App\Http\Controllers\stages\StageFourController;
 use App\Http\Controllers\stages\StageOneController;
@@ -198,5 +199,13 @@ Route::middleware('auth')->group(function () {
         ->name('requests.stage_seven.recommendations.download');
     Route::post('/requests/{accreditationRequest}/stage-seven/recommendations/submit', [StageSevenController::class, 'submitResponse'])
         ->name('requests.stage_seven.recommendations.submit');
+
+    // Stage Eight rubrics form actions
+    Route::get('/requests/{accreditationRequest}/stage-eight/rubrics/edit', [StageEightController::class, 'editRubrics'])
+        ->name('requests.stage_eight.rubrics_edit');
+    Route::get('/requests/{accreditationRequest}/stage-eight/rubrics/show', [StageEightController::class, 'showRubrics'])
+        ->name('requests.stage_eight.rubrics_show');
+    Route::post('/requests/{accreditationRequest}/stage-eight/rubrics/save', [StageEightController::class, 'saveRubrics'])
+        ->name('requests.stage_eight.rubrics_save');
 
 });
