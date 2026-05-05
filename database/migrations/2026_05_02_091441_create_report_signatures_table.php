@@ -11,15 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('report_scores', function (Blueprint $table) {
+        Schema::create('report_signatures', function (Blueprint $table) {
             $table->id();
             $table->foreignId('report_id')->constrained('committee_reports')->onDelete('cascade');
-            $table->foreignId('indicator_id')->constrained('indicators')->onDelete('cascade');
-            $table->tinyInteger('score')->nullable();
-            $table->enum('score_type', ['Initial', 'final']);
+            $table->foreignId('approval_id')->nullable()->constrained('committee_approvals')->onDelete('cascade');
+            $table->enum('form_type', ['form_5', 'form_6_initial', 'form_6_final', 'form_10']);
+            $table->string('signature_path');
+            $table->string('ip_address')->nullable();
+            $table->string('user_agent')->nullable();
             $table->timestamps();
-
-            $table->unique(['report_id', 'indicator_id', 'score_type']);
         });
     }
 
@@ -28,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('report_scores');
+        Schema::dropIfExists('report_signatures');
     }
 };

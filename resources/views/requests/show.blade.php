@@ -13,6 +13,7 @@
     ];
     $currentStageName = $stageNames[$activeStage] ?? $activeStage;
     $program = $accreditationRequest->program;
+    $user = request()->user();
 @endphp
 
 @section('title', 'لوحة الطلب #' . $accreditationRequest->id)
@@ -20,9 +21,5 @@
 @section('description', 'برنامج: ' . $program->program_name . ' — ' . $program->department->college->name)
 
 @section('content')
-    @include('requests.stages.' . $activeStage, [
-        'accreditationRequest' => $accreditationRequest,
-        'program' => $program,
-        'user' => request()->user(),
-    ])
+    @include('requests.stages.' . $activeStage, get_defined_vars())
 @endsection

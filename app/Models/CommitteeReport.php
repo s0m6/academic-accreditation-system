@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class CommitteeReport extends Model
 {
@@ -48,5 +49,21 @@ class CommitteeReport extends Model
     public function scores()
     {
         return $this->hasMany(ReportScore::class, 'report_id');
+    }
+
+    /**
+     * Get the approvals for this report.
+     */
+    public function approvals(): HasMany
+    {
+        return $this->hasMany(CommitteeApproval::class, 'report_id');
+    }
+
+    /**
+     * Get the signatures for this report.
+     */
+    public function signatures(): HasMany
+    {
+        return $this->hasMany(ReportSignature::class, 'report_id');
     }
 }
