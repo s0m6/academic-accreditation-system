@@ -306,7 +306,7 @@
                             </span>
                         </td>
                         <td class="px-5 py-4 font-bold text-(--text-primary)">
-                            التقرير النهائي للجنة المقيمين والتقدير الكلي
+                            التقرير النهائي للجنة المقيمين  
                         </td>
                         <td class="px-5 py-4">
                             <div class="flex items-center justify-center gap-2">
