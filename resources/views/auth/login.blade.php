@@ -1,102 +1,143 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="csrf-token" content="{{ csrf_token() }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="rtl" class="light">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ config('app.name', 'Laravel') }}</title>
+    <title>{{ config('app.name', 'Laravel') }} - تسجيل الدخول</title>
 
-        <!-- Fonts -->
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+    <!-- Scripts and Styles -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 
-        <!-- Scripts -->
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
-    </head>
-    <body class="font-sans text-gray-900 antialiased">
-        <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100 dark:bg-gray-900">
-            <div>
-                <a href="/">
-                    <svg viewBox="0 0 316 316" xmlns="http://www.w3.org/2000/svg" class="w-20 h-20 fill-current text-gray-500">
-                        <path d="M305.8 81.125C305.77 80.995 305.69 80.885 305.65 80.755C305.56 80.525 305.49 80.285 305.37 80.075C305.29 79.935 305.17 79.815 305.07 79.685C304.94 79.515 304.83 79.325 304.68 79.175C304.55 79.045 304.39 78.955 304.25 78.845C304.09 78.715 303.95 78.575 303.77 78.475L251.32 48.275C249.97 47.495 248.31 47.495 246.96 48.275L194.51 78.475C194.33 78.575 194.19 78.725 194.03 78.845C193.89 78.955 193.73 79.045 193.6 79.175C193.45 79.325 193.34 79.515 193.21 79.685C193.11 79.815 192.99 79.935 192.91 80.075C192.79 80.285 192.71 80.525 192.63 80.755C192.58 80.875 192.51 80.995 192.48 81.125C192.38 81.495 192.33 81.875 192.33 82.265V139.625L148.62 164.795V52.575C148.62 52.185 148.57 51.805 148.47 51.435C148.44 51.305 148.36 51.195 148.32 51.065C148.23 50.835 148.16 50.595 148.04 50.385C147.96 50.245 147.84 50.125 147.74 49.995C147.61 49.825 147.5 49.635 147.35 49.485C147.22 49.355 147.06 49.265 146.92 49.155C146.76 49.025 146.62 48.885 146.44 48.785L93.99 18.585C92.64 17.805 90.98 17.805 89.63 18.585L37.18 48.785C37 48.885 36.86 49.035 36.7 49.155C36.56 49.265 36.4 49.355 36.27 49.485C36.12 49.635 36.01 49.825 35.88 49.995C35.78 50.125 35.66 50.245 35.58 50.385C35.46 50.595 35.38 50.835 35.3 51.065C35.25 51.185 35.18 51.305 35.15 51.435C35.05 51.805 35 52.185 35 52.575V232.235C35 233.795 35.84 235.245 37.19 236.025L142.1 296.425C142.33 296.555 142.58 296.635 142.82 296.725C142.93 296.765 143.04 296.835 143.16 296.865C143.53 296.965 143.9 297.015 144.28 297.015C144.66 297.015 145.03 296.965 145.4 296.865C145.5 296.835 145.59 296.775 145.69 296.745C145.95 296.655 146.21 296.565 146.45 296.435L251.36 236.035C252.72 235.255 253.55 233.815 253.55 232.245V174.885L303.81 145.945C305.17 145.165 306 143.725 306 142.155V82.265C305.95 81.875 305.89 81.495 305.8 81.125ZM144.2 227.205L100.57 202.515L146.39 176.135L196.66 147.195L240.33 172.335L208.29 190.625L144.2 227.205ZM244.75 114.995V164.795L226.39 154.225L201.03 139.625V89.825L219.39 100.395L244.75 114.995ZM249.12 57.105L292.81 82.265L249.12 107.425L205.43 82.265L249.12 57.105ZM114.49 184.425L96.13 194.995V85.305L121.49 70.705L139.85 60.135V169.815L114.49 184.425ZM91.76 27.425L135.45 52.585L91.76 77.745L48.07 52.585L91.76 27.425ZM43.67 60.135L62.03 70.705L87.39 85.305V202.545V202.555V202.565C87.39 202.735 87.44 202.895 87.46 203.055C87.49 203.265 87.49 203.485 87.55 203.695V203.705C87.6 203.875 87.69 204.035 87.76 204.195C87.84 204.375 87.89 204.575 87.99 204.745C87.99 204.745 87.99 204.755 88 204.755C88.09 204.905 88.22 205.035 88.33 205.175C88.45 205.335 88.55 205.495 88.69 205.635L88.7 205.645C88.82 205.765 88.98 205.855 89.12 205.965C89.28 206.085 89.42 206.225 89.59 206.325C89.6 206.325 89.6 206.325 89.61 206.335C89.62 206.335 89.62 206.345 89.63 206.345L139.87 234.775V285.065L43.67 229.705V60.135ZM244.75 229.705L148.58 285.075V234.775L219.8 194.115L244.75 179.875V229.705ZM297.2 139.625L253.49 164.795V114.995L278.85 100.395L297.21 89.825V139.625H297.2Z" />
-                    </svg>
-                </a>
+    <style>
+        .institutional-pattern {
+            background-image: radial-gradient(circle at 2px 2px, rgba(0, 37, 70, 0.03) 1.5px, transparent 0);
+            background-size: 40px 40px;
+        }
+        .dark .institutional-pattern {
+            background-image: radial-gradient(circle at 2px 2px, rgba(233, 193, 118, 0.02) 1.5px, transparent 0);
+        }
+        .premium-shadow {
+            box-shadow: 0 25px 50px -12px rgba(0, 37, 70, 0.08), 0 0 1px 0 rgba(0, 37, 70, 0.1);
+        }
+        .dark .premium-shadow {
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 1px 0 rgba(233, 193, 118, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-md-surface dark:bg-slate-950 text-md-on-surface transition-colors duration-300 min-h-screen flex flex-col font-sans">
+    <div class="fixed top-6 left-6 z-50">
+        <button class="p-2.5 rounded-xl border border-md-outline-variant/30 bg-md-surface-container-lowest/50 dark:bg-slate-900/50 backdrop-blur-md hover:bg-md-surface-container-high dark:hover:bg-slate-800 transition-colors shadow-sm" onclick="document.documentElement.classList.toggle('dark')">
+            <span class="icon-[material-symbols--dark-mode-outline] text-2xl dark:hidden"></span>
+            <span class="icon-[material-symbols--light-mode] text-2xl hidden dark:block text-md-tertiary-fixed-dim"></span>
+        </button>
+    </div>
+
+    <main class="flex-grow flex items-center justify-center lg:p-6 institutional-pattern relative overflow-hidden">
+        <!-- Aesthetic Decorative Elements -->
+        <div class="absolute -top-48 -right-48 w-[600px] h-[600px] bg-md-primary/5 dark:bg-md-primary/10 rounded-full blur-[120px] pointer-events-none"></div>
+        <div class="absolute -bottom-48 -left-48 w-[600px] h-[600px] bg-md-tertiary-fixed-dim/5 dark:bg-md-tertiary/10 rounded-full blur-[120px] pointer-events-none"></div>
+
+        <!-- Login Card -->
+        <div class="w-full max-w-[560px] bg-md-surface-container-lowest dark:bg-slate-900/80 backdrop-blur-xl rounded-2xl premium-shadow border border-md-outline-variant/20 dark:border-white/5 relative z-10 overflow-hidden mx-4">
+            <!-- Top Institutional Accent Bar -->
+            <div class="h-1.5 w-full bg-gradient-to-l from-md-primary via-md-tertiary to-md-primary"></div>
+            
+            <div class="p-8 md:p-12">
+                <!-- Card Header -->
+                <div class="text-center mb-8">
+                    <div class="relative inline-block mb-6">
+                        <div class="absolute inset-0 bg-md-primary/5 rounded-full blur-2xl scale-150"></div>
+                        <img alt="AAQAC Logo" class="w-28 h-28 relative z-10 mx-auto object-contain transition-transform hover:scale-105 duration-500" src="{{ asset('images/logo.png') }}"/>
+                    </div>
+                    <h1 class="text-2xl font-bold text-md-primary dark:text-slate-100 font-headline leading-tight">البوابة الإلكترونية</h1>
+                    <p class="text-md-on-surface-variant dark:text-slate-400 text-sm mt-3 font-body">لمجلس الاعتماد الأكاديمي وضمان جودة التعليم العالي</p>
+                </div>
+
+                <!-- Session Status -->
+                @if (session('status'))
+                    <div class="mb-4 font-medium text-sm text-green-600 dark:text-green-400 text-center">
+                        {{ session('status') }}
+                    </div>
+                @endif
+
+                <form method="POST" action="{{ route('login') }}" class="space-y-6">
+                    @csrf
+
+                    <!-- Email Field -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-bold text-md-primary dark:text-slate-300 mr-1" for="email">البريد الإلكتروني </label>
+                        <div class="relative group">
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-md-outline group-focus-within:text-md-primary dark:group-focus-within:text-md-tertiary-fixed-dim transition-colors">
+                                <span class="icon-[material-symbols--alternate-email] text-[22px]"></span>
+                            </div>
+                            <input id="email" name="email" type="email" value="{{ old('email') }}" required autofocus autocomplete="username" 
+                                class="block w-full pr-12 py-3.5 bg-md-surface-container-low dark:bg-slate-800/50 border-2 border-transparent rounded-xl text-md-on-surface dark:text-slate-100 placeholder:text-md-outline/60 focus:ring-0 focus:border-md-primary/20 dark:focus:border-md-tertiary/30 focus:bg-white dark:focus:bg-slate-800 transition-all font-body text-sm" 
+                                placeholder="name@institution.edu.ye"/>
+                        </div>
+                        @if ($errors->get('email'))
+                            <p class="text-xs text-red-600 dark:text-red-400 mt-1 mr-1">
+                                {{ $errors->first('email') }}
+                            </p>
+                        @endif
+                    </div>
+
+                    <!-- Password Field -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="block text-sm font-bold text-md-primary dark:text-slate-300 mr-1" for="password">كلمة المرور</label>
+                            @if (Route::has('password.request'))
+                                <a class="text-xs font-bold text-md-tertiary-container dark:text-md-tertiary-fixed-dim hover:text-md-primary transition-colors" href="{{ route('password.request') }}">
+                                    نسيت كلمة المرور؟
+                                </a>
+                            @endif
+                        </div>
+                        <div class="relative group" x-data="{ show: false }">
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-md-outline group-focus-within:text-md-primary dark:group-focus-within:text-md-tertiary-fixed-dim transition-colors">
+                                <span class="icon-[material-symbols--shield-person] text-[22px]"></span>
+                            </div>
+                            <input :type="show ? 'text' : 'password'" id="password" name="password" required autocomplete="current-password" 
+                                class="block w-full pr-12 py-3.5 bg-md-surface-container-low dark:bg-slate-800/50 border-2 border-transparent rounded-xl text-md-on-surface dark:text-slate-100 placeholder:text-md-outline/60 focus:ring-0 focus:border-md-primary/20 dark:focus:border-md-tertiary/30 focus:bg-white dark:focus:bg-slate-800 transition-all font-body text-sm" 
+                                placeholder="••••••••"/>
+                            <button class="absolute inset-y-0 left-0 flex items-center pl-4 text-md-outline hover:text-md-primary dark:hover:text-md-tertiary-fixed-dim transition-colors" type="button" @click="show = !show">
+                                <span class="icon-[material-symbols--visibility-off-outline]" x-show="!show"></span>
+                                <span class="icon-[material-symbols--visibility-outline]" x-show="show"></span>
+                            </button>
+                        </div>
+                        @if ($errors->get('password'))
+                            <p class="text-xs text-red-600 dark:text-red-400 mt-1 mr-1">
+                                {{ $errors->first('password') }}
+                            </p>
+                        @endif
+                    </div>
+
+                    <!-- Remember Me -->
+                    <div class="flex items-center">
+                        <input id="remember_me" name="remember" type="checkbox" 
+                            class="h-4 w-4 rounded border-md-outline-variant/50 text-md-primary focus:ring-md-primary/20 bg-md-surface-container-low dark:bg-slate-800 cursor-pointer"/>
+                        <label class="mr-3 block text-xs font-medium text-md-on-surface-variant dark:text-slate-400 cursor-pointer select-none" for="remember_me">
+                            الإبقاء على تسجيل دخولي في هذا الجهاز
+                        </label>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button class="w-full py-4 bg-md-primary hover:bg-md-primary-container text-md-on-primary font-bold rounded-xl shadow-lg shadow-md-primary/30 border border-md-primary-container/20 transform active:scale-[0.99] transition-all duration-300 flex items-center justify-center gap-3 group" type="submit">
+                        <span class="text-base">دخول النظام</span>
+                        <span class="icon-[material-symbols--arrow-circle-left-outline] text-[20px] group-hover:translate-x-[-4px] transition-transform"></span>
+                    </button>
+                </form>
+
+        
             </div>
-
-            <div class="w-full sm:max-w-md mt-6 px-6 py-4 bg-white dark:bg-gray-800 shadow-md overflow-hidden sm:rounded-lg">
-               
-    <!-- Session Status -->
-    @if (session('status'))
-        <div class="mb-4 font-medium text-sm text-green-600 dark:text-green-400">
-            {{ session('status') }}
         </div>
-    @endif
+    </main>
 
-    <form method="POST" action="{{ route('login') }}">
-        @csrf
-
-        <!-- Email Address -->
-        <div>
-            <label for="email" class="block font-medium text-sm text-gray-700 dark:text-gray-300">
-                {{ __('Email') }}
-            </label>
-            <input id="email" class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-xs" type="email" name="email" value="{{ old('email') }}" required autofocus autocomplete="username" />
-            @if ($errors->get('email'))
-                <ul class="text-sm text-red-600 dark:text-red-400 space-y-1 mt-2">
-                    @foreach ((array) $errors->get('email') as $message)
-                        <li>{{ $message }}</li>
-                    @endforeach
-                </ul>
-            @endif
-        </div>
-
-        <!-- Password -->
-        <div class="mt-4">
-            <label for="password" class="block font-medium text-sm text-gray-700 dark:text-gray-300">
-                {{ __('Password') }}
-            </label>
-
-            <input id="password" class="block mt-1 w-full border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 focus:border-indigo-500 dark:focus:border-indigo-600 focus:ring-indigo-500 dark:focus:ring-indigo-600 rounded-md shadow-xs"
-                            type="password"
-                            name="password"
-                            required autocomplete="current-password" />
-
-            @if ($errors->get('password'))
-                <ul class="text-sm text-red-600 dark:text-red-400 space-y-1 mt-2">
-                    @foreach ((array) $errors->get('password') as $message)
-                        <li>{{ $message }}</li>
-                    @endforeach
-                </ul>
-            @endif
-        </div>
-
-        <!-- Remember Me -->
-        <div class="block mt-4">
-            <label for="remember_me" class="inline-flex items-center">
-                <input id="remember_me" type="checkbox" class="rounded-sm dark:bg-gray-900 border-gray-300 dark:border-gray-700 text-indigo-600 shadow-xs focus:ring-indigo-500 dark:focus:ring-indigo-600 dark:focus:ring-offset-gray-800" name="remember">
-                <span class="ms-2 text-sm text-gray-600 dark:text-gray-400">{{ __('Remember me') }}</span>
-            </label>
-        </div>
-
-        <div class="flex items-center justify-end mt-4">
-            @if (Route::has('password.request'))
-                <a class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-hidden focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800" href="{{ route('password.request') }}">
-                    {{ __('Forgot your password?') }}
-                </a>
-            @endif
-
-            <button type="submit" class="ms-3 inline-flex items-center px-4 py-2 bg-gray-800 dark:bg-gray-200 border border-transparent rounded-md font-semibold text-xs text-white dark:text-gray-800 uppercase tracking-widest hover:bg-gray-700 dark:hover:bg-white focus:bg-gray-700 dark:focus:bg-white active:bg-gray-900 dark:active:bg-gray-300 focus:outline-hidden focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition ease-in-out duration-150">
-                {{ __('Log in') }}
-            </button>
-        </div>
-    </form>
-
-            </div>
-        </div>
-    </body>
+    <!-- Minimal Legal Branding -->
+    <div class="pb-8 text-center px-4">
+        <p class="font-body text-[11px] uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">
+            © {{ date('Y') }} المجلس الوطني للاعتماد الأكاديمي وضمان الجودة - الجمهورية اليمنية
+        </p>
+    </div>
+</body>
 </html>
-
-
-
-

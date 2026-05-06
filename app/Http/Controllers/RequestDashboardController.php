@@ -8,6 +8,7 @@ use App\Models\ReportScore;
 use App\Models\Standard;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class RequestDashboardController extends Controller
 {
@@ -104,7 +105,7 @@ class RequestDashboardController extends Controller
             ->where('stage', $activeStage)
             ->with(['submitter', 'decider'])
             ->orderByDesc('id')
-            ->when(auth()->user()->role === 'evaluator', function ($q) {
+            ->when(Auth::user()->role === 'evaluator', function ($q) {
                 return $q->where('status', 'approved');
             })
             ->get();
