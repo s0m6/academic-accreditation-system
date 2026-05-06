@@ -340,10 +340,6 @@ class StageSixController extends Controller
 
         $report = $accreditationRequest->committeeReport;
 
-        // Fetch all committee approvals for stage 6 to show in the dashboard
-        $committeeApprovals = CommitteeApproval::where('report_id', $report?->id)
-            ->where('review_round', 'stage6')
-            ->get();
 
         // Ensure all members have approved
         $pendingOrRejectedCount = CommitteeApproval::where('report_id', $report->id)
