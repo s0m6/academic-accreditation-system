@@ -307,28 +307,4 @@
         @endif
 
     </nav>
-
-
-
-    <div class="p-4 border-t border-(--border-sidebar) shrink-0 flex flex-col gap-2">
-        <!-- Settings -->
-        <a href="{{ route('profile.edit') }}" class="sidebar-link group">
-            <div class="sidebar-icon-wrapper">
-                <i class="fa-solid fa-gear"></i>
-            </div>
-            <span class="sidebar-text font-semibold">الإعدادات</span>
-        </a>
-
-        <!-- Logout -->
-        <form method="POST" action="{{ route('logout') }}">
-            @csrf
-            <button type="submit" class="sidebar-link group w-full text-start text-red-500 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/30 cursor-pointer">
-                <div class="sidebar-icon-wrapper">
-                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
-                </div>
-                <span class="sidebar-text font-semibold">تسجيل الخروج</span>
-
-            </button>
-        </form>
-    </div>
 </aside>
