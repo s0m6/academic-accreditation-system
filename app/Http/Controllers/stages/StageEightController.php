@@ -208,8 +208,7 @@ class StageEightController extends Controller
             // Save form 6 final signature
             $this->saveSignature($request->form_6_signature, $report->id, $accreditationRequest->id, $approval->id, 'form_6_final');
             // Save final decision signature
-            $this->saveSignature($request->final_decision_signature, $report->id, $accreditationRequest->id, $approval->id, '
-            ');
+            $this->saveSignature($request->final_decision_signature, $report->id, $accreditationRequest->id, $approval->id, 'form_10');
 
             $approval->update([
                 'status' => 'approved',

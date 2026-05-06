@@ -34,6 +34,10 @@
     $currentStageIndex = array_search($accreditationRequest->current_stage, $stageOrder);
     $thisStageIndex = array_search('stage_eight', $stageOrder);
     $isLocked = $currentStageIndex < $thisStageIndex;
+    
+    $isCouncilCoordinator = $userRole === 'council_coordinator' && $accreditationRequest->council_coordinator_id === $user->id;
+    $isCouncilSecretariat = $userRole === 'council_secretariat';
+    $canSeeInternalNotes = $isChairEvaluator || $isCommitteeMember || $isCouncilCoordinator || $isCouncilSecretariat;
 @endphp
 
 @if($isLocked)
@@ -295,7 +299,7 @@
                             <th class="px-5 py-4">الاسم</th>
                             <th class="px-5 py-4">الحالة</th>
                             <th class="px-5 py-4">تاريخ الرد</th>
-                            @if($isChairEvaluator)
+                            @if($canSeeInternalNotes)
                             <th class="px-5 py-4">ملاحظات</th>
                             @endif
                         </tr>
@@ -335,7 +339,7 @@
                                     @endif
                                 </td>
                                 <td class="px-5 py-4 text-(--text-secondary)">{{ $approval && $approval->responded_at ? $approval->responded_at->format('Y/m/d H:i') : '—' }}</td>
-                                @if($isChairEvaluator)
+                                @if($canSeeInternalNotes)
                                 <td class="px-5 py-4">
                                     @if($approval && $approval->status === 'rejected' && $approval->reject_reason)
                                         @php $reasons = json_decode($approval->reject_reason, true) ?? []; @endphp
