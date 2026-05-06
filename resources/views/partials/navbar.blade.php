@@ -12,16 +12,21 @@
         </div>
 
         <div class="flex items-center gap-2 md:gap-3">
-            {{-- Dark Mode Toggle --}}
-            <button class="icon-btn cursor-pointer transition-transform" onclick="toggleDarkMode()" style="color: #f59e0b;">
-                <i id="theme-toggle-icon" class="fa-solid fa-moon text-lg"></i>
+            {{-- Dark Mode Toggle (MD3 Style) --}}
+            <button class="icon-btn cursor-pointer transition-transform flex items-center justify-center" onclick="toggleDarkMode()">
+                <span class="icon-[material-symbols--dark-mode-outline] text-2xl dark:hidden text-(--text-secondary) hover:text-brand-500"></span>
+                <span class="icon-[material-symbols--light-mode] text-2xl hidden dark:block text-yellow-400"></span>
             </button>
 
             {{-- Notifications Toggle --}}
-            <button class="icon-btn relative cursor-pointer" onclick="toggleNotifications()">
-                <span
-                    class="absolute top-2 inset-inline-end-2 w-2 h-2 bg-red-500 rounded-full border-2 border-(--surface-card)"></span>
-                <i class="fa-solid fa-bell text-lg"></i>
+            <button class="icon-btn relative cursor-pointer group flex items-center justify-center transition-transform active:scale-90" onclick="toggleNotifications()">
+                <span class="icon-[material-symbols--notifications-outline-rounded] text-2xl text-(--text-secondary) group-hover:text-brand-500 transition-colors"></span>
+                
+                {{-- Solid Red Notification Badge --}}
+                <span class="absolute -top-1.5 -right-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-[13px] font-black text-white ring-2 ring-(--surface-card) shadow-md shadow-red-500/20 z-10">
+                    3
+                </span>
+                <span class="absolute -top-1.5 -right-1.5 h-6 w-6 animate-ping rounded-full bg-red-500 opacity-30"></span>
             </button>
 
             <div class="h-8 w-px bg-(--border-primary) mx-2 hidden sm:block"></div>
