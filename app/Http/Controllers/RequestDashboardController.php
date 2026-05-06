@@ -160,12 +160,14 @@ class RequestDashboardController extends Controller
             }
         }
 
-        // Fetch null-scored indicators for stage six validation (grouped by standard > sub-standard)
+        // Fetch null-scored indicators for validation (grouped by standard > sub-standard)
         $nullScoredIndicators = [];
-        if ($activeStage === 'stage_six' && $report) {
-            // Collect indicator IDs that already have an Initial score (including score = 0)
+        if (($activeStage === 'stage_six' || $activeStage === 'stage_eight') && $report) {
+            $scoreType = $activeStage === 'stage_eight' ? 'final' : 'Initial';
+
+            // Collect indicator IDs that already have a score (including score = 0)
             $scoredIndicatorIds = ReportScore::where('report_id', $report->id)
-                ->where('score_type', 'Initial')
+                ->where('score_type', $scoreType)
                 ->whereNotNull('score')
                 ->pluck('indicator_id');
 

@@ -156,6 +156,14 @@ class StageEightController extends Controller
             abort(404, 'التقرير غير موجود.');
         }
 
+        // Validation: Ensure all indicators are scored (final type)
+        $standardsScores = $this->calculateStandardsScores($report->id);
+        $isIncomplete = collect($standardsScores['standards'])->contains('has_null_indicators', true);
+
+        if ($isIncomplete) {
+            return back()->with('error', 'لا يمكن طلب موافقة الأعضاء قبل إكمال تقييم جميع المؤشرات في مقاييس تقييم البرنامج (التقييم الختامي).');
+        }
+
         DB::transaction(function () use ($report, $accreditationRequest) {
             // Increment iteration explicitly
             $newIteration = ($report->current_iteration ?? 0) + 1;
