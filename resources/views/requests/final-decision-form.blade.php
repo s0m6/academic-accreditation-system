@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>نموذج 10 - القرار النهائي</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap');
 
     :root {
       --primary-color: #1a3c5e;
@@ -99,34 +100,17 @@
       width: 25%;
     }
 
-    input[type="text"] {
-      width: 100%;
-      border: none;
-      background: transparent;
-      font-family: 'Tajawal', Arial, sans-serif;
-      font-size: 15px;
-      color: #333;
-    }
-    
-    input[type="text"]:focus {
-      outline: none;
+    .data-cell {
+      font-weight: 500;
+      color: #2c3e50;
     }
 
-    .inline-input {
-      width: 80px;
-      border: none;
-      border-bottom: 2px dashed var(--primary-color);
-      text-align: center;
+    .inline-score {
       font-weight: bold;
       color: var(--primary-color);
-      font-size: 16px;
-      background: transparent;
-      font-family: 'Tajawal', Arial, sans-serif;
-    }
-    
-    .inline-input:focus {
-      outline: none;
-      border-bottom-color: #c19a3f;
+      font-size: 18px;
+      border-bottom: 2px solid var(--primary-color);
+      padding: 0 10px;
     }
 
     .paragraph-section {
@@ -174,18 +158,19 @@
       background: var(--row-bg-alt);
       border: 1px solid #dce0e5;
       border-radius: 4px;
-      cursor: pointer;
-      transition: background 0.2s, border-color 0.2s;
-    }
-
-    .checkbox-group label:hover {
-      background: #e9ecef;
-      border-color: var(--primary-color);
+      font-weight: 500;
     }
 
     .checkbox-group input[type="radio"] {
       margin-left: 12px;
       transform: scale(1.2);
+    }
+
+    .checkbox-group label.active {
+        background: #e7f3ff;
+        border-color: #3b82f6;
+        color: #1e40af;
+        font-weight: 700;
     }
 
     hr.divider {
@@ -202,6 +187,19 @@
       border-top: 2px solid var(--primary-color);
       padding-top: 20px;
       font-size: 16px;
+    }
+
+    .signature-wrapper {
+        width: 100%;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .signature-wrapper svg {
+        max-height: 50px;
+        max-width: 100%;
     }
 
     @media print {
@@ -235,6 +233,10 @@
         border: 1pt solid #000;
         background: #fff !important;
       }
+      .checkbox-group label.active {
+          background: #f0f0f0 !important;
+          border: 2pt solid #000 !important;
+      }
     }
   </style>
 </head>
@@ -262,23 +264,23 @@
         <tbody>
           <tr>
             <td class="label-cell">رقم الطلب</td>
-            <td><input type="text" id="requestNumber"></td>
+            <td class="data-cell">{{ $accreditationRequest->id }}</td>
           </tr>
           <tr>
             <td class="label-cell">اسم البرنامج</td>
-            <td><input type="text" id="programName"></td>
+            <td class="data-cell">{{ $program->program_name }}</td>
           </tr>
           <tr>
             <td class="label-cell">القسم</td>
-            <td><input type="text" id="departmentName"></td>
+            <td class="data-cell">{{ $department->name }}</td>
           </tr>
           <tr>
             <td class="label-cell">الكلية</td>
-            <td><input type="text" id="collegeName"></td>
+            <td class="data-cell">{{ $college->name }}</td>
           </tr>
           <tr>
             <td class="label-cell">المؤسسة التعليمية</td>
-            <td><input type="text" id="institutionName"></td>
+            <td class="data-cell">{{ $university->name }}</td>
           </tr>
         </tbody>
       </table>
@@ -287,7 +289,7 @@
     <!-- نص التوصية -->
     <div class="paragraph-section">
       بناءً على تقرير الزيارة الميدانية نموذج رقم (5) والتقرير النهائي للجنة المقيمين نموذج رقم (7)، وبعد إجراء التعديلات اللازمة عليه على ضوء رد المؤسسة التعليمية على توصيات اللجنة، والتي تبين أن الدرجة المتحققة للبرنامج حسب معايير مجلس الاعتماد الأكاديمي هي 
-      ( <input type="number" min="0" max="5" step="0.1" class="inline-input" id="evaluationScore"> ) 
+      <span class="inline-score">{{ number_format($grandAverage, 2) }}</span> 
       من أصل (5) درجات فإننا نوصي بالآتي:
     </div>
 
@@ -298,52 +300,82 @@
         
         <div class="decision-group-title">الموافقة على منح البرنامج الاعتماد الأكاديمي، بمستوى:</div>
         <div class="checkbox-group">
-          <label><input type="radio" name="decision"> محقق (متابعة الاعتماد بعد ثلاث سنوات)</label>
-          <label><input type="radio" name="decision"> محقق بإتقان (متابعة الاعتماد بعد أربع سنوات)</label>
-          <label><input type="radio" name="decision"> محقق بتميز (متابعة الاعتماد بعد خمس سنوات)</label>
+          <label class="{{ $achievementLevel === 'محقق' ? 'active' : '' }}">
+            <input type="radio" disabled {{ $achievementLevel === 'محقق' ? 'checked' : '' }}> محقق (متابعة الاعتماد بعد ثلاث سنوات)
+          </label>
+          <label class="{{ $achievementLevel === 'محقق بإتقان' ? 'active' : '' }}">
+            <input type="radio" disabled {{ $achievementLevel === 'محقق بإتقان' ? 'checked' : '' }}> محقق بإتقان (متابعة الاعتماد بعد أربع سنوات)
+          </label>
+          <label class="{{ $achievementLevel === 'محقق بامتياز' ? 'active' : '' }}">
+            <input type="radio" disabled {{ $achievementLevel === 'محقق بامتياز' ? 'checked' : '' }}> محقق بتميز (متابعة الاعتماد بعد خمس سنوات)
+          </label>
         </div>
 
         <hr class="divider">
 
         <div class="decision-group-title mt">عدم الموافقة على منح البرنامج الاعتماد الأكاديمي، لأن البرنامج بمستوى:</div>
         <div class="checkbox-group">
-          <label><input type="radio" name="decision"> غير محقق (يمنح مهلة سنتين لإعادة التقدم)</label>
-          <label><input type="radio" name="decision"> محقق جزئياً (يمنح مهلة سنة لإعادة التقدم)</label>
+          <label class="{{ $achievementLevel === 'غير محقق' ? 'active' : '' }}">
+            <input type="radio" disabled {{ $achievementLevel === 'غير محقق' ? 'checked' : '' }}> غير محقق (يمنح مهلة سنتين لإعادة التقدم)
+          </label>
+          <label class="{{ $achievementLevel === 'محقق جزئياً' ? 'active' : '' }}">
+            <input type="radio" disabled {{ $achievementLevel === 'محقق جزئياً' ? 'checked' : '' }}> محقق جزئياً (يمنح مهلة سنة لإعادة التقدم)
+          </label>
         </div>
 
       </div>
     </div>
 
-    <!-- جدول التوقيعات (محدث) -->
+    <!-- جدول التوقيعات -->
     <div class="table-responsive" style="margin-top: 40px;">
       <table>
         <thead>
           <tr>
             <th style="width: 20%;">الصفة</th>
-            <th style="width: 20%;">الاسم</th>
-            <th style="width: 40%;">التوقيع</th>
+            <th style="width: 25%;">الاسم</th>
+            <th style="width: 35%;">التوقيع</th>
             <th style="width: 20%;">التاريخ</th>
           </tr>
         </thead>
         <tbody>
+          @php
+            $chair = collect($membersData)->firstWhere('is_chair', true);
+            $members = collect($membersData)->where('is_chair', false);
+          @endphp
+
+          @foreach($members as $m)
           <tr>
             <td class="label-cell" style="text-align: center;">عضو اللجنة</td>
-            <td><input type="text" id="committeeMember1"></td>
-            <td><input type="text" id="signature1"></td>
-            <td><input type="text" id="date1"></td>
+            <td class="data-cell">{{ $m['name'] }}</td>
+            <td>
+                @if($m['signature_path'] && \Illuminate\Support\Facades\Storage::exists($m['signature_path']))
+                    <div class="signature-wrapper">
+                        {!! \Illuminate\Support\Facades\Storage::get($m['signature_path']) !!}
+                    </div>
+                @else
+                    <div style="text-align: center; color: #999; font-size: 12px;">(لم يتم التوقيع)</div>
+                @endif
+            </td>
+            <td class="data-cell" style="text-align: center;">{{ $m['signed_at'] ? $m['signed_at']->format('Y/m/d') : '—' }}</td>
           </tr>
-          <tr>
-            <td class="label-cell" style="text-align: center;">عضو اللجنة</td>
-            <td><input type="text" id="committeeMember2"></td>
-            <td><input type="text" id="signature2"></td>
-            <td><input type="text" id="date2" ></td>
-          </tr>
+          @endforeach
+
+          @if($chair)
           <tr>
             <td class="label-cell" style="text-align: center;">رئيس اللجنة</td>
-            <td><input type="text" id="committeeChair"></td>
-            <td><input type="text" id="signature3"></td>
-            <td><input type="text" id="date3" ></td>
+            <td class="data-cell">{{ $chair['name'] }}</td>
+            <td>
+                @if($chair['signature_path'] && \Illuminate\Support\Facades\Storage::exists($chair['signature_path']))
+                    <div class="signature-wrapper">
+                        {!! \Illuminate\Support\Facades\Storage::get($chair['signature_path']) !!}
+                    </div>
+                @else
+                    <div style="text-align: center; color: #999; font-size: 12px;">(لم يتم التوقيع)</div>
+                @endif
+            </td>
+            <td class="data-cell" style="text-align: center;">{{ $chair['signed_at'] ? $chair['signed_at']->format('Y/m/d') : '—' }}</td>
           </tr>
+          @endif
         </tbody>
       </table>
     </div>

@@ -260,9 +260,9 @@
                         <td class="px-5 py-6 font-bold text-(--text-primary)">القرار النهائي وتوصيات لجنة المقيمين بخصوص اعتماد البرنامج</td>
                         <td class="px-5 py-6">
                             <div class="flex items-center justify-center gap-2">
-                                <button type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-(--surface-card) border border-(--border-primary) hover:bg-(--bg-main) text-(--text-primary) text-xs font-bold transition">
+                                <a href="{{ route('requests.stage_eight.final_decision', $accreditationRequest) }}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-(--surface-card) border border-(--border-primary) hover:bg-(--bg-main) text-(--text-primary) text-xs font-bold transition">
                                     <i class="fa-solid fa-eye text-(--text-secondary)"></i> عرض
-                                </button>
+                                </a>
                                 <button type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-(--surface-card) border border-(--border-primary) hover:bg-(--bg-main) text-(--text-primary) text-xs font-bold transition">
                                     <i class="fa-solid fa-download text-(--text-secondary)"></i> تحميل
                                 </button>

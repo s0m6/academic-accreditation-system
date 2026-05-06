@@ -583,6 +583,89 @@ class StageEightController extends Controller
         ]);
     }
 
+    // Show the final decision and recommendations of the evaluators committee (Form 10 - Stage 8).
+    public function showFinalDecision(AccreditationRequest $accreditationRequest)
+    {
+        $report = $accreditationRequest->committeeReport;
+        if (! $report) {
+            abort(404, 'التقرير غير موجود.');
+        }
+
+        $program = $accreditationRequest->program;
+        $department = $program->department;
+        $college = $department->college;
+        $university = $college->university;
+
+        $committee = $accreditationRequest->committee;
+
+        // Calculate scores to get average and achievement level
+        $standardsScores = $this->calculateStandardsScores($report->id);
+        $grandAverage = $standardsScores['total']['average'];
+        $achievementLevel = $standardsScores['achievement_level'];
+
+        // Build members data for signatures (form_type = 'form_10')
+        $membersData = [];
+
+        // 1. Get Chair (Signature where approval_id is NULL)
+        $chairEvaluator = $committee->chairEvaluator;
+        if ($chairEvaluator) {
+            $chairSig = ReportSignature::where('report_id', $report->id)
+                ->whereNull('approval_id')
+                ->where('form_type', 'form_10')
+                ->latest()
+                ->first();
+
+            $membersData[] = [
+                'name' => $chairEvaluator->user->name,
+                'signature_path' => $chairSig?->signature_path,
+                'signed_at' => $chairSig?->created_at,
+                'is_chair' => true,
+            ];
+        }
+
+        // 2. Add Members (Latest approved signature for stage8)
+        $members = $committee->activeMembers->filter(fn ($m) => $m->evaluator_id !== $committee->chair_evaluator_id);
+
+        foreach ($members as $member) {
+            // Find latest approved record for stage8
+            $latestApproval = CommitteeApproval::where('report_id', $report->id)
+                ->where('member_id', $member->evaluator_id)
+                ->where('review_round', 'stage8')
+                ->where('status', 'approved')
+                ->latest()
+                ->first();
+
+            $sigPath = null;
+            $signedAt = null;
+            if ($latestApproval) {
+                $sig = ReportSignature::where('approval_id', $latestApproval->id)
+                    ->where('form_type', 'form_10')
+                    ->latest()
+                    ->first();
+                $sigPath = $sig?->signature_path;
+                $signedAt = $sig?->created_at;
+            }
+
+            $membersData[] = [
+                'name' => $member->evaluator->user->name,
+                'signature_path' => $sigPath,
+                'signed_at' => $signedAt,
+                'is_chair' => false,
+            ];
+        }
+
+        return view('requests.final-decision-form', compact(
+            'accreditationRequest',
+            'program',
+            'department',
+            'college',
+            'university',
+            'grandAverage',
+            'achievementLevel',
+            'membersData'
+        ));
+    }
+
     // Authorize that the current user is a committee member (not chair)
     private function authorizeAsMember(AccreditationRequest $accreditationRequest): void
     {
