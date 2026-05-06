@@ -25,6 +25,7 @@ class RequestDashboardController extends Controller
         'stage_six' => 'تقارير نتائج التقييم(الأولية)',
         'stage_seven' => 'توصيات اللجنة والرد عليها',
         'stage_eight' => 'تقارير نتائج التقييم(الختامية)',
+        'stage_nine' => 'القرار النهائي',
     ];
 
     /**
@@ -126,23 +127,36 @@ class RequestDashboardController extends Controller
         // Load visit schedules for stage five
         $visitSchedules = $accreditationRequest->visitSchedules()->orderByDesc('id')->get();
 
-        // Load committee approvals for stage six
         $report = $accreditationRequest->committeeReport;
         $committeeApprovals = collect();
         if ($report) {
-            // If iteration is 0 (submitted to council), get the latest iteration's approvals for this round
-            $iteration = $report->current_iteration > 0
-                ? $report->current_iteration
-                : CommitteeApproval::where('report_id', $report->id)
-                    ->where('review_round', 'stage6')
-                    ->max('iteration_number');
+            $round = $activeStage === 'stage_eight' ? 'stage8' : 'stage6';
 
-            if ($iteration) {
+            if ($round === 'stage6') {
+                // For stage 6, we want to show the latest record for each member from that stage
                 $committeeApprovals = CommitteeApproval::where('report_id', $report->id)
-                    ->where('iteration_number', $iteration)
                     ->where('review_round', 'stage6')
                     ->with('member.user')
-                    ->get();
+                    ->get()
+                    ->groupBy('member_id')
+                    ->map(fn($group) => $group->sortByDesc('iteration_number')->first())
+                    ->values();
+
+            } else {
+                // For stage 8, use the standard iteration-based logic
+                $iteration = $report->current_iteration > 0
+                    ? $report->current_iteration
+                    : CommitteeApproval::where('report_id', $report->id)
+                        ->where('review_round', $round)
+                        ->max('iteration_number');
+
+                if ($iteration) {
+                    $committeeApprovals = CommitteeApproval::where('report_id', $report->id)
+                        ->where('iteration_number', $iteration)
+                        ->where('review_round', $round)
+                        ->with('member.user')
+                        ->get();
+                }
             }
         }
 

@@ -10,6 +10,7 @@
         'stage_six'   => 'تقارير نتائج التقييم(الأولية)',
         'stage_seven' => 'توصيات اللجنة والرد عليها',
         'stage_eight' => 'تقارير نتائج التقييم(الختامية)',
+        'stage_nine'  => 'القرار النهائي',
     ];
     $currentStageName = $stageNames[$activeStage] ?? $activeStage;
     $program = $accreditationRequest->program;
