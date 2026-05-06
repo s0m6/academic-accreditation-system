@@ -34,7 +34,6 @@ return new class extends Migration
             $table->string('form9_pdf_path')->nullable();
             $table->timestamp('uni_responded_at')->nullable();
             $table->json('form6_final_data')->nullable();
-            $table->string('form10_pdf_path')->nullable();
             $table->timestamp('stage8_submitted_at')->nullable();
             $table->timestamps(); 
         });

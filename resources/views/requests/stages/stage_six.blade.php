@@ -295,7 +295,6 @@
                         </td>
                     </tr>
                     {{-- Row 4: Recommendations Letter (Form 8) - Visible only if submitted_to_council or higher --}}
-                    @if(in_array($currentStatus, ['submitted_to_council', 'council_responded', 'uni_responded', 'final_under_review', 'completed']))
                     <tr class="hover:bg-(--bg-main) transition-colors animate-in fade-in slide-in-from-top-2 duration-500">
                         <td class="px-5 py-4 text-center">
                             <span class="w-7 h-7 rounded-lg bg-(--surface-card) border border-(--border-primary) inline-flex items-center justify-center font-black text-(--text-primary)">
@@ -316,7 +315,6 @@
                             </div>
                         </td>
                     </tr>
-                    @endif
                 </tbody>
             </table>
         </div>

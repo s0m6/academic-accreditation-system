@@ -34,6 +34,11 @@ class StageEightController extends Controller
             ->where('score_type', 'final')
             ->pluck('score', 'indicator_id');
 
+        // Load all INITIAL scores (from Stage 6) for comparison
+        $initialScores = ReportScore::where('report_id', $report->id)
+            ->where('score_type', 'Initial')
+            ->pluck('score', 'indicator_id');
+
         $savedFormData = $report->form6_final_data ?? [];
 
         $isEditMode = true;
@@ -43,6 +48,7 @@ class StageEightController extends Controller
             'report',
             'standards',
             'savedScores',
+            'initialScores',
             'savedFormData',
             'isEditMode'
         ));
@@ -64,6 +70,13 @@ class StageEightController extends Controller
                 ->pluck('score', 'indicator_id')
             : collect();
 
+        // Load all initial scores (from Stage 6) for comparison
+        $initialScores = $report
+            ? ReportScore::where('report_id', $report->id)
+                ->where('score_type', 'Initial')
+                ->pluck('score', 'indicator_id')
+            : collect();
+
         $savedFormData = $report?->form6_final_data ?? [];
 
         $isEditMode = false;
@@ -73,6 +86,7 @@ class StageEightController extends Controller
             'report',
             'standards',
             'savedScores',
+            'initialScores',
             'savedFormData',
             'isEditMode'
         ));

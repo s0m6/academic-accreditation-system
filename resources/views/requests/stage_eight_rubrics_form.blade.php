@@ -192,11 +192,27 @@
                     <div id="sub-{{ str_replace('.', '-', $sub->number) }}-content" class="p-6 space-y-4" data-sub-id="{{ $sub->id }}">
                       @foreach($sub->indicators as $indicator)
                         <div class="indicator-row rounded-2xl p-6 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm transition-all hover:shadow-md" data-indicator-id="{{ $indicator->id }}">
-                          <div class="flex items-start justify-between mb-5">
+                          <div class="flex items-start justify-between mb-5 gap-4">
                             <div class="flex-1 border-r-4 border-blue-500 pr-3">
                               <span class="text-xs text-blue-500 font-bold tracking-wider">مؤشر <span dir="ltr" class="inline-block">{{ $indicator->number }}</span></span>
                               <p class="text-slate-800 dark:text-slate-100 mt-2 font-medium leading-relaxed">{{ $indicator->name }}</p>
                             </div>
+
+                            {{-- Display Initial Score (Stage 6) for reference --}}
+                            @php $initialScore = $initialScores[$indicator->id] ?? null; @endphp
+                            @if($initialScore !== null)
+                              <div class="flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-900/50 rounded-xl px-4 py-2.5 border border-slate-200 dark:border-slate-700 shadow-sm shrink-0 min-w-[100px]" title="التقييم الذي تم في المرحلة السادسة">
+                                <span class="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-tight mb-1">التقييم السابق</span>
+                                <div class="flex items-center gap-1.5">
+                                  @if($initialScore == 0)
+                                    <span class="text-xs font-black text-indigo-600 dark:text-indigo-400">غير مطابق</span>
+                                  @else
+                                    <span class="text-2xl font-black {{ $initialScore >= 4 ? 'text-emerald-500' : ($initialScore >= 3 ? 'text-amber-500' : 'text-red-500') }}">{{ $initialScore }}</span>
+                                    <span class="text-[10px] text-slate-400 dark:text-slate-600 font-bold">/5</span>
+                                  @endif
+                                </div>
+                              </div>
+                            @endif
                           </div>
                           
                           <div class="flex flex-wrap items-center gap-4 mb-2 bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-100 dark:border-slate-700/50">

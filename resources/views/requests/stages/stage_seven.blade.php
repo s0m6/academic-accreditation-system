@@ -148,14 +148,19 @@
                             <td class="px-5 py-6">
                                 <div class="flex items-center justify-center gap-3">
                                     @if($report && $report->form8_pdf_path)
+                                        <a href="{{ route('requests.stage_six.recommendations_letter', $accreditationRequest) }}"
+                                            target="_blank"
+                                            class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-orange-50 hover:bg-orange-100 text-orange-700 border border-orange-100 dark:bg-orange-500/10 dark:hover:bg-orange-500/20 dark:text-orange-400 dark:border-orange-500/20 text-xs font-bold transition shadow-sm cursor-pointer">
+                                            <i class="fa-solid fa-file-lines"></i> عرض (نسخة الكترونية)
+                                        </a>
                                         <a href="{{ route('requests.stage_seven.recommendations.view', $accreditationRequest) }}"
                                             target="_blank"
                                             class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-100 dark:bg-indigo-500/10 dark:hover:bg-indigo-500/20 dark:text-indigo-400 dark:border-indigo-500/20 text-xs font-bold transition shadow-sm cursor-pointer">
-                                            <i class="fa-solid fa-eye"></i> عرض الخطاب
+                                            <i class="fa-solid fa-eye"></i> عرض النسخة (الموقّعة)
                                         </a>
                                         <a href="{{ route('requests.stage_seven.recommendations.download', $accreditationRequest) }}"
                                             class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 dark:border-slate-700 text-xs font-bold transition shadow-sm cursor-pointer">
-                                            <i class="fa-solid fa-download"></i> تحميل النسخة
+                                            <i class="fa-solid fa-download"></i> تحميل النسخة(الموقّعة)
                                         </a>
                                     @else
                                         <span class="text-xs font-bold text-(--text-secondary) italic">المستند غير متوفر
