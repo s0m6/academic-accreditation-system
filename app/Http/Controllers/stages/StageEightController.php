@@ -687,6 +687,46 @@ class StageEightController extends Controller
             'membersData'
         ));
     }
+    
+    // Show a comparison view between Stage 6 (Initial) and Stage 8 (Final) rubrics.
+    public function showComparison(AccreditationRequest $accreditationRequest)
+    {
+        $this->authorizeAccess($accreditationRequest, false);
+        
+        $report = $accreditationRequest->committeeReport;
+        if (!$report) {
+            return back()->with('error', 'تقرير اللجنة غير متوفر حالياً.');
+        }
+
+        $standards = Standard::with(['subStandards.indicators'])->orderBy('id')->get();
+
+        // Load scores
+        $initialScores = ReportScore::where('report_id', $report->id)
+            ->where('score_type', 'Initial')
+            ->pluck('score', 'indicator_id');
+
+        $finalScores = ReportScore::where('report_id', $report->id)
+            ->where('score_type', 'final')
+            ->pluck('score', 'indicator_id');
+
+        // Narrative data
+        $initialData = $report->form6_initial_data ?? [];
+        $finalData = $report->form6_final_data ?? [];
+
+        // Flatten sub-standard names for easy lookup in the view
+        $subNames = $standards->flatMap->subStandards->pluck('name', 'id')->toArray();
+
+        return view('requests.stage_eight_comparison', compact(
+            'accreditationRequest',
+            'report',
+            'standards',
+            'initialScores',
+            'finalScores',
+            'initialData',
+            'finalData',
+            'subNames'
+        ));
+    }
 
     // Authorize that the current user is a committee member (not chair)
     private function authorizeAsMember(AccreditationRequest $accreditationRequest): void

@@ -231,5 +231,7 @@ Route::middleware('auth')->group(function () {
         ->name('requests.stage_eight.final_report');
     Route::get('/requests/{accreditationRequest}/stage-eight/final-decision', [StageEightController::class, 'showFinalDecision'])
         ->name('requests.stage_eight.final_decision');
+    Route::get('/requests/{accreditationRequest}/stage-eight/comparison', [StageEightController::class, 'showComparison'])
+        ->name('requests.stage_eight.comparison');
 
 });
