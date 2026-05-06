@@ -4,7 +4,9 @@ namespace App\Http\Controllers\stages;
 
 use App\Http\Controllers\Controller;
 use App\Models\AccreditationRequest;
+use App\Models\CommitteeReport;
 use App\Models\ReportScore;
+use App\Models\Standard;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -61,6 +63,90 @@ class StageSevenController extends Controller
         $fileName = 'recommendations_letter_'.$accreditationRequest->id.'.pdf';
 
         return response()->download($fullPath, $fileName);
+    }
+
+    /**
+     * Show the editable Form 9 (Response to Recommendations) for program coordinator.
+     */
+    public function editForm9(AccreditationRequest $accreditationRequest)
+    {
+        $user = request()->user();
+
+        if ($user->role !== 'program_coordinator' || $accreditationRequest->program_coord_id !== $user->id) {
+            abort(403, 'غير مصرح لك بإجراء هذه العملية.');
+        }
+
+        $report = $accreditationRequest->committeeReport;
+
+        if (! $report || $report->status !== 'council_responded') {
+            abort(403, 'لا يمكن تعديل النموذج في هذه المرحلة.');
+        }
+
+        $detailedStandards = $this->buildDetailedStandards($report);
+        $savedForm9Data = $report->form9_data ?? [];
+        $isEditMode = true;
+
+        return view('requests.recommendations-feedback-form', compact(
+            'accreditationRequest',
+            'report',
+            'detailedStandards',
+            'savedForm9Data',
+            'isEditMode'
+        ));
+    }
+
+    /**
+     * Show the read-only Form 9 (Response to Recommendations).
+     */
+    public function showForm9(AccreditationRequest $accreditationRequest)
+    {
+        $this->authorizeAccess($accreditationRequest);
+
+        $report = $accreditationRequest->committeeReport;
+
+        if (! $report) {
+            abort(404, 'التقرير غير موجود.');
+        }
+
+        $detailedStandards = $this->buildDetailedStandards($report);
+        $savedForm9Data = $report->form9_data ?? [];
+        $isEditMode = false;
+
+        return view('requests.recommendations-feedback-form', compact(
+            'accreditationRequest',
+            'report',
+            'detailedStandards',
+            'savedForm9Data',
+            'isEditMode'
+        ));
+    }
+
+    /**
+     * Save Form 9 JSON data into committee_reports.form9_data.
+     */
+    public function saveForm9(Request $request, AccreditationRequest $accreditationRequest)
+    {
+        $user = $request->user();
+
+        if ($user->role !== 'program_coordinator' || $accreditationRequest->program_coord_id !== $user->id) {
+            abort(403, 'غير مصرح لك بإجراء هذه العملية.');
+        }
+
+        $report = $accreditationRequest->committeeReport;
+
+        if (! $report || $report->status !== 'council_responded') {
+            return response()->json(['success' => false, 'message' => 'لا يمكن حفظ البيانات في هذه المرحلة.'], 403);
+        }
+
+        $data = json_decode($request->input('form9_data', '[]'), true);
+
+        if (! is_array($data)) {
+            return response()->json(['success' => false, 'message' => 'بيانات غير صالحة.'], 422);
+        }
+
+        $report->update(['form9_data' => $data]);
+
+        return response()->json(['success' => true, 'message' => 'تم حفظ البيانات بنجاح.']);
     }
 
     /**
@@ -122,6 +208,78 @@ class StageSevenController extends Controller
 
         return redirect()->route('requests.stage', ['accreditationRequest' => $accreditationRequest, 'stage' => 'stage_eight'])
             ->with('success', 'تم إرسال الرد بنجاح وانتقل الطلب للمرحلة الثامنة.');
+    }
+
+    /**
+     * Build detailed standards data for Form 9, reusing the same
+     * calculation logic as StageSixController::buildDetailedStandards().
+     *
+     * Returns per-standard array with sub-standards containing:
+     *   - id, number, name
+     *   - average score (indicators 1-5 only)
+     *   - improvements (from form6_initial_data JSON)
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function buildDetailedStandards(CommitteeReport $report): array
+    {
+        $standards = Standard::with(['subStandards.indicators'])->orderBy('id')->get();
+
+        // Load all initial scores keyed by indicator_id.
+        $scores = ReportScore::where('report_id', $report->id)
+            ->where('score_type', 'Initial')
+            ->pluck('score', 'indicator_id');
+
+        // Parse form6_initial_data JSON structure:
+        // { standards: { [stdId]: { improvements: [{text, subId}] } } }
+        $formData = $report->form6_initial_data ?? [];
+        $stdComments = $formData['standards'] ?? [];
+
+        $result = [];
+
+        foreach ($standards as $stdIndex => $standard) {
+            $subRows = [];
+            $stdCommentBlock = $stdComments[(string) $standard->id] ?? [];
+            $allImprovements = $stdCommentBlock['improvements'] ?? [];
+
+            foreach ($standard->subStandards as $subStandard) {
+                $subSum = 0;
+                $subCount = 0;
+
+                foreach ($subStandard->indicators as $indicator) {
+                    $score = $scores->get($indicator->id);
+                    if ($score !== null && $score >= 1 && $score <= 5) {
+                        $subSum += $score;
+                        $subCount += 1;
+                    }
+                    // Score 0 (non-compliant) excluded from average per business rules
+                }
+
+                $subAverage = $subCount > 0 ? round($subSum / $subCount, 2) : null;
+
+                // Filter improvement points that belong to this sub-standard
+                $subImprovements = array_values(
+                    array_filter($allImprovements, fn ($p) => (string) ($p['subId'] ?? '') === (string) $subStandard->id)
+                );
+
+                $subRows[] = [
+                    'id' => $subStandard->id,
+                    'number' => $subStandard->number ?? ($stdIndex + 1),
+                    'name' => $subStandard->name,
+                    'average' => $subAverage,
+                    'improvements' => array_column($subImprovements, 'text'),
+                ];
+            }
+
+            $result[] = [
+                'id' => $standard->id,
+                'number' => $standard->number ?? ($stdIndex + 1),
+                'name' => $standard->name,
+                'subs' => $subRows,
+            ];
+        }
+
+        return $result;
     }
 
     /**

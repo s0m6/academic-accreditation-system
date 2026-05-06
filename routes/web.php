@@ -200,6 +200,14 @@ Route::middleware('auth')->group(function () {
     Route::post('/requests/{accreditationRequest}/stage-seven/recommendations/submit', [StageSevenController::class, 'submitResponse'])
         ->name('requests.stage_seven.recommendations.submit');
 
+    // Stage Seven — Form 9 (Response to Recommendations)
+    Route::get('/requests/{accreditationRequest}/stage-seven/form9/edit', [StageSevenController::class, 'editForm9'])
+        ->name('requests.stage_seven.form9.edit');
+    Route::get('/requests/{accreditationRequest}/stage-seven/form9/show', [StageSevenController::class, 'showForm9'])
+        ->name('requests.stage_seven.form9.show');
+    Route::post('/requests/{accreditationRequest}/stage-seven/form9/save', [StageSevenController::class, 'saveForm9'])
+        ->name('requests.stage_seven.form9.save');
+
     // Stage Eight rubrics form actions
     Route::get('/requests/{accreditationRequest}/stage-eight/rubrics/edit', [StageEightController::class, 'editRubrics'])
         ->name('requests.stage_eight.rubrics_edit');
