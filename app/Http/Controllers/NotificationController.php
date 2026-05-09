@@ -14,7 +14,10 @@ class NotificationController extends Controller
     {
         $user = $request->user();
         
-        $notifications = $user->notifications()->latest()->limit(50)->get();
+        $notifications = $user->notifications()->latest()->limit(50)->get()->map(function ($n) {
+            $n->created_at_human = $n->created_at->diffForHumans();
+            return $n;
+        });
         $unreadCount = $user->unreadNotifications()->count();
 
         return response()->json([

@@ -8,6 +8,8 @@ use App\Models\CommitteeApproval;
 use App\Models\ReportScore;
 use App\Models\ReportSignature;
 use App\Models\Standard;
+use App\Models\User;
+use App\Notifications\RealTimeNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -200,6 +202,20 @@ class StageEightController extends Controller
                 'current_iteration' => $newIteration,
                 'status' => 'final_under_review',
             ]);
+
+            // Notify committee members
+            $programName = $accreditationRequest->program->program_name ?? 'البرنامج';
+            foreach ($members as $member) {
+                $memberUser = $member->evaluator->user;
+                if ($memberUser) {
+                    $memberUser->notify(new RealTimeNotification(
+                        title: 'طلب مراجعة التقرير النهائي',
+                        message: "قام رئيس اللجنة بطلب مراجعة واعتماد التقرير النهائي للبرنامج ({$programName}).",
+                        type: 'info',
+                        actionUrl: route('requests.stage', [$accreditationRequest, 'stage_eight'])
+                    ));
+                }
+            }
         });
 
         return redirect()->route('requests.stage', ['accreditationRequest' => $accreditationRequest, 'stage' => 'stage_eight'])
@@ -236,6 +252,18 @@ class StageEightController extends Controller
                 'status' => 'approved',
                 'responded_at' => now(),
             ]);
+
+            // Notify Chair
+            $programName = $accreditationRequest->program->program_name ?? 'البرنامج';
+            $chairUser = $accreditationRequest->committee->chairEvaluator->user;
+            if ($chairUser) {
+                $chairUser->notify(new RealTimeNotification(
+                    title: 'موافقة عضو على التقرير النهائي',
+                    message: "قام العضو ({$request->user()->name}) بالموافقة والتوقيع على التقرير النهائي للبرنامج ({$programName}).",
+                    type: 'success',
+                    actionUrl: route('requests.stage', [$accreditationRequest, 'stage_eight'])
+                ));
+            }
         });
 
         return redirect()->route('requests.stage', ['accreditationRequest' => $accreditationRequest, 'stage' => 'stage_eight'])
@@ -268,6 +296,18 @@ class StageEightController extends Controller
             'responded_at' => now(),
         ]);
 
+        // Notify Chair
+        $programName = $accreditationRequest->program->program_name ?? 'البرنامج';
+        $chairUser = $accreditationRequest->committee->chairEvaluator->user;
+        if ($chairUser) {
+            $chairUser->notify(new RealTimeNotification(
+                title: 'رفض مسودة التقرير النهائي',
+                message: "قام العضو ({$request->user()->name}) برفض مسودة التقرير النهائي للبرنامج ({$programName}) مع ذكر الملاحظات.",
+                type: 'error',
+                actionUrl: route('requests.stage', [$accreditationRequest, 'stage_eight'])
+            ));
+        }
+
         return redirect()->route('requests.stage', ['accreditationRequest' => $accreditationRequest, 'stage' => 'stage_eight'])
             ->with('error', 'تم إرسال الملاحظات الختامية لرئيس اللجنة.');
     }
@@ -279,7 +319,7 @@ class StageEightController extends Controller
 
         $report = $accreditationRequest->committeeReport;
 
-        DB::transaction(function () use ($report) {
+        DB::transaction(function () use ($report, $accreditationRequest) {
             // Cancel pending approvals for current iteration
             CommitteeApproval::where('report_id', $report->id)
                 ->where('iteration_number', $report->current_iteration)
@@ -293,6 +333,21 @@ class StageEightController extends Controller
                 ->delete();
 
             $report->update(['status' => 'returned_for_edit']);
+
+            // Notify members
+            $programName = $accreditationRequest->program->program_name ?? 'البرنامج';
+            $members = $accreditationRequest->committee->acceptedMembers()->where('evaluator_id', '!=', $accreditationRequest->committee->chair_evaluator_id)->get();
+            foreach ($members as $member) {
+                $memberUser = $member->evaluator->user;
+                if ($memberUser) {
+                    $memberUser->notify(new RealTimeNotification(
+                        title: 'سحب طلب مراجعة نهائي',
+                        message: "قام رئيس اللجنة بسحب طلب المراجعة للتعديل على التقرير النهائي للبرنامج ({$programName}).",
+                        type: 'warning',
+                        actionUrl: route('requests.stage', [$accreditationRequest, 'stage_eight'])
+                    ));
+                }
+            }
         });
 
         return redirect()->route('requests.stage', ['accreditationRequest' => $accreditationRequest, 'stage' => 'stage_eight'])
@@ -335,6 +390,33 @@ class StageEightController extends Controller
             $accreditationRequest->update([
                 'current_stage' => 'stage_nine',
             ]);
+
+            // Notify Council Coordinator
+            $programName = $accreditationRequest->program->program_name ?? 'البرنامج';
+            if ($councilCoordinator) {
+                $councilCoordinator->notify(new RealTimeNotification(
+                    title: 'الاعتماد النهائي للتقرير',
+                    message: "تم الاعتماد النهائي للتقرير للبرنامج ({$programName}) من قبل رئيس اللجنة.",
+                    type: 'info',
+                    actionUrl: route('requests.stage', [$accreditationRequest, 'stage_eight'])
+                ));
+            }
+
+            // Notify committee members
+            $members = $accreditationRequest->committee->acceptedMembers()
+                ->where('evaluator_id', '!=', $accreditationRequest->committee->chair_evaluator_id)
+                ->get();
+            foreach ($members as $member) {
+                $memberUser = $member->evaluator->user;
+                if ($memberUser) {
+                    $memberUser->notify(new RealTimeNotification(
+                        title: 'الاعتماد النهائي للتقرير',
+                        message: "تم الاعتماد النهائي للتقرير للبرنامج ({$programName}) وإرساله للمجلس.",
+                        type: 'success',
+                        actionUrl: route('requests.stage', [$accreditationRequest, 'stage_eight'])
+                    ));
+                }
+            }
         });
 
         return redirect()->route('requests.stage', ['accreditationRequest' => $accreditationRequest, 'stage' => 'stage_eight'])
@@ -687,14 +769,14 @@ class StageEightController extends Controller
             'membersData'
         ));
     }
-    
+
     // Show a comparison view between Stage 6 (Initial) and Stage 8 (Final) rubrics.
     public function showComparison(AccreditationRequest $accreditationRequest)
     {
         $this->authorizeAccess($accreditationRequest, false);
-        
+
         $report = $accreditationRequest->committeeReport;
-        if (!$report) {
+        if (! $report) {
             return back()->with('error', 'تقرير اللجنة غير متوفر حالياً.');
         }
 

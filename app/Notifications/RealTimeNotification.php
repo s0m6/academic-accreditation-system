@@ -59,7 +59,7 @@ class RealTimeNotification extends Notification implements ShouldBroadcast
             'id' => $this->id,
             'title' => $this->title,
             'message' => $this->message,
-            'type' => $this->type,
+            'notif_level' => $this->type, // Use a unique key here
             'action_url' => $this->actionUrl,
             'created_at' => now()->diffForHumans(),
         ]);

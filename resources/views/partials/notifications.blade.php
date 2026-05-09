@@ -1,5 +1,5 @@
 <aside
-        class="fixed inset-y-0 inset-inline-end-0 z-[70] w-96 bg-md-surface-container-lowest/95 dark:bg-slate-900/95 backdrop-blur-xl border-s border-md-outline-variant/30 shadow-2xl transform translate-x-full transition-transform duration-500 ease-in-out flex flex-col"
+        class="fixed inset-y-0 inset-inline-end-0 z-[70] w-96 bg-md-surface-container-lowest/95 dark:bg-slate-950/98 backdrop-blur-xl border-s border-md-outline-variant/30 dark:border-slate-800 shadow-2xl transform translate-x-full transition-transform duration-500 ease-in-out flex flex-col"
         id="notifications-drawer"
         x-data="notifications">
     
@@ -10,9 +10,7 @@
             <h3 class="font-black text-lg text-md-on-surface dark:text-slate-100 font-headline">مركز التنبيهات</h3>
         </div>
         <div class="flex items-center gap-2">
-            <button x-show="unreadCount > 0" @click="markAllAsRead()" class="text-xs font-bold text-md-primary hover:underline cursor-pointer">
-                تحديد الكل كمقروء
-            </button>
+
             <button class="p-2 rounded-xl hover:bg-md-surface-container-high transition-colors cursor-pointer text-md-on-surface-variant" onclick="toggleNotifications()">
                 <span class="icon-[material-symbols--close-rounded] text-2xl"></span>
             </button>
@@ -39,9 +37,19 @@
 
         {{-- Notifications Loop --}}
         <template x-for="notification in notifications" :key="notification.id">
-            <div :class="{'opacity-60': notification.read_at}"
-                class="p-4 rounded-2xl bg-md-surface-container-low dark:bg-slate-800/40 border border-transparent hover:border-brand-500/30 transition-all cursor-pointer group relative overflow-hidden"
-                @click="if(!notification.read_at) markAsRead(notification.id); if(notification.data.action_url) window.location.href = notification.data.action_url">
+            <div class="p-4 rounded-2xl transition-all cursor-pointer group relative overflow-hidden border"
+                :class="{
+                    'bg-transparent border-amber-500 dark:border-amber-500 shadow-sm': notification.isNew,
+                    'bg-md-surface-container-low dark:bg-slate-900/60 border-transparent dark:border-slate-800/50 shadow-inner': !notification.isNew
+                }"
+                @click="if(!notification.read_at) markAsRead(notification.id); notification.isNew = false; if(notification.data.action_url) window.location.href = notification.data.action_url">
+                
+                {{-- New Badge --}}
+                <template x-if="notification.isNew">
+                    <span class="absolute bottom-2 left-2 px-2 py-0.5 border border-red-500 text-red-500 text-[10px] font-black rounded-md animate-pulse z-10 bg-transparent">
+                        جديد
+                    </span>
+                </template>
                 
                 <div class="absolute inset-y-0 right-0 w-1" 
                     :class="{
@@ -59,19 +67,14 @@
                             'bg-amber-500/10 text-amber-600': notification.data.type === 'warning',
                             'bg-red-500/10 text-red-600': notification.data.type === 'error',
                         }">
-                        <span class="text-2xl" :class="{
-                            'icon-[material-symbols--check-circle-outline-rounded]': notification.data.type === 'success',
-                            'icon-[material-symbols--info-outline-rounded]': notification.data.type === 'info',
-                            'icon-[material-symbols--warning-outline-rounded]': notification.data.type === 'warning',
-                            'icon-[material-symbols--error-outline-rounded]': notification.data.type === 'error',
-                        }"></span>
+                        <span x-html="getTypeIcon(notification.data.type)"></span>
                     </div>
                     <div class="flex-1">
                         <div class="flex justify-between items-start mb-1">
-                            <p class="text-sm font-black text-md-on-surface dark:text-slate-200" x-text="notification.data.title"></p>
-                            <span class="text-[10px] font-bold text-md-outline opacity-70" x-text="notification.created_at"></span>
+                            <p class="text-base font-black text-md-on-surface dark:text-slate-200" x-text="notification.data.title"></p>
+                            <span class="text-xs font-bold text-md-outline opacity-70" x-text="notification.created_at_human || notification.created_at"></span>
                         </div>
-                        <p class="text-xs text-md-on-surface-variant dark:text-slate-400 leading-relaxed font-body" x-text="notification.data.message"></p>
+                        <p class="text-sm text-md-on-surface-variant dark:text-slate-400 leading-relaxed font-body" x-text="notification.data.message"></p>
                     </div>
                 </div>
             </div>
@@ -79,7 +82,7 @@
     </div>
 
     {{-- Drawer Footer --}}
-    <div class="p-6 border-t border-md-outline-variant/20 bg-md-surface-container-lowest dark:bg-slate-900">
+    <div class="p-6 border-t border-md-outline-variant/20 bg-md-surface-container-lowest dark:bg-slate-950">
         <button class="w-full py-3 text-sm font-black text-md-primary hover:bg-md-primary/5 rounded-xl transition-all cursor-pointer border border-md-primary/20 hover:border-md-primary/40 shadow-sm flex items-center justify-center gap-2">
             <span>عرض كافة الإشعارات</span>
             <span class="icon-[material-symbols--arrow-left-alt-rounded] text-lg"></span>

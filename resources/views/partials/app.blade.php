@@ -49,7 +49,7 @@
     {{-- OVERLAYS --}}
     <div class="fixed inset-0 bg-black/50 z-40 hidden md:hidden cursor-pointer" id="sidebar-overlay"
         onclick="toggleSidebar()"></div>
-    <div class="fixed inset-0 bg-black/40 z-50 hidden transition-opacity cursor-pointer" id="notifications-overlay"
+    <div class="fixed inset-0 bg-black/40 dark:bg-black/60 z-50 hidden transition-opacity cursor-pointer" id="notifications-overlay"
         onclick="toggleNotifications()"></div>
 
     @stack('scripts')
