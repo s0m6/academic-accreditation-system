@@ -7,6 +7,7 @@ use App\Models\AccreditationRequest;
 use App\Models\CommitteeReport;
 use App\Models\ReportScore;
 use App\Models\Standard;
+use App\Notifications\RealTimeNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -205,6 +206,62 @@ class StageSevenController extends Controller
                 'current_stage' => 'stage_eight',
             ]);
         });
+
+        // Notify stakeholders
+        $programName = $accreditationRequest->program->program_name ?? 'البرنامج';
+        $accreditationRequest->loadMissing([
+            'program.department.college.university.officer',
+            'councilCoordinator',
+            'committee.chairEvaluator.user',
+            'committee.acceptedMembers.evaluator.user'
+        ]);
+
+        $councilCoordinator = $accreditationRequest->councilCoordinator;
+        $officer = $accreditationRequest->program->department->college->university->officer;
+        $chair = $accreditationRequest->committee->chairEvaluator->user ?? null;
+
+        if ($councilCoordinator) {
+            $councilCoordinator->notify(new RealTimeNotification(
+                title: 'رفع الرد على التوصيات',
+                message: "قام منسق البرنامج برفع الرد على التوصيات (نموذج 9) للبرنامج ({$programName}).",
+                type: 'info',
+                actionUrl: route('requests.stage', [$accreditationRequest, 'stage_eight'])
+            ));
+        }
+
+        if ($officer) {
+            $officer->notify(new RealTimeNotification(
+                title: 'رفع الرد على التوصيات',
+                message: "قام منسق البرنامج برفع الرد على التوصيات للبرنامج ({$programName}). انتقل الطلب للمرحلة الثامنة.",
+                type: 'info',
+                actionUrl: route('requests.stage', [$accreditationRequest, 'stage_eight'])
+            ));
+        }
+
+        if ($chair) {
+            $chair->notify(new RealTimeNotification(
+                title: 'وصول رد البرنامج على التوصيات',
+                message: "قام منسق برنامج ({$programName}) بالرد على التوصيات. يمكنك الآن البدء في إعداد التقرير النهائي.",
+                type: 'info',
+                actionUrl: route('requests.stage', [$accreditationRequest, 'stage_eight'])
+            ));
+        }
+
+        // Notify other committee members
+        $members = $accreditationRequest->committee->acceptedMembers()
+            ->where('evaluator_id', '!=', $accreditationRequest->committee->chair_evaluator_id)
+            ->get();
+        foreach ($members as $member) {
+            $memberUser = $member->evaluator->user;
+            if ($memberUser) {
+                $memberUser->notify(new RealTimeNotification(
+                    title: 'وصول رد البرنامج على التوصيات',
+                    message: "قام منسق برنامج ({$programName}) بالرد على التوصيات. انتقل الطلب للمرحلة الثامنة للمشاركة في التقرير النهائي.",
+                    type: 'info',
+                    actionUrl: route('requests.stage', [$accreditationRequest, 'stage_eight'])
+                ));
+            }
+        }
 
         return redirect()->route('requests.stage', ['accreditationRequest' => $accreditationRequest, 'stage' => 'stage_eight'])
             ->with('success', 'تم إرسال الرد بنجاح وانتقل الطلب للمرحلة الثامنة.');
