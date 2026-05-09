@@ -5,8 +5,11 @@ namespace App\Http\Controllers\stages;
 use App\Http\Controllers\Controller;
 use App\Models\AccreditationRequest;
 use App\Models\FormSubmission;
+use App\Models\User;
+use App\Notifications\RealTimeNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 
 /**
@@ -142,7 +145,7 @@ class StageTwoController extends Controller
                 $filename = basename($currentPath);
                 $newTempPath = "req_{$accreditationRequest->id}/stage_two_decisions/".$filename;
                 Storage::disk('local')->makeDirectory("req_{$accreditationRequest->id}/stage_two_decisions");
-                
+
                 // Move it. If it fails, we keep the original temp path as fallback
                 if (Storage::disk('local')->move($currentPath, $newTempPath)) {
                     $currentPath = $newTempPath;
@@ -163,7 +166,7 @@ class StageTwoController extends Controller
                 if ($currentPath && $currentPath !== $path && $isSafeToDelete($currentPath)) {
                     Storage::disk('local')->delete($currentPath);
                 }
-                
+
                 // Also handle the case where we had an old path that wasn't the current one
                 if ($oldPath && $oldPath !== $path && $oldPath !== $currentPath && $isSafeToDelete($oldPath)) {
                     Storage::disk('local')->delete($oldPath);
@@ -178,7 +181,7 @@ class StageTwoController extends Controller
                     $jsonData['decision_files'] = [];
                 }
                 $jsonData['decision_files'][$i] = $currentPath;
-                
+
                 // cleanup old file if it was replaced by a DIFFERENT existing path or new move
                 if ($oldPath && $oldPath !== $currentPath && $isSafeToDelete($oldPath)) {
                     Storage::disk('local')->delete($oldPath);
@@ -223,6 +226,30 @@ class StageTwoController extends Controller
             'submitted_by' => $user->id,
             'submitted_at' => Carbon::now(),
         ]);
+
+        // Notify Council Secretariat and Accreditation Officer
+        $programName = $accreditationRequest->program->program_name ?? 'البرنامج';
+        $accreditationRequest->loadMissing('program.department.college.university.officer');
+        $officer = $accreditationRequest->program->department->college->university->officer;
+        $secretaries = User::where('role', 'council_secretariat')->get();
+
+        if ($secretaries->isNotEmpty()) {
+            Notification::send($secretaries, new RealTimeNotification(
+                title: 'رفع بيانات المرحلة الثانية',
+                message: "قام منسق البرنامج برفع البيانات للمرحلة الثانية للبرنامج ({$programName}).",
+                type: 'info',
+                actionUrl: route('requests.stage', [$accreditationRequest, 'stage_two'])
+            ));
+        }
+
+        if ($officer) {
+            $officer->notify(new RealTimeNotification(
+                title: 'رفع بيانات المرحلة الثانية',
+                message: "قام منسق البرنامج برفع البيانات للمرحلة الثانية للبرنامج ({$programName}) (للمراجعة فقط).",
+                type: 'info',
+                actionUrl: route('requests.stage', [$accreditationRequest, 'stage_two'])
+            ));
+        }
 
         return back()->with('success', 'تم رفع البيانات للأمانة بنجاح.');
     }
@@ -311,6 +338,30 @@ class StageTwoController extends Controller
             'decision_at' => Carbon::now(),
         ]);
 
+        // Notify Coordinator and Accreditation Officer
+        $programName = $accreditationRequest->program->program_name ?? 'البرنامج';
+        $accreditationRequest->loadMissing('program.department.college.university.officer', 'programCoordinator');
+        $coordinator = $accreditationRequest->programCoordinator;
+        $officer = $accreditationRequest->program->department->college->university->officer;
+
+        if ($coordinator) {
+            $coordinator->notify(new RealTimeNotification(
+                title: 'رفض بيانات المرحلة الثانية',
+                message: "تم رفض بيانات المرحلة الثانية للبرنامج ({$programName}). يرجى مراجعة الأسباب والتعديل.",
+                type: 'error',
+                actionUrl: route('requests.stage', [$accreditationRequest, 'stage_two'])
+            ));
+        }
+
+        if ($officer) {
+            $officer->notify(new RealTimeNotification(
+                title: 'رفض بيانات المرحلة الثانية',
+                message: "تم رفض بيانات المرحلة الثانية للبرنامج ({$programName}) من قبل أمانة المجلس.",
+                type: 'error',
+                actionUrl: route('requests.stage', [$accreditationRequest, 'stage_two'])
+            ));
+        }
+
         return back()->with('success', 'تم رفض نموذج البيانات الأساسية وإعادته للمنسق للتعديل.');
     }
 
@@ -335,6 +386,30 @@ class StageTwoController extends Controller
         $accreditationRequest->update([
             'current_stage' => 'stage_three',
         ]);
+
+        // Notify Coordinator and Accreditation Officer
+        $programName = $accreditationRequest->program->program_name ?? 'البرنامج';
+        $accreditationRequest->loadMissing('program.department.college.university.officer', 'programCoordinator');
+        $coordinator = $accreditationRequest->programCoordinator;
+        $officer = $accreditationRequest->program->department->college->university->officer;
+
+        if ($coordinator) {
+            $coordinator->notify(new RealTimeNotification(
+                title: 'الموافقة على المرحلة الثانية',
+                message: "تمت الموافقة على بيانات المرحلة الثانية للبرنامج ({$programName}). يرجى الانتقال للمرحلة الثالثة.",
+                type: 'success',
+                actionUrl: route('requests.stage', [$accreditationRequest, 'stage_three'])
+            ));
+        }
+
+        if ($officer) {
+            $officer->notify(new RealTimeNotification(
+                title: 'الموافقة على المرحلة الثانية',
+                message: "تمت الموافقة على بيانات المرحلة الثانية للبرنامج ({$programName}). الطلب انتقل للمرحلة الثالثة.",
+                type: 'success',
+                actionUrl: route('requests.stage', [$accreditationRequest, 'stage_three'])
+            ));
+        }
 
         return back()->with('success', 'تمت الموافقة على البيانات الأساسية، والطلب الآن في مرحلة تقرير الدراسة الذاتية.');
     }

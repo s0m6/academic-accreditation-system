@@ -11,16 +11,16 @@ use App\Mail\ProgramCoordinatorCreated;
 use App\Models\AccreditationRequest;
 use App\Models\FormSubmission;
 use App\Models\User;
+use App\Notifications\RealTimeNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Notification;
-use App\Notifications\RealTimeNotification;
 
 class StageOneController extends Controller
 {
@@ -135,7 +135,7 @@ class StageOneController extends Controller
         $secretaries = User::where('role', 'council_secretariat')->get();
         Notification::send($secretaries, new RealTimeNotification(
             title: 'طلب اعتماد جديد',
-            message: "تم تقديم طلب أولي جديد لبرنامج ({$program->program_name}) من قبل ({$user->name})",
+            message: "تم تقديم طلب أولي جديد لبرنامج ({$program->program_name}) من قبل ({$univ->name})",
             type: 'info',
             actionUrl: route('requests.stage', [$accreditationRequest, 'stage_one'])
         ));
@@ -165,7 +165,7 @@ class StageOneController extends Controller
         ]);
 
         // Notify the Accreditation Officer
-        $officer = $formSubmission->submitter; 
+        $officer = $formSubmission->submitter;
         $accreditationRequest->loadMissing('program');
 
         if ($officer) {
@@ -259,9 +259,19 @@ class StageOneController extends Controller
             if ($officer) {
                 $officer->notify(new RealTimeNotification(
                     title: 'تمت الموافقة على الطلب الأولي',
-                    message: "تهانينا، تمت الموافقة على طلبك الأولي لبرنامج ({$accreditationRequest->program->program_name}) وانتقل الطلب للمرحلة التالية.",
+                    message: "تمت الموافقة من قبل أمانة المجلس على طلب الاعتماد الأولي لبرنامج ({$accreditationRequest->program->program_name}).",
                     type: 'success',
                     actionUrl: route('requests.stage', [$accreditationRequest, 'stage_one'])
+                ));
+            }
+
+            // Notify the Program Coordinator
+            if (isset($coordinator)) {
+                $coordinator->notify(new RealTimeNotification(
+                    title: 'اختيارك كمنسق برنامج',
+                    message: "تم اختيارك كمنسق للبرنامج ({$accreditationRequest->program->program_name}) في طلب الاعتماد الأكاديمي.",
+                    type: 'info',
+                    actionUrl: route('requests.stage', [$accreditationRequest, 'stage_two'])
                 ));
             }
 
