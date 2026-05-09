@@ -4,6 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'لوحة طلب الاعتماد')</title>
 
 
@@ -15,6 +16,9 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     @stack('styles')
+    <script>
+        window.userId = @json(auth()->id());
+    </script>
 </head>
 
 <body class="bg-(--bg-main) text-(--text-primary) overflow-x-hidden min-h-screen">
@@ -34,7 +38,6 @@
     {{-- NOTIFICATIONS --}}
     @include('partials.notifications')
 
-    {{-- MAIN CONTENT --}}
     <main class="pro-layout-content flex-1 p-4 lg:p-10 transition-all duration-300" id="main-content">
         <div class="mb-8">
             <h1 class="text-xl md:text-2xl font-bold">@yield('title2', 'لوحة الطلب')</h1>

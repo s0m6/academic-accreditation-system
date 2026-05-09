@@ -1,5 +1,6 @@
 import './bootstrap';
 import './dashboard';
+import './notifications';
 
 import "flyonui/flyonui"
 import Alpine from 'alpinejs';

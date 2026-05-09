@@ -52,11 +52,21 @@
         </button>
 
         {{-- Notifications Toggle --}}
-        <button class="icon-btn relative cursor-pointer" onclick="toggleNotifications()">
-            <span
-                class="absolute top-2 inset-inline-end-2 w-2 h-2 bg-red-500 rounded-full border-2 border-(--surface-card)"></span>
-            <i class="fa-solid fa-bell text-lg"></i>
-        </button>
+        <div x-data="notifications">
+            <button class="icon-btn relative cursor-pointer group flex items-center justify-center transition-transform active:scale-90" 
+                @click="toggleNotifications(); clearUnreadCount()">
+                <i class="fa-solid fa-bell text-lg text-(--text-secondary) group-hover:text-orange-500 transition-colors"></i>
+                
+                <template x-if="unreadCount > 0">
+                    <div class="absolute -top-1.5 -right-1.5">
+                        <span class="relative flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white ring-2 ring-(--surface-card) shadow-sm z-10"
+                            x-text="unreadCount">
+                        </span>
+                        <span class="absolute top-0 right-0 h-5 w-5 animate-ping rounded-full bg-red-500 opacity-30"></span>
+                    </div>
+                </template>
+            </button>
+        </div>
 
         <div class="h-8 w-px bg-(--border-primary) mx-2 hidden sm:block"></div>
 

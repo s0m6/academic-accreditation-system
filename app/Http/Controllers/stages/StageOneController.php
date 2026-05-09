@@ -19,6 +19,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Notification;
+use App\Notifications\RealTimeNotification;
 
 class StageOneController extends Controller
 {
@@ -129,6 +131,15 @@ class StageOneController extends Controller
         // Activate the accreditation request
         $accreditationRequest->update(['request_status' => 'Active']);
 
+        // Notify Council Secretariat
+        $secretaries = User::where('role', 'council_secretariat')->get();
+        Notification::send($secretaries, new RealTimeNotification(
+            title: 'طلب اعتماد جديد',
+            message: "تم تقديم طلب أولي جديد لبرنامج ({$program->program_name}) من قبل ({$user->name})",
+            type: 'info',
+            actionUrl: route('requests.stage', [$accreditationRequest, 'stage_one'])
+        ));
+
         return back()->with('success', 'تم إرسال الطلب الأولي بنجاح وهو الآن قيد المراجعة.');
     }
 
@@ -152,6 +163,19 @@ class StageOneController extends Controller
             'decided_by' => $user->id,
             'decision_at' => Carbon::now(),
         ]);
+
+        // Notify the Accreditation Officer
+        $officer = $formSubmission->submitter; 
+        $accreditationRequest->loadMissing('program');
+
+        if ($officer) {
+            $officer->notify(new RealTimeNotification(
+                title: 'تم رفض الطلب الأولي',
+                message: "عذراً، تم رفض طلب الاعتماد الأولي لبرنامج ({$accreditationRequest->program->program_name}). يرجى مراجعة الأسباب المذكورة.",
+                type: 'error',
+                actionUrl: route('requests.stage', [$accreditationRequest, 'stage_one'])
+            ));
+        }
 
         return back()->with('success', 'تم رفض الطلب وإشعار مسؤول الاعتماد.');
     }
@@ -228,6 +252,18 @@ class StageOneController extends Controller
             $message = $existingCoord
                 ? 'تمت الموافقة على الطلب وإسناده للمنسق الحالي.'
                 : 'تمت الموافقة على الطلب وتم إنشاء حساب منسق البرنامج وإرسال بريد التفعيل.';
+
+            // Notify the Accreditation Officer
+            $accreditationRequest->loadMissing('program');
+            $officer = $formSubmission->submitter;
+            if ($officer) {
+                $officer->notify(new RealTimeNotification(
+                    title: 'تمت الموافقة على الطلب الأولي',
+                    message: "تهانينا، تمت الموافقة على طلبك الأولي لبرنامج ({$accreditationRequest->program->program_name}) وانتقل الطلب للمرحلة التالية.",
+                    type: 'success',
+                    actionUrl: route('requests.stage', [$accreditationRequest, 'stage_one'])
+                ));
+            }
 
             return redirect()->route('requests.stage', [$accreditationRequest, 'stage_one'])
                 ->with('success', $message);
