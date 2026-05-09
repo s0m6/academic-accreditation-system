@@ -9,8 +9,11 @@ use App\Models\CommitteeMember;
 use App\Models\Evaluator;
 use App\Models\University;
 use App\Models\User;
+use App\Notifications\RealTimeNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
+
 
 class StageFourController extends Controller
 {
@@ -34,6 +37,15 @@ class StageFourController extends Controller
         $accreditationRequest->update([
             'council_coord_id' => $coordinator->id,
         ]);
+
+        // Notify the assigned Council Coordinator
+        $programName = $accreditationRequest->program->program_name ?? 'البرنامج';
+        $coordinator->notify(new RealTimeNotification(
+            title: 'تعيين كمنسق مجلس',
+            message: "تم تعيينك كمنسق مجلس لطلب الاعتماد للبرنامج ({$programName}).",
+            type: 'info',
+            actionUrl: route('requests.stage', [$accreditationRequest, 'stage_four'])
+        ));
 
         return back()->with('success', 'تم تعيين منسق المجلس بنجاح.');
     }
@@ -152,6 +164,22 @@ class StageFourController extends Controller
             'reject_reason' => null,
         ]);
 
+        // Notify the Evaluator
+        $accreditationRequest->load(['program.department.college.university']);
+        $evaluatorUser = Evaluator::with('user')->find($validated['evaluator_id'])->user;
+        $program = $accreditationRequest->program;
+        $programName = $program->program_name ?? 'البرنامج';
+        $universityName = $program->department?->college?->university?->name ?? 'الجامعة';
+
+        if ($evaluatorUser) {
+            $evaluatorUser->notify(new RealTimeNotification(
+                title: 'دعوة للمشاركة في لجنة تقييم',
+                message: "تمت دعوتك للمشاركة في لجنة تقييم البرنامج ({$programName}) مع جامعة ({$universityName}). يرجى مراجعة الطلب واتخاذ قرار.",
+                type: 'info',
+                actionUrl: route('evaluator.invitations')
+            ));
+        }
+
         return back()->with('success', 'تم إرسال الدعوة للمقيم بنجاح.');
     }
 
@@ -191,6 +219,22 @@ class StageFourController extends Controller
             ]);
         });
 
+        // Notify the NEW Evaluator
+        $accreditationRequest->load(['program.department.college.university']);
+        $newEvaluatorUser = Evaluator::with('user')->find($validated['evaluator_id'])->user;
+        $program = $accreditationRequest->program;
+        $programName = $program->program_name ?? 'البرنامج';
+        $universityName = $program->department?->college?->university?->name ?? 'الجامعة';
+
+        if ($newEvaluatorUser) {
+            $newEvaluatorUser->notify(new RealTimeNotification(
+                title: 'دعوة للمشاركة في لجنة تقييم (بديل)',
+                message: "تمت دعوتك للمشاركة في لجنة تقييم البرنامج ({$programName}) مع جامعة ({$universityName}). يرجى مراجعة الطلب واتخاذ قرار.",
+                type: 'info',
+                actionUrl: route('evaluator.invitations')
+            ));
+        }
+
         return back()->with('success', 'تم استبدال العضو بنجاح وإرسال دعوة للمقيم الجديد.');
     }
 
@@ -206,10 +250,37 @@ class StageFourController extends Controller
             return back()->with('error', 'لا يمكن إلغاء الأعضاء بعد اعتماد اللجنة.');
         }
 
+        $oldStatus = $committeeMember->member_status;
+        $evaluatorUser = $committeeMember->evaluator->user;
+        $programName = $accreditationRequest->program->program_name ?? 'البرنامج';
+
         $committeeMember->update([
             'member_status' => 'canceled',
             'is_active' => false,
         ]);
+
+        // Notify Evaluator
+        if ($evaluatorUser) {
+            $evaluatorUser->notify(new RealTimeNotification(
+                title: 'إلغاء دعوة لجنة',
+                message: "تم إلغاء دعوتك للمشاركة في لجنة تقييم البرنامج ({$programName}).",
+                type: 'warning',
+                actionUrl: route('evaluator.invitations')
+            ));
+        }
+
+        // Notify Program Coordinator if they knew about the member (status was pending_uni or accepted)
+        if (in_array($oldStatus, ['pending_uni', 'accepted'])) {
+            $coordinator = $accreditationRequest->programCoordinator;
+            if ($coordinator) {
+                $coordinator->notify(new RealTimeNotification(
+                    title: 'تعديل في أعضاء اللجنة',
+                    message: "تم إلغاء دعوة العضو ({$evaluatorUser->name}) من لجنة تقييم البرنامج ({$programName}).",
+                    type: 'warning',
+                    actionUrl: route('requests.stage', [$accreditationRequest, 'stage_four'])
+                ));
+            }
+        }
 
         return back()->with('success', 'تم إلغاء طلب المشاركة للمقيم بنجاح.');
     }
@@ -243,6 +314,23 @@ class StageFourController extends Controller
                 'reject_reason' => null,
             ]);
         });
+
+        // Notify the Evaluator
+        $accreditationRequest->load(['program.department.college.university']);
+        $committeeMember->load('evaluator.user');
+        $evaluatorUser = $committeeMember->evaluator->user;
+        $program = $accreditationRequest->program;
+        $programName = $program->program_name ?? 'البرنامج';
+        $universityName = $program->department?->college?->university?->name ?? 'الجامعة';
+
+        if ($evaluatorUser) {
+            $evaluatorUser->notify(new RealTimeNotification(
+                title: 'إعادة دعوة للمشاركة في لجنة تقييم',
+                message: "تمت إعادة دعوتك للمشاركة في لجنة تقييم البرنامج ({$programName}) مع جامعة ({$universityName}). يرجى مراجعة الطلب واتخاذ قرار.",
+                type: 'info',
+                actionUrl: route('evaluator.invitations')
+            ));
+        }
 
         return back()->with('success', 'تمت إعادة إرسال الدعوة للمقيم بنجاح.');
     }
@@ -294,6 +382,63 @@ class StageFourController extends Controller
                 'current_stage' => 'stage_five',
             ]);
         });
+
+        // Notify stakeholders
+        $programName = $accreditationRequest->program->program_name ?? 'البرنامج';
+        $accreditationRequest->loadMissing('program.department.college.university.officer', 'programCoordinator', 'committee.members.evaluator.user');
+
+        $coordinator = $accreditationRequest->programCoordinator;
+        $officer = $accreditationRequest->program->department->college->university->officer;
+        $chair = $committee->chairEvaluator->user;
+        $members = $committee->members()->where('is_active', true)->where('member_status', 'accepted')->get();
+
+        // 1. Notify Council Secretariat
+        $secretariat = User::where('role', 'council_secretariat')->get();
+        Notification::send($secretariat, new RealTimeNotification(
+            title: 'الاعتماد النهائي للجنة',
+            message: "تم الاعتماد النهائي للجنة تقييم البرنامج ({$programName}).",
+            type: 'success',
+            actionUrl: route('requests.stage', [$accreditationRequest, 'stage_five'])
+        ));
+
+        // 2. Notify Program Coordinator
+        if ($coordinator) {
+            $coordinator->notify(new RealTimeNotification(
+                title: 'اعتماد لجنة التقييم',
+                message: "تم اعتماد لجنة التقييم للبرنامج ({$programName}). يرجى الاستعداد للمرحلة الخامسة (جدول الزيارة).",
+                type: 'success',
+                actionUrl: route('requests.stage', [$accreditationRequest, 'stage_five'])
+            ));
+        }
+
+        // 3. Notify Accreditation Officer
+        if ($officer) {
+            $officer->notify(new RealTimeNotification(
+                title: 'اعتماد لجنة التقييم',
+                message: "تم اعتماد لجنة التقييم للبرنامج ({$programName}). انتقل الطلب للمرحلة الخامسة.",
+                type: 'success',
+                actionUrl: route('requests.stage', [$accreditationRequest, 'stage_five'])
+            ));
+        }
+
+        // 4. Notify Committee Members
+        foreach ($members as $member) {
+            $memberUser = $member->evaluator->user;
+            if ($memberUser) {
+                $isChair = $member->evaluator_id === $committee->chair_evaluator_id;
+                $title = $isChair ? 'اعتمادك كرئيس لجنة' : 'اعتمادك كعضو لجنة';
+                $message = $isChair
+                    ? "تم اعتمادك كرئيس للجنة التقييم للبرنامج ({$programName}). يرجى البدء في إعداد جدول الزيارة."
+                    : "تم اعتمادك كعضو في لجنة التقييم للبرنامج ({$programName}).";
+
+                $memberUser->notify(new RealTimeNotification(
+                    title: $title,
+                    message: $message,
+                    type: 'success',
+                    actionUrl: route('requests.stage', [$accreditationRequest, 'stage_five'])
+                ));
+            }
+        }
 
         return back()->with('success', 'تم اعتماد اللجنة بنجاح وانتقل الطلب إلى المرحلة الخامسة.');
     }
