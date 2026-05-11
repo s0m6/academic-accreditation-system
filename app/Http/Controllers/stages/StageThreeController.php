@@ -10,9 +10,12 @@ use App\Models\FormSubmission;
 use App\Models\Indicator;
 use App\Models\IndicatorEvaluation;
 use App\Models\Standard;
+use App\Models\User;
+use App\Notifications\RealTimeNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 
 /**
@@ -430,6 +433,30 @@ class StageThreeController extends Controller
             'submitted_at' => Carbon::now(),
         ]);
 
+        // Notify Council Secretariat and Accreditation Officer
+        $programName = $accreditationRequest->program->program_name ?? 'البرنامج';
+        $accreditationRequest->loadMissing('program.department.college.university.officer');
+        $officer = $accreditationRequest->program->department->college->university->officer;
+        $secretaries = User::where('role', 'council_secretariat')->get();
+
+        if ($secretaries->isNotEmpty()) {
+            Notification::send($secretaries, new RealTimeNotification(
+                title: 'رفع تقرير الدراسة الذاتية',
+                message: "قام منسق البرنامج برفع تقرير الدراسة الذاتية للمرحلة الثالثة للبرنامج ({$programName}).",
+                type: 'info',
+                actionUrl: route('requests.stage', [$accreditationRequest, 'stage_three'])
+            ));
+        }
+
+        if ($officer) {
+            $officer->notify(new RealTimeNotification(
+                title: 'رفع تقرير الدراسة الذاتية',
+                message: "قام منسق البرنامج برفع تقرير الدراسة الذاتية للمرحلة الثالثة للبرنامج ({$programName}) (للمراجعة فقط).",
+                type: 'info',
+                actionUrl: route('requests.stage', [$accreditationRequest, 'stage_three'])
+            ));
+        }
+
         return back()->with('success', 'تم رفع تقرير الدراسة الذاتية للأمانة بنجاح.');
     }
 
@@ -453,6 +480,30 @@ class StageThreeController extends Controller
             'decided_by' => $user->id,
             'decision_at' => Carbon::now(),
         ]);
+
+        // Notify Coordinator and Accreditation Officer
+        $programName = $accreditationRequest->program->program_name ?? 'البرنامج';
+        $accreditationRequest->loadMissing('program.department.college.university.officer', 'programCoordinator');
+        $coordinator = $accreditationRequest->programCoordinator;
+        $officer = $accreditationRequest->program->department->college->university->officer;
+
+        if ($coordinator) {
+            $coordinator->notify(new RealTimeNotification(
+                title: 'رفض تقرير الدراسة الذاتية',
+                message: "تم رفض تقرير الدراسة الذاتية للمرحلة الثالثة للبرنامج ({$programName}). يرجى مراجعة الأسباب والتعديل.",
+                type: 'error',
+                actionUrl: route('requests.stage', [$accreditationRequest, 'stage_three'])
+            ));
+        }
+
+        if ($officer) {
+            $officer->notify(new RealTimeNotification(
+                title: 'رفض تقرير الدراسة الذاتية',
+                message: "تم رفض تقرير الدراسة الذاتية للبرنامج ({$programName}) من قبل أمانة المجلس.",
+                type: 'error',
+                actionUrl: route('requests.stage', [$accreditationRequest, 'stage_three'])
+            ));
+        }
 
         return back()->with('success', 'تم رفض التقرير وإعادته للمنسق للتعديل.');
     }
@@ -486,7 +537,31 @@ class StageThreeController extends Controller
             ]);
         });
 
-        return back()->with('success', 'تمت الموافقة على التقرير بنجاح، وتم إنشاء لجنة التقييم (قيد التشكيل). الطلب الآن في المرحلة الرابعة.');
+        // Notify Coordinator and Accreditation Officer
+        $programName = $accreditationRequest->program->program_name ?? 'البرنامج';
+        $accreditationRequest->loadMissing('program.department.college.university.officer', 'programCoordinator');
+        $coordinator = $accreditationRequest->programCoordinator;
+        $officer = $accreditationRequest->program->department->college->university->officer;
+
+        if ($coordinator) {
+            $coordinator->notify(new RealTimeNotification(
+                title: 'الموافقة على المرحلة الثالثة',
+                message: 'تم قبول الدراسة الذاتية وسيتم خلال الفترة القادمة اختيار لجنة التقييم واشعاركم بها من أجل الموافقة عليها.',
+                type: 'success',
+                actionUrl: route('requests.stage', [$accreditationRequest, 'stage_four'])
+            ));
+        }
+
+        if ($officer) {
+            $officer->notify(new RealTimeNotification(
+                title: 'الموافقة على المرحلة الثالثة',
+                message: "تمت الموافقة على تقرير الدراسة الذاتية للبرنامج ({$programName}). انتقل الطلب للمرحلة الرابعة (اختيار اللجنة).",
+                type: 'success',
+                actionUrl: route('requests.stage', [$accreditationRequest, 'stage_four'])
+            ));
+        }
+
+        return back()->with('success', 'تمت الموافقة على التقرير بنجاح, لجنة التقييم (قيد التشكيل). الطلب الآن في المرحلة الرابعة.');
     }
 
     // Ensure the submission belongs to the correct request and the user is authorized.

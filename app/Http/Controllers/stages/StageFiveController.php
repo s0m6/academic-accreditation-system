@@ -4,10 +4,11 @@ namespace App\Http\Controllers\stages;
 
 use App\Http\Controllers\Controller;
 use App\Models\AccreditationRequest;
-use App\Models\VisitSchedule;
 use App\Models\CommitteeReport;
-use App\Models\ReportScore;
 use App\Models\Indicator;
+use App\Models\User;
+use App\Models\VisitSchedule;
+use App\Notifications\RealTimeNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -129,6 +130,34 @@ class StageFiveController extends Controller
             'submitted_at' => now(),
         ]);
 
+        // Notify Council Coordinator
+        $programName = $accreditationRequest->program->program_name ?? 'البرنامج';
+        $councilCoordinator = $accreditationRequest->councilCoordinator;
+        if ($councilCoordinator) {
+            $councilCoordinator->notify(new RealTimeNotification(
+                title: 'رفع جدول الزيارة',
+                message: "قام رئيس اللجنة برفع جدول الزيارة للبرنامج ({$programName}). يرجى المراجعة والتحويل للجامعة.",
+                type: 'info',
+                actionUrl: route('requests.stage', [$accreditationRequest, 'stage_five'])
+            ));
+        }
+
+        // Notify other committee members
+        $members = $accreditationRequest->committee->acceptedMembers()
+            ->where('evaluator_id', '!=', $accreditationRequest->committee->chair_evaluator_id)
+            ->get();
+        foreach ($members as $member) {
+            $memberUser = $member->evaluator->user;
+            if ($memberUser) {
+                $memberUser->notify(new RealTimeNotification(
+                    title: 'رفع جدول الزيارة للمراجعة',
+                    message: "قام رئيس اللجنة برفع جدول الزيارة للبرنامج ({$programName}) إلى المجلس للمراجعة.",
+                    type: 'info',
+                    actionUrl: route('requests.stage', [$accreditationRequest, 'stage_five'])
+                ));
+            }
+        }
+
         return back()->with('success', 'تم إرسال جدول الزيارة إلى منسق المجلس بنجاح.');
     }
 
@@ -156,6 +185,30 @@ class StageFiveController extends Controller
             'council_processed_at' => now(),
             'council_pdf_path' => $pdfPath,
         ]);
+
+        // Notify Program Coordinator and Accreditation Officer
+        $programName = $accreditationRequest->program->program_name ?? 'البرنامج';
+        $accreditationRequest->loadMissing('program.department.college.university.officer', 'programCoordinator');
+        $coordinator = $accreditationRequest->programCoordinator;
+        $officer = $accreditationRequest->program->department->college->university->officer;
+
+        if ($coordinator) {
+            $coordinator->notify(new RealTimeNotification(
+                title: 'وصول جدول الزيارة',
+                message: "تم إرسال جدول الزيارة للبرنامج ({$programName}) من قبل المجلس. يرجى المراجعة والرد بالقبول أو الرفض.",
+                type: 'info',
+                actionUrl: route('requests.stage', [$accreditationRequest, 'stage_five'])
+            ));
+        }
+
+        if ($officer) {
+            $officer->notify(new RealTimeNotification(
+                title: 'وصول جدول الزيارة',
+                message: "تم إرسال جدول الزيارة للبرنامج ({$programName}) للجامعة للمراجعة.",
+                type: 'info',
+                actionUrl: route('requests.stage', [$accreditationRequest, 'stage_five'])
+            ));
+        }
 
         return back()->with('success', 'تم إرفاق النسخة الموقعة وتحويل الجدول إلى الجامعة بنجاح.');
     }
@@ -208,6 +261,45 @@ class StageFiveController extends Controller
             ],
         ]);
 
+        // Notify Chair and Council Coordinator
+        $programName = $accreditationRequest->program->program_name ?? 'البرنامج';
+        $chair = $accreditationRequest->committee->chairEvaluator->user ?? null;
+        $councilCoordinator = $accreditationRequest->councilCoordinator;
+
+        if ($chair) {
+            $chair->notify(new RealTimeNotification(
+                title: 'رفض جدول الزيارة',
+                message: "تم رفض جدول الزيارة للبرنامج ({$programName}) من قبل الجامعة. يرجى مراجعة الأسباب والتعديل.",
+                type: 'error',
+                actionUrl: route('requests.stage', [$accreditationRequest, 'stage_five'])
+            ));
+        }
+
+        if ($councilCoordinator) {
+            $councilCoordinator->notify(new RealTimeNotification(
+                title: 'رفض جدول الزيارة',
+                message: "تم رفض جدول الزيارة للبرنامج ({$programName}) من قبل الجامعة.",
+                type: 'error',
+                actionUrl: route('requests.stage', [$accreditationRequest, 'stage_five'])
+            ));
+        }
+
+        // Notify other committee members
+        $members = $accreditationRequest->committee->acceptedMembers()
+            ->where('evaluator_id', '!=', $accreditationRequest->committee->chair_evaluator_id)
+            ->get();
+        foreach ($members as $member) {
+            $memberUser = $member->evaluator->user;
+            if ($memberUser) {
+                $memberUser->notify(new RealTimeNotification(
+                    title: 'رفض جدول الزيارة من الجامعة',
+                    message: "قامت الجامعة برفض جدول الزيارة للبرنامج ({$programName}). سيقوم رئيس اللجنة بالتعديل عليه.",
+                    type: 'error',
+                    actionUrl: route('requests.stage', [$accreditationRequest, 'stage_five'])
+                ));
+            }
+        }
+
         return back()->with('success', 'تم رفض جدول الزيارة وإرسال الأسباب بنجاح.');
     }
 
@@ -249,7 +341,9 @@ class StageFiveController extends Controller
                     [
                         'report_id' => $committeeReport->id,
                         'indicator_id' => $indicator->id,
-                    'score' => null,
+                    ],
+                    [
+                        'score' => null,
                         'score_type' => 'Initial',
                         'created_at' => now(),
                         'updated_at' => now(),
@@ -257,6 +351,55 @@ class StageFiveController extends Controller
                 );
             }
         });
+
+        // Notify Chair, Council Coordinator and Officer
+        $programName = $accreditationRequest->program->program_name ?? 'البرنامج';
+        $chair = $accreditationRequest->committee->chairEvaluator->user ?? null;
+        $councilCoordinator = $accreditationRequest->councilCoordinator;
+        $officer = $accreditationRequest->program->department->college->university->officer;
+
+        if ($chair) {
+            $chair->notify(new RealTimeNotification(
+                title: 'الموافقة على جدول الزيارة',
+                message: "تمت الموافقة على جدول الزيارة للبرنامج ({$programName}). يرجى الاستعداد للزيارة الميدانية وإعداد التقرير.",
+                type: 'success',
+                actionUrl: route('requests.stage', [$accreditationRequest, 'stage_six'])
+            ));
+        }
+
+        if ($councilCoordinator) {
+            $councilCoordinator->notify(new RealTimeNotification(
+                title: 'الموافقة على جدول الزيارة',
+                message: "تمت الموافقة على جدول الزيارة للبرنامج ({$programName}) من قبل الجامعة.",
+                type: 'success',
+                actionUrl: route('requests.stage', [$accreditationRequest, 'stage_six'])
+            ));
+        }
+
+        if ($officer) {
+            $officer->notify(new RealTimeNotification(
+                title: 'الموافقة على جدول الزيارة',
+                message: "تمت الموافقة على جدول الزيارة للبرنامج ({$programName}). انتقل الطلب للمرحلة السادسة (تقرير اللجنة).",
+                type: 'success',
+                actionUrl: route('requests.stage', [$accreditationRequest, 'stage_six'])
+            ));
+        }
+
+        // Notify other committee members
+        $members = $accreditationRequest->committee->acceptedMembers()
+            ->where('evaluator_id', '!=', $accreditationRequest->committee->chair_evaluator_id)
+            ->get();
+        foreach ($members as $member) {
+            $memberUser = $member->evaluator->user;
+            if ($memberUser) {
+                $memberUser->notify(new RealTimeNotification(
+                    title: 'الموافقة على جدول الزيارة',
+                    message: "تمت الموافقة على جدول الزيارة للبرنامج ({$programName}). يرجى الاستعداد للزيارة الميدانية والمشاركة في إعداد التقرير.",
+                    type: 'success',
+                    actionUrl: route('requests.stage', [$accreditationRequest, 'stage_six'])
+                ));
+            }
+        }
 
         return back()->with('success', 'تم الموافقة على جدول الزيارة وانتقل الطلب للمرحلة السادسة.');
     }

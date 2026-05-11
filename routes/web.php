@@ -26,6 +26,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
 });
+
+// Import Notification Routes
+require __DIR__ . '/notifications.php';
 // UI design playground / testing routes
 Route::get('/app', function () {
     return view('partials.app');

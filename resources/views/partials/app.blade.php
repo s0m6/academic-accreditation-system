@@ -4,19 +4,19 @@
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'blank page')</title>
 
 
-
-    {{-- Font Awesome 6.4.0 --}}
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
     {{-- Vite-compiled assets --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     @stack('styles')
 
-   
+    <script>
+        window.userId = @json(auth()->id());
+    </script>
 </head>
 
 <body class="bg-(--bg-main) text-(--text-primary) overflow-x-hidden min-h-screen">
@@ -49,7 +49,7 @@
     {{-- OVERLAYS --}}
     <div class="fixed inset-0 bg-black/50 z-40 hidden md:hidden cursor-pointer" id="sidebar-overlay"
         onclick="toggleSidebar()"></div>
-    <div class="fixed inset-0 bg-black/40 z-50 hidden transition-opacity cursor-pointer" id="notifications-overlay"
+    <div class="fixed inset-0 bg-black/40 dark:bg-black/60 z-50 hidden transition-opacity cursor-pointer" id="notifications-overlay"
         onclick="toggleNotifications()"></div>
 
     @stack('scripts')

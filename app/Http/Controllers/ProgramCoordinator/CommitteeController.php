@@ -5,7 +5,10 @@ namespace App\Http\Controllers\ProgramCoordinator;
 use App\Http\Controllers\Controller;
 use App\Models\AccreditationRequest;
 use App\Models\CommitteeMember;
+use App\Models\User;
+use App\Notifications\RealTimeNotification;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Notification;
 
 class CommitteeController extends Controller
 {
@@ -51,6 +54,29 @@ class CommitteeController extends Controller
             'university_responded_at' => now(),
         ]);
 
+        // Notify stakeholders
+        $programName = $accreditationRequest->program->program_name ?? 'البرنامج';
+        $evaluatorUser = $committeeMember->evaluator->user;
+
+        // 1. Notify Council Secretariat
+        $secretariat = User::where('role', 'council_secretariat')->get();
+        Notification::send($secretariat, new RealTimeNotification(
+            title: 'موافقة الجامعة على عضو لجنة',
+            message: "وافقت الجامعة على انضمام المقيم ({$evaluatorUser->name}) للجنة البرنامج ({$programName}).",
+            type: 'success',
+            actionUrl: route('requests.stage', [$accreditationRequest, 'stage_four'])
+        ));
+
+        // 2. Notify Evaluator
+        if ($evaluatorUser) {
+            $evaluatorUser->notify(new RealTimeNotification(
+                title: 'موافقة الجامعة على ترشيحك',
+                message: "تمت موافقة الجامعة على مشاركتك في لجنة تقييم البرنامج ({$programName}). يرجى الانتظار للاعتماد النهائي للجنة.",
+                type: 'success',
+                actionUrl: route('evaluator.invitations')
+            ));
+        }
+
         return back()->with('success', 'تمت الموافقة على العضو بنجاح.');
     }
 
@@ -81,6 +107,29 @@ class CommitteeController extends Controller
             'university_responded_at' => now(),
             'reject_reason' => $validated['reasons'],
         ]);
+
+        // Notify stakeholders
+        $programName = $accreditationRequest->program->program_name ?? 'البرنامج';
+        $evaluatorUser = $committeeMember->evaluator->user;
+
+        // 1. Notify Council Secretariat
+        $secretariat = User::where('role', 'council_secretariat')->get();
+        Notification::send($secretariat, new RealTimeNotification(
+            title: 'رفض الجامعة لعضو لجنة',
+            message: "قامت الجامعة برفض انضمام المقيم ({$evaluatorUser->name}) للجنة البرنامج ({$programName}).",
+            type: 'error',
+            actionUrl: route('requests.stage', [$accreditationRequest, 'stage_four'])
+        ));
+
+        // 2. Notify Evaluator
+        if ($evaluatorUser) {
+            $evaluatorUser->notify(new RealTimeNotification(
+                title: 'رفض ترشيحك من الجامعة',
+                message: "نعتذر، لقد تم رفض مشاركتك في لجنة تقييم البرنامج ({$programName}) من قبل الجامعة.",
+                type: 'error',
+                actionUrl: route('evaluator.invitations')
+            ));
+        }
 
         return back()->with('success', 'تم تسجيل رفض الجامعة.');
     }
