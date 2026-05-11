@@ -1,5 +1,5 @@
 <aside
-        class="fixed inset-y-0 inset-inline-end-0 z-[70] w-96 bg-md-surface-container-lowest/95 dark:bg-slate-950/98 backdrop-blur-xl border-s border-md-outline-variant/30 dark:border-slate-800 shadow-2xl transform translate-x-full transition-transform duration-500 ease-in-out flex flex-col"
+        class="fixed inset-y-0 inset-inline-end-0 z-[70] w-full sm:w-96 bg-md-surface-container-lowest/95 dark:bg-slate-950/98 backdrop-blur-xl border-s border-md-outline-variant/30 dark:border-slate-800 shadow-2xl transform translate-x-full transition-transform duration-500 ease-in-out flex flex-col"
         id="notifications-drawer"
         x-data="notifications">
     
