@@ -149,6 +149,8 @@ Route::middleware('auth')->group(function () {
         ->name('requests.stage_five.show');
     Route::post('/requests/{accreditationRequest}/stage-five/{visitSchedule}/save', [StageFiveController::class, 'saveDraft'])
         ->name('requests.stage_five.save');
+    Route::post('/requests/{accreditationRequest}/stage-five/{visitSchedule}/validate', [StageFiveController::class, 'validateSchedule'])
+        ->name('requests.stage_five.validate');
     Route::patch('/requests/{accreditationRequest}/stage-five/{visitSchedule}/submit', [StageFiveController::class, 'submit'])
         ->name('requests.stage_five.submit');
     Route::post('/requests/{accreditationRequest}/stage-five/{visitSchedule}/council-forward', [StageFiveController::class, 'councilForward'])
