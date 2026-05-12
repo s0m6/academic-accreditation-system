@@ -82,6 +82,10 @@
     pad5: null,
     pad6: null,
     submitType: 'member', // 'member' or 'chair'
+    isPortrait: false,
+    checkOrientation() {
+        this.isPortrait = window.matchMedia('(orientation: portrait)').matches && window.innerWidth < 1024;
+    },
     
     async tryRequestApproval() {
         if (this.isValidating) return;
@@ -106,6 +110,15 @@
         }
     },
     init() {
+        this.checkOrientation();
+        window.addEventListener('resize', () => {
+            this.checkOrientation();
+            if (this.showSignModal) {
+                if (this.signStep === 1) this.initPad('canvas5');
+                if (this.signStep === 2) this.initPad('canvas6');
+            }
+        });
+
         // Observe theme changes to update signature pad color in real-time
         const observer = new MutationObserver(() => {
             const color = 'rgb(0, 0, 0)';
@@ -117,36 +130,41 @@
     
     initPad(refName) {
         this.$nextTick(() => {
-            setTimeout(() => {
-                const canvas = this.$refs[refName];
-                if (canvas) {
-                    const padKey = 'pad' + refName.replace('canvas', '');
-                    
-                    const color = 'rgb(0, 0, 0)';
+            const canvas = this.$refs[refName];
+            if (!canvas) return;
 
-                    // Create pad if doesn't exist
-                    if (!this[padKey]) {
-                        const pad = new window.SignaturePad(canvas, {
-                            backgroundColor: 'rgba(255, 255, 255, 0)',
-                            penColor: color,
-                            minWidth: 1.2,
-                            maxWidth: 4,
-                            velocityFilterWeight: 0.6,
-                        });
-                        this[padKey] = pad;
-                    } else {
-                        // Update pen color dynamically to handle theme changes without refresh
-                        this[padKey].penColor = color;
-                    }
-                    
-                    // Resize logic
-                    const ratio = Math.max(window.devicePixelRatio || 1, 1);
-                    canvas.width = canvas.offsetWidth * ratio;
-                    canvas.height = canvas.offsetHeight * ratio;
-                    canvas.getContext('2d').scale(ratio, ratio);
-                    this[padKey].clear();
+            // Wait for animation frame to ensure layout is ready
+            requestAnimationFrame(() => {
+                const padKey = 'pad' + refName.replace('canvas', '');
+                const color = 'rgb(0, 0, 0)';
+
+                // Create pad if doesn't exist
+                if (!this[padKey]) {
+                    this[padKey] = new window.SignaturePad(canvas, {
+                        backgroundColor: 'rgba(255, 255, 255, 0)',
+                        penColor: color,
+                        minWidth: 1.2,
+                        maxWidth: 4,
+                        velocityFilterWeight: 0.6,
+                    });
+                } else {
+                    this[padKey].penColor = color;
                 }
-            }, 200);
+
+                // Resize logic based on parent container
+                const rect = canvas.parentElement.getBoundingClientRect();
+                if (rect.width === 0 || rect.height === 0) {
+                    // Try again if elements are not yet sized
+                    setTimeout(() => this.initPad(refName), 100);
+                    return;
+                }
+
+                const ratio = Math.max(window.devicePixelRatio || 1, 1);
+                canvas.width = rect.width * ratio;
+                canvas.height = rect.height * ratio;
+                canvas.getContext('2d').scale(ratio, ratio);
+                this[padKey].clear();
+            });
         });
     },
     clearPad(num) {
@@ -173,7 +191,7 @@
         if(this.pad5) this.pad5.clear();
         if(this.pad6) this.pad6.clear();
     }
-}" x-init="$watch('showSignModal', value => { if(value && signStep === 1) initPad('canvas5') }); $watch('signStep', value => { if(value === 1) initPad('canvas5'); if(value === 2) initPad('canvas6'); })">
+}" x-init="$watch('showSignModal', value => { if(value) { checkOrientation(); if(signStep === 1) initPad('canvas5'); } }); $watch('signStep', value => { if(value === 1) initPad('canvas5'); if(value === 2) initPad('canvas6'); })">
 
     {{-- Flash alerts --}}
     @if(session('success'))
@@ -704,59 +722,113 @@
         </template>
     @endif
 
+
     {{-- Interactive Signature Workflow Modal (For both Chair & Members) --}}
     <template x-teleport="body">
         <div x-show="showSignModal" style="display:none" class="relative z-[300]">
-            <div class="fixed inset-0 bg-black/60 backdrop-blur-md" @click="showSignModal = false"></div>
-            <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
-                <div @click.away="showSignModal = false" class="relative w-full max-w-2xl bg-(--surface-card) shadow-2xl rounded-3xl border border-(--border-primary) overflow-hidden flex flex-col h-[80vh] max-h-[700px]">
-                    
-                    {{-- Header progress --}}
-                    <div class="px-6 py-5 border-b border-(--border-primary) bg-(--bg-main) shrink-0">
-                        <div class="flex justify-between items-center mb-4">
+            <div class="fixed inset-0 bg-black/60 backdrop-blur-md"></div>
+            <div class="fixed inset-0 z-10 flex items-center justify-center">
+
+                {{-- Portrait Mode: show rotate prompt --}}
+                <div x-show="isPortrait" style="display:none"
+                     class="relative w-full max-w-sm mx-4 bg-(--surface-card) shadow-2xl rounded-3xl border border-(--border-primary) overflow-hidden p-10 flex flex-col items-center justify-center text-center gap-6">
+                    <button @click="showSignModal = false" class="absolute top-4 left-4 w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 transition">
+                        <i class="fa-solid fa-xmark text-xl"></i>
+                    </button>
+                    <div class="w-24 h-24 relative">
+                        <div class="absolute inset-0 rounded-full animate-ping opacity-30"
+                             :class="submitType === 'chair' ? 'bg-indigo-100 dark:bg-indigo-500/20' : 'bg-green-100 dark:bg-green-500/20'"></div>
+                        <div class="relative w-full h-full rounded-full flex items-center justify-center border shadow-inner"
+                             :class="submitType === 'chair' ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-100 dark:border-indigo-500/20' : 'bg-green-50 dark:bg-green-500/10 text-green-600 dark:text-green-400 border-green-100 dark:border-green-500/20'">
+                            <i class="fa-solid fa-mobile-screen-button text-4xl" style="transform: rotate(90deg);"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-black text-(--text-primary) mb-2">يرجى تدوير الجهاز</h3>
+                        <p class="text-(--text-secondary) leading-relaxed font-bold text-sm">
+                            لتوقيع بشكل مريح، يرجى تدوير هاتفك إلى الوضع العرضي (Landscape).
+                        </p>
+                    </div>
+                </div>
+
+                {{-- Landscape Mode: full-screen signature --}}
+                <div x-show="!isPortrait" style="display:none" class="fixed inset-0 bg-(--surface-card) flex flex-col md:relative md:w-full md:max-w-2xl md:h-[85vh] md:max-h-[700px] md:rounded-3xl md:shadow-2xl md:border md:border-(--border-primary)">
+
+                    {{-- Desktop/Tablet Header (hidden on small landscape phones) --}}
+                    <div class="px-6 py-4 border-b border-(--border-primary) bg-(--bg-main) shrink-0 hidden md:block">
+                        <div class="flex justify-between items-center mb-3">
                             <h3 class="font-black text-lg text-(--text-primary)">
-                                <i class="fa-solid fa-signature text-indigo-600 ml-2"></i> توقيع النماذج واعتمادها
+                                <i class="fa-solid fa-signature ml-2" :class="submitType === 'chair' ? 'text-indigo-600' : 'text-green-600'"></i> توقيع النماذج واعتمادها
                             </h3>
                             <button @click="showSignModal = false" class="text-(--text-secondary) hover:text-(--text-primary) transition"><i class="fa-solid fa-xmark text-xl"></i></button>
                         </div>
                         <div class="flex gap-2">
-                            <div class="flex-1 h-2 rounded-full transition-colors duration-300" :class="signStep >= 1 ? 'bg-indigo-600' : 'bg-gray-200 dark:bg-gray-700'"></div>
-                            <div class="flex-1 h-2 rounded-full transition-colors duration-300" :class="signStep >= 2 ? 'bg-indigo-600' : 'bg-gray-200 dark:bg-gray-700'"></div>
-                            <div class="flex-1 h-2 rounded-full transition-colors duration-300" :class="signStep >= 3 ? 'bg-indigo-600' : 'bg-gray-200 dark:bg-gray-700'"></div>
+                            <div class="flex-1 h-2 rounded-full transition-colors duration-300" :class="signStep >= 1 ? (submitType === 'chair' ? 'bg-indigo-600' : 'bg-green-600') : 'bg-gray-200 dark:bg-gray-700'"></div>
+                            <div class="flex-1 h-2 rounded-full transition-colors duration-300" :class="signStep >= 2 ? (submitType === 'chair' ? 'bg-indigo-600' : 'bg-green-600') : 'bg-gray-200 dark:bg-gray-700'"></div>
+                            <div class="flex-1 h-2 rounded-full transition-colors duration-300" :class="signStep >= 3 ? (submitType === 'chair' ? 'bg-indigo-600' : 'bg-green-600') : 'bg-gray-200 dark:bg-gray-700'"></div>
                         </div>
                     </div>
 
-                    {{-- Form Steps Wrapper (Relative for sliding) --}}
+                    {{-- Canvas area: full remaining space --}}
                     <div class="flex-1 relative overflow-hidden bg-(--surface-card)">
-                        
+
                         {{-- Step 1: Form 5 --}}
-                        <div class="absolute inset-0 p-6 flex flex-col transition-all duration-500 ease-in-out"
+                        <div class="absolute inset-0 flex flex-col transition-all duration-500 ease-in-out"
                              :class="{ 'translate-x-0 opacity-100': signStep === 1, '-translate-x-full opacity-0 pointer-events-none': signStep > 1, 'translate-x-full opacity-0 pointer-events-none': signStep < 1 }">
-                            <h4 class="font-bold text-(--text-primary) mb-2">1. توقيع نموذج الزيارة الميدانية (Form 5)</h4>
-                            <p class="text-sm text-(--text-secondary) mb-4">الرجاء رسم توقيعك أدناه لاعتماد نموذج الزيارة الميدانية.</p>
-                            
-                            <div class="flex-1 border-2 border-dashed border-indigo-200 dark:border-indigo-500/20 rounded-2xl bg-white relative">
-                                <canvas x-ref="canvas5" class="w-full h-full cursor-crosshair rounded-2xl touch-none"></canvas>
-                                <button type="button" @click="clearPad(5)" class="absolute top-3 left-3 px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold transition">مسح <i class="fa-solid fa-eraser ml-1"></i></button>
+                            {{-- Title shown only on desktop --}}
+                            <div class="hidden md:block px-6 pt-5 pb-3">
+                                <h4 class="font-bold text-(--text-primary)">1. توقيع نموذج الزيارة الميدانية (Form 5)</h4>
+                                <p class="text-xs text-(--text-secondary)">الرجاء رسم توقيعك أدناه.</p>
+                            </div>
+                            {{-- Canvas fills all remaining space --}}
+                            <div class="flex-1 relative bg-white border-t-2 md:mx-6 md:mb-4 md:rounded-2xl md:border-2 border-dashed border-indigo-200 dark:border-indigo-500/20 overflow-hidden">
+                                <canvas x-ref="canvas5" class="absolute inset-0 w-full h-full cursor-crosshair touch-none"></canvas>
+                                {{-- Step indicator for mobile --}}
+                                <div class="absolute top-3 right-3 md:hidden flex gap-1">
+                                    <span class="w-2 h-2 rounded-full" :class="signStep === 1 ? (submitType === 'chair' ? 'bg-indigo-600' : 'bg-green-600') : 'bg-gray-300'"></span>
+                                    <span class="w-2 h-2 rounded-full" :class="signStep === 2 ? (submitType === 'chair' ? 'bg-indigo-600' : 'bg-green-600') : 'bg-gray-300'"></span>
+                                    <span class="w-2 h-2 rounded-full" :class="signStep === 3 ? (submitType === 'chair' ? 'bg-indigo-600' : 'bg-green-600') : 'bg-gray-300'"></span>
+                                </div>
+                                <button type="button" @click="clearPad(5)"
+                                        class="absolute top-3 left-3 px-3 py-1.5 rounded-xl bg-white/90 backdrop-blur-sm border border-red-200 text-red-600 text-xs font-bold shadow-sm">
+                                    <i class="fa-solid fa-eraser ml-1"></i> مسح
+                                </button>
+                                {{-- Mobile: close button --}}
+                                <button @click="showSignModal = false"
+                                        class="md:hidden absolute top-3 right-10 w-8 h-8 rounded-xl bg-white/90 backdrop-blur-sm border border-gray-200 text-gray-500 text-sm flex items-center justify-center shadow-sm">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
                             </div>
                         </div>
 
                         {{-- Step 2: Form 6 --}}
-                        <div class="absolute inset-0 p-6 flex flex-col transition-all duration-500 ease-in-out"
+                        <div class="absolute inset-0 flex flex-col transition-all duration-500 ease-in-out"
                              :class="{ 'translate-x-0 opacity-100': signStep === 2, '-translate-x-full opacity-0 pointer-events-none': signStep > 2, 'translate-x-full opacity-0 pointer-events-none': signStep < 2 }">
-                            <h4 class="font-bold text-(--text-primary) mb-2">2. توقيع نموذج تقييم المعايير (Form 6 - Initial)</h4>
-                            <p class="text-sm text-(--text-secondary) mb-4">الرجاء رسم توقيعك لاعتماد نموذج تقييم البرنامج الأولي.</p>
-                            
-                            <div class="flex-1 border-2 border-dashed border-indigo-200 dark:border-indigo-500/20 rounded-2xl bg-white relative">
-                                <canvas x-ref="canvas6" class="w-full h-full cursor-crosshair rounded-2xl touch-none"></canvas>
-                                <button type="button" @click="clearPad(6)" class="absolute top-3 left-3 px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold transition">مسح <i class="fa-solid fa-eraser ml-1"></i></button>
+                            <div class="hidden md:block px-6 pt-5 pb-3">
+                                <h4 class="font-bold text-(--text-primary)">2. توقيع نموذج تقييم المعايير (Form 6)</h4>
+                                <p class="text-xs text-(--text-secondary)">الرجاء رسم توقيعك لاعتماد نموذج تقييم البرنامج الأولي.</p>
+                            </div>
+                            <div class="flex-1 relative bg-white border-t-2 md:mx-6 md:mb-4 md:rounded-2xl md:border-2 border-dashed border-indigo-200 dark:border-indigo-500/20 overflow-hidden">
+                                <canvas x-ref="canvas6" class="absolute inset-0 w-full h-full cursor-crosshair touch-none"></canvas>
+                                <div class="absolute top-3 right-3 md:hidden flex gap-1">
+                                    <span class="w-2 h-2 rounded-full" :class="signStep === 1 ? (submitType === 'chair' ? 'bg-indigo-600' : 'bg-green-600') : 'bg-gray-300'"></span>
+                                    <span class="w-2 h-2 rounded-full" :class="signStep === 2 ? (submitType === 'chair' ? 'bg-indigo-600' : 'bg-green-600') : 'bg-gray-300'"></span>
+                                    <span class="w-2 h-2 rounded-full" :class="signStep === 3 ? (submitType === 'chair' ? 'bg-indigo-600' : 'bg-green-600') : 'bg-gray-300'"></span>
+                                </div>
+                                <button type="button" @click="clearPad(6)"
+                                        class="absolute top-3 left-3 px-3 py-1.5 rounded-xl bg-white/90 backdrop-blur-sm border border-red-200 text-red-600 text-xs font-bold shadow-sm">
+                                    <i class="fa-solid fa-eraser ml-1"></i> مسح
+                                </button>
+                                <button @click="showSignModal = false"
+                                        class="md:hidden absolute top-3 right-10 w-8 h-8 rounded-xl bg-white/90 backdrop-blur-sm border border-gray-200 text-gray-500 text-sm flex items-center justify-center shadow-sm">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
                             </div>
                         </div>
 
                         {{-- Step 3: Confirm --}}
                         <div class="absolute inset-0 p-6 flex flex-col transition-all duration-500 ease-in-out"
                              :class="{ 'translate-x-0 opacity-100': signStep === 3, 'translate-x-full opacity-0 pointer-events-none': signStep < 3 }">
-                            
                             <div class="flex-1 flex flex-col items-center justify-center text-center">
                                 <div class="w-20 h-20 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-4xl mb-6 shadow-inner"><i class="fa-solid fa-check-double"></i></div>
                                 <h4 class="font-black text-2xl text-(--text-primary) mb-3">تأكيد الاعتماد</h4>
@@ -767,13 +839,25 @@
 
                     </div>
 
-                    {{-- Footer Actions --}}
-                    <div class="px-6 py-4 border-t border-(--border-primary) bg-(--bg-main) flex justify-between shrink-0">
-                        <button type="button" @click="prevStep()" :class="signStep === 1 ? 'opacity-0 pointer-events-none' : ''" class="px-5 py-2.5 rounded-xl border border-(--border-primary) font-bold flex items-center gap-2"><i class="fa-solid fa-arrow-right"></i> السابق</button>
-                        
-                        <button type="button" @click="nextStep()" x-show="signStep < 3" class="px-6 py-2.5 rounded-xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 shadow-md flex items-center gap-2">التالي <i class="fa-solid fa-arrow-left"></i></button>
+                    {{-- Footer: regular on desktop, floating overlay on mobile --}}
+                    <div class="shrink-0 md:border-t md:border-(--border-primary) md:bg-(--bg-main) md:px-6 md:py-4
+                                flex justify-between
+                                absolute bottom-0 left-0 right-0 p-4
+                                md:relative md:bottom-auto md:left-auto md:right-auto">
+                        <button type="button" @click="prevStep()"
+                                :class="signStep === 1 ? 'opacity-0 pointer-events-none' : ''"
+                                class="px-5 py-2.5 rounded-xl border border-(--border-primary) bg-(--surface-card)/90 backdrop-blur-sm font-bold flex items-center gap-2 shadow-sm">
+                            <i class="fa-solid fa-arrow-right"></i> السابق
+                        </button>
 
-                        <form x-show="signStep === 3" method="POST" :action="submitType === 'chair' ? '{{ route('requests.stage_six.submit_to_council', $accreditationRequest) }}' : '{{ route('requests.stage_six.member_approve', $accreditationRequest) }}'">
+                        <button type="button" @click="nextStep()" x-show="signStep < 3"
+                                class="px-6 py-2.5 rounded-xl text-white font-bold shadow-lg flex items-center gap-2 transition-colors"
+                                :class="submitType === 'chair' ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-green-600 hover:bg-green-700'">
+                            التالي <i class="fa-solid fa-arrow-left"></i>
+                        </button>
+
+                        <form x-show="signStep === 3" method="POST"
+                              :action="submitType === 'chair' ? '{{ route('requests.stage_six.submit_to_council', $accreditationRequest) }}' : '{{ route('requests.stage_six.member_approve', $accreditationRequest) }}'">
                             @csrf
                             <input type="hidden" name="form_5_signature" :value="signature5">
                             <input type="hidden" name="form_6_signature" :value="signature6">
@@ -783,6 +867,7 @@
                         </form>
                     </div>
                 </div>
+
             </div>
         </div>
     </template>
