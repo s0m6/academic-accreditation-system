@@ -20,6 +20,7 @@ class UniversityController extends Controller
     public function index()
     {
         $universities = University::with('officer')->get();
+
         return view('council_secretariat.universities', compact('universities'));
     }
 

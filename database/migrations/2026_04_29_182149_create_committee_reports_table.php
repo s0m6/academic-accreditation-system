@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('committee_reports', function (Blueprint $table) {
-            $table->id(); 
+            $table->id();
             $table->foreignId('accreditation_request_id')->constrained('accreditation_requests')->cascadeOnDelete();
             $table->enum('status', [
                 'draft',
@@ -35,7 +35,7 @@ return new class extends Migration
             $table->timestamp('uni_responded_at')->nullable();
             $table->json('form6_final_data')->nullable();
             $table->timestamp('stage8_submitted_at')->nullable();
-            $table->timestamps(); 
+            $table->timestamps();
         });
     }
 

@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Evaluator;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Auth;
 use App\Models\CommitteeMember;
+use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
@@ -14,10 +14,10 @@ class DashboardController extends Controller
     public function index()
     {
         $user = Auth::user();
-        if (!$user->evaluator) {
-             return view('evaluator.dashboard', [
+        if (! $user->evaluator) {
+            return view('evaluator.dashboard', [
                 'activeEvaluations' => collect(),
-                'stats' => ['active_count' => 0, 'completed_count' => 0, 'upcoming_count' => 0]
+                'stats' => ['active_count' => 0, 'completed_count' => 0, 'upcoming_count' => 0],
             ]);
         }
         $evaluatorId = $user->evaluator->id;

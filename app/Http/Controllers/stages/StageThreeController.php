@@ -505,16 +505,17 @@ class StageThreeController extends Controller
         foreach ($section1 as $sec => $fields) {
             foreach ($fields as $key => $label) {
                 $val = $formData[$sec][$key] ?? '';
-                
+
                 // Special handling for program_objectives_list (JSON string)
                 if ($key === 'program_objectives_list') {
                     if (is_string($val)) {
                         $val = json_decode($val, true) ?? [];
                     }
-                    $nonEmptyPoints = array_filter((array)$val, fn($p) => !empty(trim($p)));
+                    $nonEmptyPoints = array_filter((array) $val, fn ($p) => ! empty(trim($p)));
                     if (empty($nonEmptyPoints)) {
                         $missing[] = "الجزء الأول: حقل «{$label}» مطلوب (يجب إدخال نقطة واحدة على الأقل).";
                     }
+
                     continue;
                 }
 
@@ -545,7 +546,7 @@ class StageThreeController extends Controller
             foreach ($grades as $g) {
                 $fieldKey = "ft_graduates_{$y}_{$g}";
                 $val = $tables[$fieldKey] ?? '';
-                
+
                 // Check if the flat key is empty
                 if ($val === null || (is_string($val) && trim($val) === '')) {
                     $gradMissing = true;
@@ -562,12 +563,12 @@ class StageThreeController extends Controller
         $researchKeys = [
             'intl_journals_indexed', 'arabic_journals_reviewed', 'local_journals_reviewed',
             'faculty_publications', 'faculty_textbooks', 'faculty_translated_books',
-            'master_theses_discussed', 'phd_dissertations_discussed', 'conferences_workshops_organized'
+            'master_theses_discussed', 'phd_dissertations_discussed', 'conferences_workshops_organized',
         ];
         $resMissing = false;
         foreach ($researchKeys as $rk) {
             $val = $tables["res_{$rk}_count"] ?? null;
-            if ($val === null || ($val === '' && $val !== 0 && $val !== "0")) {
+            if ($val === null || ($val === '' && $val !== 0 && $val !== '0')) {
                 $resMissing = true;
                 break;
             }
@@ -583,7 +584,7 @@ class StageThreeController extends Controller
         foreach ($facilityKeys as $fk) {
             foreach ($facFields as $ff) {
                 $val = $tables["fac_{$fk}_{$ff}"] ?? null;
-                if ($val === null || ($val === '' && $val !== 0 && $val !== "0")) {
+                if ($val === null || ($val === '' && $val !== 0 && $val !== '0')) {
                     $facMissing = true;
                     break 2;
                 }

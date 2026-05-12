@@ -127,40 +127,40 @@ class StageFiveController extends Controller
 
         // Check each of the first 3 days
         $requiredLabels = ['اليوم الأول', 'اليوم الثاني', 'اليوم الثالث'];
-        
+
         foreach ($requiredLabels as $index => $label) {
             $day = $days[$index] ?? null;
             $dayName = $label;
-            
+
             // Check Date
-            if (!$day || empty($day['date'])) {
+            if (! $day || empty($day['date'])) {
                 $errors[] = "تاريخ {$dayName} مطلوب.";
             }
-            
+
             // Check Activities
             $activityCount = 0;
-            if ($day && !empty($day['rows'])) {
+            if ($day && ! empty($day['rows'])) {
                 foreach ($day['rows'] as $row) {
-                    if (!empty($row['task'])) {
+                    if (! empty($row['task'])) {
                         $activityCount++;
                     }
                 }
             }
-            
+
             if ($activityCount === 0) {
                 $errors[] = "يجب إضافة نشاط واحد على الأقل في {$dayName}.";
             }
-            
+
             $counts[] = [
                 'label' => $dayName,
-                'count' => $activityCount
+                'count' => $activityCount,
             ];
         }
 
         return response()->json([
             'success' => empty($errors),
             'errors' => $errors,
-            'counts' => $counts
+            'counts' => $counts,
         ]);
     }
 
@@ -179,24 +179,24 @@ class StageFiveController extends Controller
         $data = $visitSchedule->schedule_data;
         $days = $data['days'] ?? [];
         $requiredLabels = ['اليوم الأول', 'اليوم الثاني', 'اليوم الثالث'];
-        
+
         foreach ($requiredLabels as $index => $label) {
             $day = $days[$index] ?? null;
-            if (!$day || empty($day['date'])) {
+            if (! $day || empty($day['date'])) {
                 return back()->with('error', "تاريخ {$label} مطلوب.");
             }
-            
+
             $hasActivity = false;
-            if ($day && !empty($day['rows'])) {
+            if ($day && ! empty($day['rows'])) {
                 foreach ($day['rows'] as $row) {
-                    if (!empty($row['task'])) {
+                    if (! empty($row['task'])) {
                         $hasActivity = true;
                         break;
                     }
                 }
             }
-            
-            if (!$hasActivity) {
+
+            if (! $hasActivity) {
                 return back()->with('error', "يجب إضافة نشاط واحد على الأقل في {$label}.");
             }
         }
