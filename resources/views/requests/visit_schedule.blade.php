@@ -31,10 +31,18 @@
             to   { opacity: 1; }
         }
         input[type="date"]::-webkit-calendar-picker-indicator {
-            opacity: 0.5; cursor: pointer;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: all 0.2s;
         }
-        .dark input[type="date"]::-webkit-calendar-picker-indicator {
-            filter: invert(0.7);
+        html:not(.dark) input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: brightness(0);
+        }
+        html.dark input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1) brightness(2);
+        }
+        input[type="date"]::-webkit-calendar-picker-indicator:hover {
+            opacity: 1;
         }
     </style>
 </head>
@@ -44,11 +52,11 @@
 
     {{-- ═══ HEADER ═══ --}}
     <header class="sticky top-0 z-50 border-b" style="background-color:var(--surface-card); border-color:var(--border-primary);">
-        <div class="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
+        <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
 
             <div class="flex items-center gap-3">
-                <a href="{{ route('requests.show', $accreditationRequest->id) }}?stage=stage_five" class="w-9 h-9 rounded-xl bg-(--bg-main) border border-(--border-primary) flex items-center justify-center shrink-0 hover:bg-(--surface-card) transition-colors cursor-pointer" title="العودة للوحة الطلب">
-                    <i class="fa-solid fa-arrow-right text-(--text-secondary)"></i>
+                <a href="{{ route('requests.show', $accreditationRequest->id) }}?stage=stage_five" class="w-9 h-9 rounded-xl bg-(--bg-main) border border-(--border-primary) flex items-center justify-center shrink-0 hover:bg-(--surface-card) transition-colors cursor-pointer group" title="العودة للوحة الطلب">
+                    <i class="fa-solid fa-arrow-right text-(--text-secondary) group-hover:text-blue-500"></i>
                 </a>
                 <div class="w-9 h-9 rounded-xl btn-gradient flex items-center justify-center shrink-0">
                     <i class="fa-solid fa-calendar-days text-white text-sm"></i>
@@ -77,13 +85,11 @@
                     <span x-text="isSaving ? 'جاري الحفظ...' : 'حفظ مسودة'"></span>
                 </button>
 
-                @if($visitSchedule->status === 'draft' || $visitSchedule->status === 'rejected_uni')
-                    <button type="button" @click="showSubmitModal = true"
-                        class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-xl font-bold text-sm flex items-center gap-2 cursor-pointer transition shadow-sm">
-                        <i class="fa-solid fa-paper-plane"></i>
-                        إرسال للمجلس
-                    </button>
-                @endif
+                <a href="{{ route('requests.show', $accreditationRequest->id) }}?stage=stage_five"
+                    class="bg-(--bg-main) border border-(--border-primary) text-(--text-secondary) hover:text-(--text-primary) px-5 py-2 rounded-xl font-bold text-sm flex items-center gap-2 cursor-pointer transition shadow-sm">
+                    <i class="fa-solid fa-arrow-left"></i>
+                    العودة للوحة الطلب
+                </a>
             </div>
             <div x-show="readonly" class="flex items-center gap-2">
                  <button type="button" @click="darkMode = !darkMode"
@@ -99,7 +105,7 @@
     </header>
 
     {{-- ═══ MAIN ═══ --}}
-    <main class="max-w-4xl mx-auto px-6 py-8 space-y-6">
+    <main class="max-w-6xl mx-auto px-6 py-8 space-y-6">
 
         {{-- Card --}}
         <div class="rounded-2xl border overflow-hidden shadow-sm" style="background:var(--surface-card); border-color:var(--border-primary);">
@@ -114,7 +120,7 @@
                             :style="activeDay !== i ? 'color:var(--text-secondary);' : ''">
                             <span x-text="day.label"></span>
                             <span x-show="day.rows.length > 0"
-                                class="inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-black"
+                                class="inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-black"
                                 :class="activeDay === i ? 'bg-white/25 text-white' : 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400'"
                                 x-text="day.rows.length"></span>
                         </button>
@@ -199,7 +205,7 @@
                                     {{-- Delete --}}
                                     <div class="col-span-1 px-2 py-3 flex items-center justify-center border-s" style="border-color:var(--border-primary);" x-show="!readonly">
                                         <button type="button" @click="day.rows.splice(rowIdx, 1)"
-                                            class="w-7 h-7 rounded-lg text-red-400 hover:text-white hover:bg-red-500 flex items-center justify-center transition-all cursor-pointer opacity-0 group-hover:opacity-100 text-xs">
+                                            class="w-8 h-8 rounded-lg text-red-500 hover:text-white hover:bg-red-600 flex items-center justify-center transition-all cursor-pointer opacity-50 group-hover:opacity-100 text-sm bg-red-50 dark:bg-red-500/10">
                                             <i class="fa-solid fa-xmark"></i>
                                         </button>
                                     </div>
@@ -224,63 +230,7 @@
         </div>
     </main>
 
-    {{-- MODAL: Submit to Council --}}
-    <template x-teleport="body">
-        <div x-show="showSubmitModal" style="display:none" class="relative z-[200]" role="dialog" aria-modal="true">
-            <div x-show="showSubmitModal"
-                x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
-                x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-                class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"></div>
 
-            <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
-                <div class="flex min-h-full items-center justify-center p-4 text-center">
-                    <div x-show="showSubmitModal"
-                        x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
-                        x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
-                        @click.away="showSubmitModal = false"
-                        class="relative transform overflow-hidden rounded-2xl bg-(--surface-card) border border-(--border-primary) shadow-2xl w-full max-w-md text-start">
-
-                        <div class="p-6">
-                            <div class="flex items-center gap-4 mb-4">
-                                <div class="w-12 h-12 rounded-full bg-indigo-100 dark:bg-indigo-500/10 flex items-center justify-center shrink-0">
-                                    <i class="fa-solid fa-paper-plane text-indigo-600 dark:text-indigo-400 text-xl"></i>
-                                </div>
-                                <div>
-                                    <h3 class="font-bold text-(--text-primary)">إرسال الجدول للمجلس</h3>
-                                    <p class="text-xs text-(--text-secondary) mt-1">
-                                        سيتم تحويل الجدول للمجلس تمهيداً لرفعه للجامعة لاعتماده.
-                                    </p>
-                                </div>
-                            </div>
-                            <div class="bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-xl p-4">
-                                <div class="flex gap-3">
-                                    <i class="fa-solid fa-circle-exclamation text-amber-600 dark:text-amber-400 mt-0.5"></i>
-                                    <p class="text-[11px] text-amber-800 dark:text-amber-300 leading-relaxed font-medium">
-                                        بمجرد الإرسال، سيتم قفل الجدول ولن تتمكن من تعديله إلا في حال رفضه من قبل الجامعة أو المجلس.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="px-6 py-4 border-t border-(--border-primary) bg-(--bg-main) flex justify-end gap-3">
-                            <button type="button" @click="showSubmitModal = false"
-                                class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-(--surface-card) border border-(--border-primary) text-(--text-primary) text-sm font-bold hover:bg-(--bg-main) transition-all cursor-pointer">
-                                إلغاء
-                            </button>
-                            <form method="POST" action="{{ route('requests.stage_five.submit', [$accreditationRequest, $visitSchedule]) }}" class="inline">
-                                @csrf
-                                @method('PATCH')
-                                <button type="submit"
-                                    class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-black shadow-lg shadow-indigo-500/20 transition-all cursor-pointer">
-                                    <i class="fa-solid fa-circle-check"></i> تأكيد الرفع للمجلس
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </template>
 
     {{-- Toast --}}
     <div x-show="toast.show" style="display:none"
@@ -293,7 +243,7 @@
         <span x-text="toast.message"></span>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" defer></script>
+
     <script>
         function visitSchedule(readonly = false) {
             return {

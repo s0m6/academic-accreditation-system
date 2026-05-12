@@ -45,12 +45,12 @@
 @else
 
 <div class="w-full text-start space-y-6" x-data="{
-    showFormModal: false,
-    showViewModal: false,
     showSubmitModal: false,
     showRejectModal: false,
     showApproveModal: false,
     showViewReasonsModal: false,
+    showValidationModal: false,
+    missingFields: [],
     submitActionUrl: '',
     viewData: null,
     rejectSubmissionId: null,
@@ -59,6 +59,101 @@
     rejectionReasons: [],
     addReason() { this.reasons.push(''); },
     removeReason(i) { if (this.reasons.length > 1) this.reasons.splice(i, 1); },
+
+    validateSubmission(sub) {
+        const data = sub.form_data || {};
+        const missing = [];
+
+        // 1. Decisions
+        const decisionsList = {
+            1: 'قرار إنشاء البرنامج',
+            2: 'قرار الطاقة الاستيعابية',
+            3: 'قرار قبول أول دفعة',
+            4: 'قرار قبول دفعة العام الماضي',
+            5: 'قرار قبول دفعة العام قبل الماضي',
+            6: 'قرار اعتماد أحدث خطة دراسية',
+            7: 'محضر قرار تخرج دفعة العام الحالي',
+            8: 'قرار تقديم طلب الاعتماد الأكاديمي',
+        };
+        const decisionsData = data.decisions || [];
+        const decisionFiles = data.decision_files || {};
+        for (let i = 1; i <= 8; i++) {
+            const d = decisionsData.find(item => item.id == i);
+            const label = decisionsList[i];
+            if (!d || !d.number || d.number.toString().trim() === '') missing.push({ cat: 'القرارات', field: `رقم القرار (${label})` });
+            if (!d || !d.authority || d.authority.toString().trim() === '') missing.push({ cat: 'القرارات', field: `الجهة المصدرة (${label})` });
+            if (!d || !d.date || d.date.toString().trim() === '') missing.push({ cat: 'القرارات', field: `تاريخ القرار (${label})` });
+            if (!decisionFiles[i]) missing.push({ cat: 'القرارات', field: `المرفق PDF (${label})` });
+        }
+
+        // 2. Student Statistics
+        const studentSections = {
+            'planned': 'عدد الطلبة المخطط التحاقهم',
+            'total': 'العدد الكلي للطلاب الملتحقين',
+            'average': 'متوسط عدد الطلبة في الشعبة',
+            'graduates_higher_ed': 'عدد الخريجين (دراسات عليا)',
+            'graduates_employed': 'عدد الخريجين (توظيف)'
+        };
+        const rowLabels = {
+            'general': 'قبول عام', 'special': 'قبول خاص', 'international': 'قبول دولي',
+            'male': 'ذكور', 'female': 'إناث'
+        };
+        const periodLabels = { 'past': 'العام الماضي', 'current': 'العام الحالي', 'next': 'المتوقع' };
+        if (!data.student_stats) {
+            missing.push({ cat: 'إحصائيات الطلاب', field: 'بيانات إحصائيات الطلاب بالكامل' });
+        } else {
+            Object.entries(studentSections).forEach(([sKey, sLabel]) => {
+                const section = data.student_stats[sKey] || {};
+                let rows = ['male', 'female'];
+                if (['planned', 'total'].includes(sKey)) rows = ['general', 'special', 'international'];
+                rows.forEach(rKey => {
+                    const row = section[rKey] || {};
+                    ['past', 'current', 'next'].forEach(pKey => {
+                        const val = row[pKey];
+                        // In stats, if it's undefined, null, empty string, or 0 (often means not filled), we flag it
+                        if (val === undefined || val === null || val === '' || val === 0) {
+                             missing.push({ cat: 'إحصائيات الطلاب', field: `${sLabel} - ${rowLabels[rKey]} (${periodLabels[pKey]})` });
+                        }
+                    });
+                });
+            });
+        }
+
+        // 3. Faculty Statistics Table - NECESSARY
+        const facultyRanks = {
+            'professor': 'أستاذ', 'associate': 'أستاذ مشارك', 'assistant': 'أستاذ مساعد',
+            'lecturer': 'مدرس', 'teaching_assistant': 'معيد'
+        };
+        const facultyCols = { 'male': 'ذكور', 'female': 'إناث', 'load': 'العبء التدريسي', 'parttime': 'غير المتفرغين' };
+        if (!data.faculty_stats) {
+            missing.push({ cat: 'إحصائيات الهيئة التدريسية', field: 'بيانات إحصائيات الهيئة بالكامل' });
+        } else {
+            Object.entries(facultyRanks).forEach(([rKey, rLabel]) => {
+                const rankData = data.faculty_stats[rKey] || {};
+                Object.entries(facultyCols).forEach(([cKey, cLabel]) => {
+                    const val = rankData[cKey];
+                    if (val === undefined || val === null || val === '' || val === 0) {
+                        missing.push({ cat: 'إحصائيات الهيئة التدريسية', field: `${rLabel} - ${cLabel}` });
+                    }
+                });
+            });
+        }
+
+        // 4. (Skipped: Faculty Members List - per user request)
+
+        return missing;
+    },
+
+    handleSubmission(sub, url) {
+        const errors = this.validateSubmission(sub);
+        if (errors.length > 0) {
+            this.missingFields = errors;
+            this.showValidationModal = true;
+        } else {
+            this.submitActionUrl = url;
+            this.showSubmitModal = true;
+        }
+    }
 }">
 
     {{-- Alerts --}}
@@ -164,7 +259,7 @@
                                             </a>
                                             
                                             {{-- Submit Action --}}
-                                            <button type="button" @click="submitActionUrl = '{{ route('requests.stage_two.submit', [$accreditationRequest, $sub]) }}'; showSubmitModal = true"
+                                            <button type="button" @click="handleSubmission({{ Js::from($sub) }}, '{{ route('requests.stage_two.submit', [$accreditationRequest, $sub]) }}')"
                                                 class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/20 text-xs font-bold transition-colors cursor-pointer">
                                                 <i class="fa-solid fa-paper-plane"></i> رفع للمجلس
                                             </button>
@@ -443,6 +538,83 @@
                                 class="inline-flex items-center gap-2 px-6 py-2 rounded-xl bg-orange-500 text-white text-xs font-black shadow-lg shadow-orange-500/20 transition-all cursor-pointer">
                                 فهمت ذلك
                             </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+    {{-- MODAL: VALIDATION ERRORS (Coordinator) --}}
+    <template x-teleport="body">
+        <div x-show="showValidationModal" style="display:none" class="relative z-[250]">
+            <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" @click="showValidationModal = false"></div>
+            <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
+                <div @click.away="showValidationModal = false"
+                     class="relative w-full max-w-2xl rounded-2xl bg-(--surface-card) shadow-2xl border border-(--border-primary) flex flex-col max-h-[85vh]">
+
+                    {{-- Header --}}
+                    <div class="px-6 py-5 border-b border-(--border-primary) bg-(--bg-main) flex items-center gap-3 shrink-0">
+                        <div class="w-10 h-10 rounded-xl bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 flex items-center justify-center border border-red-100 dark:border-red-500/20 shadow-inner shrink-0">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-(--text-primary)">بيانات غير مكتملة</h3>
+                            <p class="text-xs text-(--text-secondary)">يجب إكمال كافة الحقول المطلوبة قبل الرفع للمجلس</p>
+                        </div>
+                        <button @click="showValidationModal = false" class="mr-auto text-(--text-secondary) hover:text-(--text-primary) transition p-2">
+                            <i class="fa-solid fa-xmark text-xl"></i>
+                        </button>
+                    </div>
+
+                    {{-- Body --}}
+                    <div class="overflow-y-auto flex-1 p-6 space-y-4">
+                        <div class="p-4 rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 text-sm text-amber-800 dark:text-amber-300 flex items-start gap-3">
+                            <i class="fa-solid fa-circle-info shrink-0 mt-0.5 text-lg"></i>
+                            <span class="leading-relaxed">لقد اكتشف النظام وجود حقول لم يتم تعبئتها في نموذج البيانات الأساسية. يرجى مراجعة القائمة أدناه وتعبئتها في صفحة التعديل.</span>
+                        </div>
+
+                        {{-- Grouped Errors --}}
+                        <div class="space-y-4">
+                            @php
+                                $categories = [
+                                    'القرارات' => ['icon' => 'fa-file-signature', 'color' => 'blue'],
+                                    'إحصائيات الطلاب' => ['icon' => 'fa-chart-bar', 'color' => 'emerald'],
+                                    'إحصائيات الهيئة التدريسية' => ['icon' => 'fa-chalkboard-user', 'color' => 'violet'],
+                                ];
+                            @endphp
+
+                            @foreach($categories as $cat => $style)
+                                <div x-show="missingFields.some(f => f.cat === '{{ $cat }}')" class="rounded-xl border border-(--border-primary) overflow-hidden shadow-sm">
+                                    <div class="px-4 py-3 bg-{{ $style['color'] }}-50 dark:bg-{{ $style['color'] }}-500/10 border-b border-(--border-primary) flex items-center gap-2">
+                                        <i class="fa-solid {{ $style['icon'] }} text-{{ $style['color'] }}-600 dark:text-{{ $style['color'] }}-400 text-sm"></i>
+                                        <span class="font-bold text-{{ $style['color'] }}-700 dark:text-{{ $style['color'] }}-300 text-sm">{{ $cat }}</span>
+                                    </div>
+                                    <div class="p-4 bg-(--surface-card)">
+                                        <ul class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
+                                            <template x-for="(f, i) in missingFields.filter(f => f.cat === '{{ $cat }}')" :key="i">
+                                                <li class="flex items-start gap-2 text-xs text-(--text-primary)">
+                                                    <span class="mt-1.5 w-1.5 h-1.5 rounded-full bg-red-400 shrink-0"></span>
+                                                    <span x-text="f.field" class="leading-relaxed"></span>
+                                                </li>
+                                            </template>
+                                        </ul>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    {{-- Footer --}}
+                    <div class="px-6 py-4 border-t border-(--border-primary) bg-(--bg-main) flex justify-end items-center shrink-0">
+                        <div class="flex gap-3">
+                            <button @click="showValidationModal = false"
+                                    class="px-6 py-2.5 rounded-xl border border-(--border-primary) font-bold text-(--text-primary) hover:bg-(--surface-card) transition-all cursor-pointer text-sm">
+                                إغلاق
+                            </button>
+                            <a href="{{ route('requests.stage_two.edit', [$accreditationRequest, $sub]) }}"
+                               class="px-6 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold transition-all shadow-lg shadow-orange-500/20 flex items-center gap-2 text-sm no-underline">
+                                <i class="fa-solid fa-pen-to-square"></i> الذهاب للتعديل الآن
+                            </a>
                         </div>
                     </div>
                 </div>

@@ -64,8 +64,9 @@
 @else
 
 <div class="w-full text-start space-y-6" x-data="{
-    nullScoredIndicators: {{ Js::from($nullScoredIndicators ?? []) }},
+    nullScoredIndicators: [],
     showNullModal: false,
+    isValidating: false,
     showRequestModal: false,
     showWithdrawModal: false,
     
@@ -81,16 +82,41 @@
     pad6: null,
     padFinal: null,
     submitType: 'member',
+    isPortrait: false,
+    checkOrientation() {
+        this.isPortrait = window.matchMedia('(orientation: portrait)').matches && window.innerWidth < 1024;
+    },
 
-    tryRequestApproval() {
-        if (this.nullScoredIndicators.length > 0) {
-            this.showNullModal = true;
-        } else {
-            this.showRequestModal = true;
+    async tryRequestApproval() {
+        if (this.isValidating) return;
+        
+        this.isValidating = true;
+        try {
+            const response = await axios.post('{{ route('requests.stage_eight.validate', $accreditationRequest) }}');
+            this.nullScoredIndicators = response.data.nullScoredIndicators;
+            
+            if (this.nullScoredIndicators.length > 0) {
+                this.showNullModal = true;
+            } else {
+                this.showRequestModal = true;
+            }
+        } catch (error) {
+            console.error('Validation error:', error);
+            alert('حدث خطأ أثناء التحقق من البيانات. يرجى المحاولة مرة أخرى.');
+        } finally {
+            this.isValidating = false;
         }
     },
     
     init() {
+        this.checkOrientation();
+        window.addEventListener('resize', () => {
+            this.checkOrientation();
+            if (this.showSignModal) {
+                if (this.signStep === 1) this.initPad('canvas6');
+                if (this.signStep === 2) this.initPad('canvasFinal');
+            }
+        });
         const observer = new MutationObserver(() => {
             const color = 'rgb(0, 0, 0)';
             if (this.pad6) this.pad6.penColor = color;
@@ -101,31 +127,37 @@
     
     initPad(refName) {
         this.$nextTick(() => {
-            setTimeout(() => {
-                const canvas = this.$refs[refName];
-                if (canvas) {
-                    const padKey = 'pad' + refName.replace('canvas', '');
-                    const color = 'rgb(0, 0, 0)';
+            const canvas = this.$refs[refName];
+            if (!canvas) return;
 
-                    if (!this[padKey]) {
-                        this[padKey] = new window.SignaturePad(canvas, {
-                            backgroundColor: 'rgba(255, 255, 255, 0)',
-                            penColor: color,
-                            minWidth: 1.2,
-                            maxWidth: 4,
-                            velocityFilterWeight: 0.6,
-                        });
-                    } else {
-                        this[padKey].penColor = color;
-                    }
-                    
-                    const ratio = Math.max(window.devicePixelRatio || 1, 1);
-                    canvas.width = canvas.offsetWidth * ratio;
-                    canvas.height = canvas.offsetHeight * ratio;
-                    canvas.getContext('2d').scale(ratio, ratio);
-                    this[padKey].clear();
+            requestAnimationFrame(() => {
+                const padKey = 'pad' + refName.replace('canvas', '');
+                const color = 'rgb(0, 0, 0)';
+
+                if (!this[padKey]) {
+                    this[padKey] = new window.SignaturePad(canvas, {
+                        backgroundColor: 'rgba(255, 255, 255, 0)',
+                        penColor: color,
+                        minWidth: 1.2,
+                        maxWidth: 4,
+                        velocityFilterWeight: 0.6,
+                    });
+                } else {
+                    this[padKey].penColor = color;
                 }
-            }, 200);
+
+                const rect = canvas.parentElement.getBoundingClientRect();
+                if (rect.width === 0 || rect.height === 0) {
+                    setTimeout(() => this.initPad(refName), 100);
+                    return;
+                }
+
+                const ratio = Math.max(window.devicePixelRatio || 1, 1);
+                canvas.width = rect.width * ratio;
+                canvas.height = rect.height * ratio;
+                canvas.getContext('2d').scale(ratio, ratio);
+                this[padKey].clear();
+            });
         });
     },
     clearPad(num) {
@@ -152,7 +184,7 @@
         if(this.pad6) this.pad6.clear();
         if(this.padFinal) this.padFinal.clear();
     }
-}" x-init="$watch('showSignModal', value => { if(value && signStep === 1) initPad('canvas6') }); $watch('signStep', value => { if(value === 1) initPad('canvas6'); if(value === 2) initPad('canvasFinal'); })">
+}" x-init="$watch('showSignModal', value => { if(value) { checkOrientation(); if(signStep === 1) initPad('canvas6'); } }); $watch('signStep', value => { if(value === 1) initPad('canvas6'); if(value === 2) initPad('canvasFinal'); })">
 
     {{-- Null Indicators Warning Modal --}}
     <template x-teleport="body">
@@ -163,15 +195,17 @@
                      class="relative w-full max-w-2xl rounded-2xl bg-(--surface-card) shadow-2xl border border-(--border-primary) flex flex-col max-h-[85vh]">
 
                     {{-- Header --}}
-                    <div class="px-6 py-5 border-b border-(--border-primary) bg-(--bg-main) flex items-center gap-3 shrink-0">
-                        <div class="w-10 h-10 rounded-xl bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 flex items-center justify-center border border-red-100 dark:border-red-500/20 shadow-inner shrink-0">
-                            <i class="fa-solid fa-triangle-exclamation"></i>
+                    <div class="px-6 py-5 border-b border-(--border-primary) bg-(--bg-main) flex items-center justify-between shrink-0">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 flex items-center justify-center border border-red-100 dark:border-red-500/20 shadow-inner shrink-0">
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-(--text-primary)">مؤشرات غير مكتملة التقييم</h3>
+                                <p class="text-xs text-(--text-secondary)">يجب تقييم جميع المؤشرات قبل طلب موافقة الأعضاء</p>
+                            </div>
                         </div>
-                        <div>
-                            <h3 class="font-bold text-(--text-primary)">مؤشرات غير مكتملة التقييم</h3>
-                            <p class="text-xs text-(--text-secondary)">يجب تقييم جميع المؤشرات قبل طلب موافقة الأعضاء</p>
-                        </div>
-                        <button @click="showNullModal = false" class="mr-auto text-(--text-secondary) hover:text-(--text-primary) transition">
+                        <button @click="showNullModal = false" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors cursor-pointer">
                             <i class="fa-solid fa-xmark text-xl"></i>
                         </button>
                     </div>
@@ -183,36 +217,28 @@
                             <span>المؤشرات التالية لم يتم تقييمها بعد (التقييم الختامي).</span>
                         </div>
 
-                        <template x-for="(standard, si) in nullScoredIndicators" :key="si">
-                            <div class="rounded-xl border border-(--border-primary) overflow-hidden">
-                                {{-- Standard header --}}
-                                <div class="px-4 py-3 bg-blue-50 dark:bg-blue-500/10 border-b border-(--border-primary) flex items-center gap-2">
-                                    <i class="fa-solid fa-layer-group text-blue-600 dark:text-blue-400 text-sm"></i>
-                                    <span class="font-bold text-blue-700 dark:text-blue-300 text-sm" x-text="standard.standard_name"></span>
-                                </div>
-
-                                <div class="divide-y divide-(--border-primary)">
-                                    <template x-for="(sub, ssi) in standard.sub_groups" :key="ssi">
-                                        <div class="px-4 py-3">
-                                            {{-- Sub-standard --}}
-                                            <p class="text-xs font-bold text-(--text-secondary) mb-2 flex items-center gap-1.5">
-                                                <i class="fa-solid fa-chevron-left text-[10px]"></i>
-                                                <span x-text="sub.sub_standard_name"></span>
-                                            </p>
-                                            {{-- Indicators list --}}
-                                            <ul class="space-y-1.5 pr-4">
-                                                <template x-for="(ind, ii) in sub.indicators" :key="ii">
-                                                    <li class="flex items-start gap-2 text-sm text-(--text-primary)">
-                                                        <span class="mt-1 w-1.5 h-1.5 rounded-full bg-red-400 shrink-0"></span>
-                                                        <span x-text="ind"></span>
-                                                    </li>
-                                                </template>
-                                            </ul>
+                        <div class="grid grid-cols-1 gap-3">
+                            <template x-for="(standard, si) in nullScoredIndicators" :key="si">
+                                <div class="flex items-center justify-between p-4 rounded-xl border border-(--border-primary) bg-(--surface-card) hover:bg-(--bg-main) transition-colors group">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-lg bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center border border-blue-100 dark:border-blue-500/20 shadow-sm group-hover:scale-110 transition-transform">
+                                            <i class="fa-solid fa-layer-group"></i>
                                         </div>
-                                    </template>
+                                        <div>
+                                            <p class="text-sm font-bold text-(--text-primary)" x-text="standard.standard_name"></p>
+                                            <p class="text-[11px] text-(--text-secondary) mt-0.5">المعيار الرئيسي رقم <span x-text="si + 1"></span></p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <div class="px-3 py-1.5 rounded-lg bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-500/20 flex items-center gap-2">
+                                            <span class="text-base font-black" x-text="standard.total_missing"></span>
+                                            <span class="text-[10px] font-bold">مؤشر غير مقيم</span>
+                                        </div>
+                                        <i class="fa-solid fa-circle-exclamation text-red-500 animate-pulse"></i>
+                                    </div>
                                 </div>
-                            </div>
-                        </template>
+                            </template>
+                        </div>
                     </div>
 
                     {{-- Footer --}}
@@ -478,9 +504,20 @@
     <div class="flex flex-wrap items-center gap-3 mt-6 border-t border-(--border-primary) pt-6">
         @if($isChairEvaluator)
             @if(in_array($currentStatus, ['uni_responded', 'returned_for_edit']))
-                <button @click="tryRequestApproval()" class="px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-md transition-colors flex items-center gap-2">
-                    <i class="fa-solid fa-paper-plane"></i> طلب موافقة الأعضاء
-                </button>
+                    <button @click="tryRequestApproval()" 
+                            :disabled="isValidating"
+                            class="px-6 py-3 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold shadow-md transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-wait">
+                        <template x-if="!isValidating">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-paper-plane"></i> طلب موافقة الأعضاء (المراجعة النهائية)
+                            </div>
+                        </template>
+                        <template x-if="isValidating">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-spinner fa-spin"></i> جاري التحقق...
+                            </div>
+                        </template>
+                    </button>
             @endif
 
             @if($currentStatus === 'final_under_review')
@@ -585,12 +622,38 @@
 
     <template x-teleport="body">
         <div x-show="showSignModal" style="display:none" class="relative z-[300]">
-            <div class="fixed inset-0 bg-black/60 backdrop-blur-md" @click="showSignModal = false"></div>
-            <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
-                <div @click.away="showSignModal = false" class="relative w-full max-w-2xl bg-(--surface-card) shadow-2xl rounded-3xl border border-(--border-primary) overflow-hidden flex flex-col h-[80vh] max-h-[700px]">
-                    <div class="px-6 py-5 border-b border-(--border-primary) bg-(--bg-main) shrink-0">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="font-black text-lg text-(--text-primary)"><i class="fa-solid fa-signature text-indigo-600 ml-2"></i> اعتماد التقارير الختامية</h3>
+            <div class="fixed inset-0 bg-black/60 backdrop-blur-md"></div>
+            <div class="fixed inset-0 z-10 flex items-center justify-center">
+
+                {{-- Portrait Mode: rotate prompt --}}
+                <div x-show="isPortrait" style="display:none"
+                     class="relative w-full max-w-sm mx-4 bg-(--surface-card) shadow-2xl rounded-3xl border border-(--border-primary) overflow-hidden p-10 flex flex-col items-center justify-center text-center gap-6">
+                    <button @click="showSignModal = false" class="absolute top-4 left-4 w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 transition">
+                        <i class="fa-solid fa-xmark text-xl"></i>
+                    </button>
+                    <div class="w-24 h-24 relative">
+                        <div class="absolute inset-0 bg-indigo-100 dark:bg-indigo-500/20 rounded-full animate-ping opacity-30"></div>
+                        <div class="relative w-full h-full bg-indigo-50 dark:bg-indigo-500/10 rounded-full flex items-center justify-center text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-500/20 shadow-inner">
+                            <i class="fa-solid fa-mobile-screen-button text-4xl" style="transform: rotate(90deg);"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-black text-(--text-primary) mb-2">يرجى تدوير الجهاز</h3>
+                        <p class="text-(--text-secondary) leading-relaxed font-bold text-sm">
+                            لتوقيع بشكل مريح، يرجى تدوير هاتفك إلى الوضع العرضي (Landscape).
+                        </p>
+                    </div>
+                </div>
+
+                {{-- Landscape/Desktop Mode: full-screen signature --}}
+                <div x-show="!isPortrait" style="display:none" class="fixed inset-0 bg-(--surface-card) flex flex-col md:relative md:w-full md:max-w-2xl md:h-[85vh] md:max-h-[700px] md:rounded-3xl md:shadow-2xl md:border md:border-(--border-primary)">
+
+                    {{-- Desktop Header --}}
+                    <div class="px-6 py-4 border-b border-(--border-primary) bg-(--bg-main) shrink-0 hidden md:block">
+                        <div class="flex justify-between items-center mb-3">
+                            <h3 class="font-black text-lg text-(--text-primary)">
+                                <i class="fa-solid fa-signature text-indigo-600 ml-2"></i> اعتماد التقارير الختامية
+                            </h3>
                             <button @click="showSignModal = false" class="text-(--text-secondary) hover:text-(--text-primary) transition"><i class="fa-solid fa-xmark text-xl"></i></button>
                         </div>
                         <div class="flex gap-2">
@@ -600,24 +663,62 @@
                         </div>
                     </div>
 
+                    {{-- Canvas Area --}}
                     <div class="flex-1 relative overflow-hidden bg-(--surface-card)">
-                        <div class="absolute inset-0 p-6 flex flex-col transition-all duration-500 ease-in-out" :class="{ 'translate-x-0 opacity-100': signStep === 1, '-translate-x-full opacity-0 pointer-events-none': signStep > 1, 'translate-x-full opacity-0 pointer-events-none': signStep < 1 }">
-                            <h4 class="font-bold text-(--text-primary) mb-2">1. توقيع نموذج مقاييس تقييم البرنامج الختامي</h4>
-                            <p class="text-sm text-(--text-secondary) mb-4">الرجاء رسم توقيعك أدناه لاعتماد نتائج التقييم الختامية للبرنامج.</p>
-                            <div class="flex-1 border-2 border-dashed border-indigo-200 dark:border-indigo-500/20 rounded-2xl bg-white relative">
-                                <canvas x-ref="canvas6" class="w-full h-full cursor-crosshair rounded-2xl touch-none"></canvas>
-                                <button type="button" @click="clearPad(6)" class="absolute top-3 left-3 px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold transition">مسح <i class="fa-solid fa-eraser ml-1"></i></button>
+
+                        {{-- Step 1: Form 6 Final --}}
+                        <div class="absolute inset-0 flex flex-col transition-all duration-500 ease-in-out"
+                             :class="{ 'translate-x-0 opacity-100': signStep === 1, '-translate-x-full opacity-0 pointer-events-none': signStep > 1, 'translate-x-full opacity-0 pointer-events-none': signStep < 1 }">
+                            <div class="hidden md:block px-6 pt-5 pb-3">
+                                <h4 class="font-bold text-(--text-primary)">1. توقيع نموذج مقاييس تقييم البرنامج الختامي</h4>
+                                <p class="text-xs text-(--text-secondary)">الرجاء رسم توقيعك لاعتماد نتائج التقييم الختامية.</p>
+                            </div>
+                            <div class="flex-1 relative bg-white border-t-2 md:mx-6 md:mb-4 md:rounded-2xl md:border-2 border-dashed border-indigo-200 dark:border-indigo-500/20 overflow-hidden">
+                                <canvas x-ref="canvas6" class="absolute inset-0 w-full h-full cursor-crosshair touch-none"></canvas>
+                                <div class="absolute top-3 right-3 md:hidden flex gap-1">
+                                    <span class="w-2 h-2 rounded-full bg-indigo-600"></span>
+                                    <span class="w-2 h-2 rounded-full bg-gray-300"></span>
+                                    <span class="w-2 h-2 rounded-full bg-gray-300"></span>
+                                </div>
+                                <button type="button" @click="clearPad(6)"
+                                        class="absolute top-3 left-3 px-3 py-1.5 rounded-xl bg-white/90 backdrop-blur-sm border border-red-200 text-red-600 text-xs font-bold shadow-sm">
+                                    <i class="fa-solid fa-eraser ml-1"></i> مسح
+                                </button>
+                                <button @click="showSignModal = false"
+                                        class="md:hidden absolute top-3 right-10 w-8 h-8 rounded-xl bg-white/90 backdrop-blur-sm border border-gray-200 text-gray-500 text-sm flex items-center justify-center shadow-sm">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
                             </div>
                         </div>
-                        <div class="absolute inset-0 p-6 flex flex-col transition-all duration-500 ease-in-out" :class="{ 'translate-x-0 opacity-100': signStep === 2, '-translate-x-full opacity-0 pointer-events-none': signStep > 2, 'translate-x-full opacity-0 pointer-events-none': signStep < 2 }">
-                            <h4 class="font-bold text-(--text-primary) mb-2">2. التوقيع على القرار النهائي والتوصيات</h4>
-                            <p class="text-sm text-(--text-secondary) mb-4">الرجاء رسم توقيعك لاعتماد القرار النهائي بخصوص اعتماد البرنامج.</p>
-                            <div class="flex-1 border-2 border-dashed border-indigo-200 dark:border-indigo-500/20 rounded-2xl bg-white relative">
-                                <canvas x-ref="canvasFinal" class="w-full h-full cursor-crosshair rounded-2xl touch-none"></canvas>
-                                <button type="button" @click="clearPad('Final')" class="absolute top-3 left-3 px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold transition">مسح <i class="fa-solid fa-eraser ml-1"></i></button>
+
+                        {{-- Step 2: Final Decision --}}
+                        <div class="absolute inset-0 flex flex-col transition-all duration-500 ease-in-out"
+                             :class="{ 'translate-x-0 opacity-100': signStep === 2, '-translate-x-full opacity-0 pointer-events-none': signStep > 2, 'translate-x-full opacity-0 pointer-events-none': signStep < 2 }">
+                            <div class="hidden md:block px-6 pt-5 pb-3">
+                                <h4 class="font-bold text-(--text-primary)">2. التوقيع على القرار النهائي والتوصيات</h4>
+                                <p class="text-xs text-(--text-secondary)">الرجاء رسم توقيعك لاعتماد القرار النهائي بخصوص اعتماد البرنامج.</p>
+                            </div>
+                            <div class="flex-1 relative bg-white border-t-2 md:mx-6 md:mb-4 md:rounded-2xl md:border-2 border-dashed border-indigo-200 dark:border-indigo-500/20 overflow-hidden">
+                                <canvas x-ref="canvasFinal" class="absolute inset-0 w-full h-full cursor-crosshair touch-none"></canvas>
+                                <div class="absolute top-3 right-3 md:hidden flex gap-1">
+                                    <span class="w-2 h-2 rounded-full bg-gray-300"></span>
+                                    <span class="w-2 h-2 rounded-full bg-indigo-600"></span>
+                                    <span class="w-2 h-2 rounded-full bg-gray-300"></span>
+                                </div>
+                                <button type="button" @click="clearPad('Final')"
+                                        class="absolute top-3 left-3 px-3 py-1.5 rounded-xl bg-white/90 backdrop-blur-sm border border-red-200 text-red-600 text-xs font-bold shadow-sm">
+                                    <i class="fa-solid fa-eraser ml-1"></i> مسح
+                                </button>
+                                <button @click="showSignModal = false"
+                                        class="md:hidden absolute top-3 right-10 w-8 h-8 rounded-xl bg-white/90 backdrop-blur-sm border border-gray-200 text-gray-500 text-sm flex items-center justify-center shadow-sm">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
                             </div>
                         </div>
-                        <div class="absolute inset-0 p-6 flex flex-col transition-all duration-500 ease-in-out" :class="{ 'translate-x-0 opacity-100': signStep === 3, 'translate-x-full opacity-0 pointer-events-none': signStep < 3 }">
+
+                        {{-- Step 3: Confirm --}}
+                        <div class="absolute inset-0 p-6 flex flex-col transition-all duration-500 ease-in-out"
+                             :class="{ 'translate-x-0 opacity-100': signStep === 3, 'translate-x-full opacity-0 pointer-events-none': signStep < 3 }">
                             <div class="flex-1 flex flex-col items-center justify-center text-center">
                                 <div class="w-20 h-20 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-4xl mb-6 shadow-inner"><i class="fa-solid fa-check-double"></i></div>
                                 <h4 class="font-black text-2xl text-(--text-primary) mb-3">تأكيد الاعتماد النهائي</h4>
@@ -625,19 +726,37 @@
                                 <p class="text-(--text-secondary) max-w-sm leading-relaxed" x-show="submitType === 'chair'">بمجرد الضغط على تأكيد، سيتم إنهاء المرحلة الثامنة واعتماد التقارير الختامية بشكل نهائي. سيتم تحويل الطلب للمرحلة التاسعة.</p>
                             </div>
                         </div>
+
                     </div>
 
-                    <div class="px-6 py-4 border-t border-(--border-primary) bg-(--bg-main) flex justify-between shrink-0">
-                        <button type="button" @click="prevStep()" :class="signStep === 1 ? 'opacity-0 pointer-events-none' : ''" class="px-5 py-2.5 rounded-xl border border-(--border-primary) font-bold flex items-center gap-2"><i class="fa-solid fa-arrow-right"></i> السابق</button>
-                        <button type="button" @click="nextStep()" x-show="signStep < 3" class="px-6 py-2.5 rounded-xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 shadow-md flex items-center gap-2">التالي <i class="fa-solid fa-arrow-left"></i></button>
-                        <form x-show="signStep === 3" method="POST" :action="submitType === 'chair' ? '{{ route('requests.stage_eight.final_submit', $accreditationRequest) }}' : '{{ route('requests.stage_eight.member_approve', $accreditationRequest) }}'">
+                    {{-- Footer: floating on mobile, static on desktop --}}
+                    <div class="shrink-0 md:border-t md:border-(--border-primary) md:bg-(--bg-main) md:px-6 md:py-4
+                                flex justify-between
+                                absolute bottom-0 left-0 right-0 p-4
+                                md:relative md:bottom-auto md:left-auto md:right-auto">
+                        <button type="button" @click="prevStep()"
+                                :class="signStep === 1 ? 'opacity-0 pointer-events-none' : ''"
+                                class="px-5 py-2.5 rounded-xl border border-(--border-primary) bg-(--surface-card)/90 backdrop-blur-sm font-bold flex items-center gap-2 shadow-sm">
+                            <i class="fa-solid fa-arrow-right"></i> السابق
+                        </button>
+
+                        <button type="button" @click="nextStep()" x-show="signStep < 3"
+                                class="px-6 py-2.5 rounded-xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 shadow-lg flex items-center gap-2">
+                            التالي <i class="fa-solid fa-arrow-left"></i>
+                        </button>
+
+                        <form x-show="signStep === 3" method="POST"
+                              :action="submitType === 'chair' ? '{{ route('requests.stage_eight.final_submit', $accreditationRequest) }}' : '{{ route('requests.stage_eight.member_approve', $accreditationRequest) }}'">
                             @csrf
                             <input type="hidden" name="form_6_signature" :value="signature6">
                             <input type="hidden" name="final_decision_signature" :value="signatureFinal">
-                            <button type="submit" class="px-6 py-2.5 rounded-xl bg-green-600 text-white font-bold hover:bg-green-700 shadow-lg shadow-green-500/30 flex items-center gap-2"><i class="fa-solid fa-paper-plane"></i> تأكيد وإرسال</button>
+                            <button type="submit" class="px-6 py-2.5 rounded-xl bg-green-600 text-white font-bold hover:bg-green-700 shadow-lg shadow-green-500/30 flex items-center gap-2">
+                                <i class="fa-solid fa-paper-plane"></i> تأكيد وإرسال
+                            </button>
                         </form>
                     </div>
                 </div>
+
             </div>
         </div>
     </template>

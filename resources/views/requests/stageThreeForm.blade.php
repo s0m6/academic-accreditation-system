@@ -747,8 +747,7 @@ function ratingColor($rating) {
                       'library' => 'المكتبة',
                       'admin_offices' => 'المكاتب الإدارية',
                       'student_lounges' => 'استراحات الطلاب',
-                      'sports' => 'المرافق الرياضية',
-                      'others' => 'أخرى'
+                      'sports' => 'المرافق الرياضية'
                     ];
                   @endphp
                   @foreach($facilityTypes as $key => $label)

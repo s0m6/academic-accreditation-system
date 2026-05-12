@@ -44,18 +44,43 @@
     </div>
 @else
 
-<div class="w-full text-start space-y-6" x-data="{
+<div class="w-full text-start space-y-6 shadow-sm overflow-hidden" x-data="{
     showSubmitModal: false,
     showRejectModal: false,
     showApproveModal: false,
     showViewReasonsModal: false,
+    showValidationModal: false,
+    isValidating: false,
+    validationMissing: [],
     submitActionUrl: '',
+    currentSubId: null,
     rejectSubmissionId: null,
     approveSubmissionId: null,
     reasons: [''],
     rejectionReasons: [],
     addReason() { this.reasons.push(''); },
     removeReason(i) { if (this.reasons.length > 1) this.reasons.splice(i, 1); },
+    async startValidation(subId, submitUrl) {
+        this.isValidating = true;
+        this.currentSubId = subId;
+        this.validationMissing = [];
+        this.submitActionUrl = submitUrl;
+
+        try {
+            const resp = await axios.post(`/requests/{{ $accreditationRequest->id }}/stage-three/${subId}/validate`);
+            if (resp.data.success) {
+                this.showSubmitModal = true;
+            } else {
+                this.validationMissing = resp.data.missing;
+                this.showValidationModal = true;
+            }
+        } catch (e) {
+            console.error(e);
+            alert('تعذر الاتصال بالخادم للتحقق من البيانات.');
+        } finally {
+            this.isValidating = false;
+        }
+    }
 }">
 
     {{-- Alerts --}}
@@ -160,9 +185,12 @@
                                         </a>
                                         
                                         @if($sub->status === 'draft' && $userRole === 'program_coordinator')
-                                            <button type="button" @click="submitActionUrl = '{{ route('requests.stage_three.submit', [$accreditationRequest, $sub]) }}'; showSubmitModal = true"
-                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/20 text-xs font-bold transition-colors cursor-pointer">
-                                                <i class="fa-solid fa-paper-plane"></i> رفع للمجلس
+                                            <button type="button" 
+                                                @click="startValidation({{ $sub->id }}, '{{ route('requests.stage_three.submit', [$accreditationRequest, $sub]) }}')"
+                                                :disabled="isValidating"
+                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/20 text-xs font-bold transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-wait">
+                                                <i class="fa-solid" :class="isValidating ? 'fa-circle-notch fa-spin' : 'fa-paper-plane'"></i>
+                                                <span x-text="isValidating ? 'جاري التحقق...' : 'رفع للمجلس'"></span>
                                             </button>
                                         @endif
 
@@ -426,6 +454,69 @@
                                 class="inline-flex items-center gap-2 px-6 py-2 rounded-xl bg-orange-500 text-white text-xs font-black shadow-lg shadow-orange-500/20 transition-all cursor-pointer">
                                 فهمت ذلك
                             </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    {{-- MODAL: VALIDATION ERRORS --}}
+    <template x-teleport="body">
+        <div x-show="showValidationModal" style="display:none" class="relative z-[200]" role="dialog" aria-modal="true">
+            <div x-show="showValidationModal"
+                x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
+                x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+                class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"></div>
+
+            <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+                <div class="flex min-h-full items-center justify-center p-4">
+                    <div x-show="showValidationModal"
+                        x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                        x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+                        @click.away="showValidationModal = false"
+                        class="relative rounded-2xl bg-(--surface-card) border border-(--border-primary) shadow-2xl w-full max-w-lg text-start overflow-hidden">
+
+                        <div class="px-6 py-5 border-b border-(--border-primary) bg-red-50 dark:bg-red-500/10 flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400 flex items-center justify-center border border-red-200 dark:border-red-500/30 shrink-0">
+                                    <i class="fa-solid fa-triangle-exclamation"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-red-800 dark:text-red-300">بيانات ناقصة في التقرير</h3>
+                                    <p class="text-xs text-red-600/70 dark:text-red-400/70">يجب إكمال الحقول التالية قبل التمكن من رفع التقرير</p>
+                                </div>
+                            </div>
+                            <button @click="showValidationModal = false" class="text-red-400 hover:text-red-600 transition-all cursor-pointer p-2">
+                                <i class="fa-solid fa-times text-lg"></i>
+                            </button>
+                        </div>
+
+                        <div class="p-6 max-h-[60vh] overflow-y-auto bg-(--bg-main)/50 custom-scrollbar">
+                            <div class="space-y-3">
+                                <template x-for="(error, i) in validationMissing" :key="i">
+                                    <div class="flex items-start gap-3 bg-(--surface-card) border border-(--border-primary) rounded-xl p-4 shadow-sm group hover:border-red-200 dark:hover:border-red-500/30 transition-all">
+                                        <div class="w-6 h-6 rounded-full bg-red-50 dark:bg-red-500/10 flex items-center justify-center text-[10px] font-bold text-red-600 dark:text-red-400 border border-red-100 dark:border-red-500/20 shrink-0 mt-0.5" x-text="i + 1"></div>
+                                        <p class="text-sm font-medium text-(--text-primary) leading-relaxed" x-text="error"></p>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+
+                        <div class="px-6 py-5 border-t border-(--border-primary) bg-(--bg-main) flex items-center justify-between gap-4">
+                            <p class="text-[11px] text-(--text-secondary) leading-tight italic max-w-[200px]">
+                                * يرجى مراجعة كافة الأقسام والتأكد من حفظ التغييرات كمسودة قبل المحاولة مرة أخرى.
+                            </p>
+                            <div class="flex gap-3 shrink-0">
+                                <button @click="showValidationModal = false"
+                                    class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-(--surface-card) border border-(--border-primary) text-(--text-primary) text-sm font-bold hover:bg-(--bg-main) transition-all cursor-pointer">
+                                    إغلاق
+                                </button>
+                                <a :href="`{{ url('/requests/' . $accreditationRequest->id . '/stage-three') }}/${currentSubId}/edit`" 
+                                   class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-sm font-black shadow-lg shadow-orange-500/20 transition-all cursor-pointer">
+                                    <i class="fa-solid fa-edit"></i> الانتقال للتعديل
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>

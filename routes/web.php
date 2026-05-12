@@ -28,11 +28,9 @@ Route::middleware('auth')->group(function () {
 });
 
 // Import Notification Routes
-require __DIR__ . '/notifications.php';
+require __DIR__.'/notifications.php';
 // UI design playground / testing routes
-Route::get('/app', function () {
-    return view('partials.app');
-});
+
 Route::get('/blank', function () {
     return view('partials.blank');
 });
@@ -117,6 +115,8 @@ Route::middleware('auth')->group(function () {
         ->name('requests.stage_three.upload_evidence_temp');
     Route::get('/stage-three/view-file', [StageThreeController::class, 'viewFile'])
         ->name('requests.stage_three.view_file');
+    Route::post('/requests/{accreditationRequest}/stage-three/{formSubmission}/validate', [StageThreeController::class, 'validateSubmission'])
+        ->name('requests.stage_three.validate');
     Route::patch('/requests/{accreditationRequest}/stage-three/{formSubmission}/submit', [StageThreeController::class, 'submit'])
         ->name('requests.stage_three.submit');
     Route::patch('/requests/{accreditationRequest}/stage-three/{formSubmission}/reject', [StageThreeController::class, 'reject'])
@@ -149,6 +149,8 @@ Route::middleware('auth')->group(function () {
         ->name('requests.stage_five.show');
     Route::post('/requests/{accreditationRequest}/stage-five/{visitSchedule}/save', [StageFiveController::class, 'saveDraft'])
         ->name('requests.stage_five.save');
+    Route::post('/requests/{accreditationRequest}/stage-five/{visitSchedule}/validate', [StageFiveController::class, 'validateSchedule'])
+        ->name('requests.stage_five.validate');
     Route::patch('/requests/{accreditationRequest}/stage-five/{visitSchedule}/submit', [StageFiveController::class, 'submit'])
         ->name('requests.stage_five.submit');
     Route::post('/requests/{accreditationRequest}/stage-five/{visitSchedule}/council-forward', [StageFiveController::class, 'councilForward'])
@@ -177,6 +179,8 @@ Route::middleware('auth')->group(function () {
         ->name('requests.stage_six.rubrics_save');
 
     // Stage Six approval workflow actions
+    Route::post('/requests/{accreditationRequest}/stage-six/validate', [StageSixController::class, 'validateIndicators'])
+        ->name('requests.stage_six.validate');
     Route::patch('/requests/{accreditationRequest}/stage-six/request-approval', [StageSixController::class, 'requestMemberApproval'])
         ->name('requests.stage_six.request_approval');
     Route::post('/requests/{accreditationRequest}/stage-six/member-reject', [StageSixController::class, 'memberReject'])
@@ -219,6 +223,8 @@ Route::middleware('auth')->group(function () {
         ->name('requests.stage_eight.rubrics_save');
 
     // Stage Eight approval workflow actions
+    Route::post('/requests/{accreditationRequest}/stage-eight/validate', [StageEightController::class, 'validateIndicators'])
+        ->name('requests.stage_eight.validate');
     Route::patch('/requests/{accreditationRequest}/stage-eight/request-approval', [StageEightController::class, 'requestMemberApproval'])
         ->name('requests.stage_eight.request_approval');
     Route::post('/requests/{accreditationRequest}/stage-eight/member-reject', [StageEightController::class, 'memberReject'])

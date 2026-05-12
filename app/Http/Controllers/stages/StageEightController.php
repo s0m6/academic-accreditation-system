@@ -138,6 +138,58 @@ class StageEightController extends Controller
         return response()->json(['success' => true, 'message' => 'تم حفظ التغييرات الختامية بنجاح.']);
     }
 
+    // Validate that all indicators are scored (Final assessment)
+    public function validateIndicators(AccreditationRequest $accreditationRequest)
+    {
+        $this->authorizeAccess($accreditationRequest);
+
+        $report = $accreditationRequest->committeeReport;
+        if (! $report) {
+            return response()->json(['valid' => false, 'nullScoredIndicators' => []]);
+        }
+
+        $standards = Standard::with(['subStandards.indicators'])->orderBy('id')->get();
+        $savedScores = ReportScore::where('report_id', $report->id)
+            ->where('score_type', 'final')
+            ->pluck('score', 'indicator_id');
+
+        $nullScoredIndicators = [];
+
+        foreach ($standards as $standard) {
+            $missingIndicators = [];
+            foreach ($standard->subStandards as $subStandard) {
+                foreach ($subStandard->indicators as $indicator) {
+                    if (! $savedScores->has($indicator->id) || $savedScores->get($indicator->id) === null) {
+                        $missingIndicators[$subStandard->name][] = $indicator->indicator_name;
+                    }
+                }
+            }
+
+            if (! empty($missingIndicators)) {
+                $subGroups = [];
+                $totalMissing = 0;
+                foreach ($missingIndicators as $subName => $inds) {
+                    $subGroups[] = [
+                        'sub_standard_name' => $subName,
+                        'indicators' => $inds,
+                    ];
+                    $totalMissing += count($inds);
+                }
+
+                $nullScoredIndicators[] = [
+                    'standard_name' => $standard->name,
+                    'sub_groups' => $subGroups,
+                    'total_missing' => $totalMissing,
+                ];
+            }
+        }
+
+        return response()->json([
+            'valid' => empty($nullScoredIndicators),
+            'nullScoredIndicators' => $nullScoredIndicators,
+        ]);
+    }
+
     // Authorize that the current user is the committee chair evaluator.
     private function authorizeAccess(AccreditationRequest $accreditationRequest, bool $checkEditable = false): void
     {
@@ -393,6 +445,7 @@ class StageEightController extends Controller
 
             // Notify Council Coordinator
             $programName = $accreditationRequest->program->program_name ?? 'البرنامج';
+            $councilCoordinator = $accreditationRequest->councilCoordinator;
             if ($councilCoordinator) {
                 $councilCoordinator->notify(new RealTimeNotification(
                     title: 'الاعتماد النهائي للتقرير',

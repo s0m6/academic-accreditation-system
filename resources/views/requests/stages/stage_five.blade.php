@@ -64,6 +64,10 @@
     
     showSubmitModal: false,
     submitActionUrl: '',
+    isValidating: false,
+    validationErrors: [],
+    validationCounts: [],
+    validationSuccess: false,
 
     showAcceptModal: false,
     acceptActionUrl: '',
@@ -77,6 +81,26 @@
 
     addReason() { this.rejectReasons.push(''); },
     removeReason(i) { if (this.rejectReasons.length > 1) this.rejectReasons.splice(i, 1); },
+
+    async validateAndShowModal(validateUrl, submitUrl) {
+        this.submitActionUrl = submitUrl;
+        this.showSubmitModal = true;
+        this.isValidating = true;
+        this.validationErrors = [];
+        this.validationCounts = [];
+        this.validationSuccess = false;
+
+        try {
+            const response = await axios.post(validateUrl);
+            this.validationSuccess = response.data.success;
+            this.validationErrors = response.data.errors;
+            this.validationCounts = response.data.counts;
+        } catch (error) {
+            this.validationErrors = ['حدث خطأ أثناء عملية التحقق. يرجى المحاولة مرة أخرى.'];
+        } finally {
+            this.isValidating = false;
+        }
+    }
 }">
 
     {{-- Flash alerts --}}
@@ -200,7 +224,7 @@
                                                 <i class="fa-solid fa-pen"></i> تعديل
                                             </a>
                                             
-                                            <button type="button" @click="showSubmitModal = true; submitActionUrl = '{{ route('requests.stage_five.submit', [$accreditationRequest, $schedule]) }}'"
+                                            <button type="button" @click="validateAndShowModal('{{ route('requests.stage_five.validate', [$accreditationRequest, $schedule]) }}', '{{ route('requests.stage_five.submit', [$accreditationRequest, $schedule]) }}')"
                                                 class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition cursor-pointer shadow-sm">
                                                 <i class="fa-solid fa-paper-plane"></i> رفع للمجلس
                                             </button>
@@ -257,8 +281,13 @@
                     <div x-show="showSubmitModal"
                         x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
                         x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
-                        @click.away="showSubmitModal = false"
-                        class="relative transform overflow-hidden rounded-2xl bg-(--surface-card) border border-(--border-primary) shadow-2xl w-full max-w-md text-start">
+                        <div class="relative transform overflow-hidden rounded-2xl bg-(--surface-card) border border-(--border-primary) shadow-2xl w-full max-w-2xl text-start">
+                            {{-- Close button --}}
+                            <div class="absolute top-4 left-4 z-10">
+                                <button @click="showSubmitModal = false" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors cursor-pointer">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            </div>
 
                         <div class="p-6">
                             <div class="flex items-center gap-4 mb-4">
@@ -272,12 +301,55 @@
                                     </p>
                                 </div>
                             </div>
-                            <div class="bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-xl p-4">
-                                <div class="flex gap-3">
-                                    <i class="fa-solid fa-circle-exclamation text-amber-600 dark:text-amber-400 mt-0.5"></i>
-                                    <p class="text-[11px] text-amber-800 dark:text-amber-300 leading-relaxed font-medium">
-                                        بمجرد الإرسال، سيتم قفل الجدول ولن تتمكن من تعديله إلا في حال رفضه من قبل الجامعة أو المجلس.
-                                    </p>
+
+                            {{-- Validation State --}}
+                            <div class="space-y-4">
+                                {{-- Loading --}}
+                                <div x-show="isValidating" class="flex flex-col items-center justify-center py-6 gap-3">
+                                    <div class="w-8 h-8 border-4 border-indigo-500/20 border-t-indigo-600 rounded-full animate-spin"></div>
+                                    <p class="text-xs text-(--text-secondary) font-bold">جاري التحقق من بيانات الجدول...</p>
+                                </div>
+
+                                {{-- Errors --}}
+                                <div x-show="!isValidating && validationErrors.length > 0" class="bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-xl p-4">
+                                    <div class="flex gap-3 mb-2">
+                                        <i class="fa-solid fa-circle-xmark text-red-600 dark:text-red-400 mt-0.5"></i>
+                                        <p class="text-xs font-bold text-red-800 dark:text-red-300">لا يمكن الرفع للأسباب التالية:</p>
+                                    </div>
+                                    <ul class="list-disc list-inside space-y-1">
+                                        <template x-for="error in validationErrors" :key="error">
+                                            <li class="text-[11px] text-red-700 dark:text-red-400/80 leading-relaxed" x-text="error"></li>
+                                        </template>
+                                    </ul>
+                                </div>
+
+                                {{-- Success Summary --}}
+                                <div x-show="!isValidating && validationErrors.length === 0" class="space-y-3">
+                                    <div class="bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-500/20 rounded-xl p-4">
+                                        <div class="flex gap-3 mb-3">
+                                            <i class="fa-solid fa-circle-check text-green-600 dark:text-green-400 mt-0.5"></i>
+                                            <p class="text-xs font-bold text-green-800 dark:text-green-300">تم التحقق من اكتمال البيانات بنجاح:</p>
+                                        </div>
+                                        <div class="grid grid-cols-3 gap-2">
+                                            <template x-for="day in validationCounts" :key="day.label">
+                                                <div class="bg-white dark:bg-white/5 rounded-lg p-2 border border-green-100 dark:border-green-500/10 text-center">
+                                                    <p class="text-[10px] text-(--text-secondary) mb-1 font-bold" x-text="day.label"></p>
+                                                    <p class="text-base font-black text-green-600 dark:text-green-400">
+                                                        <span x-text="day.count"></span> نشاط
+                                                    </p>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-xl p-4">
+                                        <div class="flex gap-3">
+                                            <i class="fa-solid fa-circle-exclamation text-amber-600 dark:text-amber-400 mt-0.5"></i>
+                                            <p class="text-[11px] text-amber-800 dark:text-amber-300 leading-relaxed font-medium">
+                                                بمجرد الإرسال، سيتم قفل الجدول ولن تتمكن من تعديله إلا في حال رفضه من قبل الجامعة أو المجلس.
+                                            </p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -290,8 +362,8 @@
                             <form method="POST" :action="submitActionUrl" class="inline">
                                 @csrf
                                 @method('PATCH')
-                                <button type="submit"
-                                    class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-black shadow-lg shadow-indigo-500/20 transition-all cursor-pointer">
+                                <button type="submit" :disabled="isValidating || !validationSuccess"
+                                    class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-black shadow-lg shadow-indigo-500/20 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
                                     <i class="fa-solid fa-circle-check"></i> تأكيد الرفع للمجلس
                                 </button>
                             </form>
@@ -315,8 +387,13 @@
                     <div x-show="showAcceptModal"
                         x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
                         x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
-                        @click.away="showAcceptModal = false"
-                        class="relative transform overflow-hidden rounded-2xl bg-(--surface-card) border border-(--border-primary) shadow-2xl w-full max-w-md text-start">
+                        <div class="relative transform overflow-hidden rounded-2xl bg-(--surface-card) border border-(--border-primary) shadow-2xl w-full max-w-2xl text-start">
+                            {{-- Close button --}}
+                            <div class="absolute top-4 left-4 z-10">
+                                <button @click="showAcceptModal = false" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors cursor-pointer">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            </div>
 
                         <div class="p-6">
                             <div class="flex flex-col items-center text-center">
@@ -364,7 +441,7 @@
                         x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
                         x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
                         @click.away="showUploadModal = false"
-                        class="relative transform overflow-hidden rounded-2xl bg-(--surface-card) border border-(--border-primary) shadow-2xl w-full max-w-md text-start">
+                        class="relative transform overflow-hidden rounded-2xl bg-(--surface-card) border border-(--border-primary) shadow-2xl w-full max-w-lg text-start">
 
                         <div class="px-6 py-5 border-b border-(--border-primary) bg-(--bg-main) flex justify-between items-center">
                             <div class="flex items-center gap-3">
@@ -376,9 +453,9 @@
                                     <p class="text-[10px] text-(--text-secondary)">إرسال النسخة المعتمدة والموقعة من المجلس</p>
                                 </div>
                             </div>
-                            <button @click="showUploadModal = false" class="w-8 h-8 rounded-lg flex items-center justify-center text-(--text-secondary) hover:bg-(--bg-main) transition-colors cursor-pointer">
-                                <i class="fa-solid fa-xmark"></i>
-                            </button>
+                        <button @click="showUploadModal = false" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors cursor-pointer">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
                         </div>
 
                         <form method="POST" :action="uploadActionUrl" enctype="multipart/form-data">
@@ -394,7 +471,8 @@
                                     </div>
                                 </div>
 
-                                {{-- Simplified Modern File Input --}}
+                                {{-- Simplified Modern File 
+                                 --}}
                                 <div class="space-y-2" x-data="{ fileName: '' }">
                                     <label class="block text-sm font-bold text-(--text-primary)">الملف المعتمد (PDF)</label>
                                     
@@ -450,16 +528,18 @@
         <div x-show="showRejectModal" style="display:none" class="relative z-[200]" role="dialog" aria-modal="true">
             <div x-transition:enter="ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" class="fixed inset-0 bg-black/60 backdrop-blur-sm"></div>
             <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
-                <div x-show="showRejectModal" @click.away="showRejectModal = false" x-transition:enter="ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" class="relative w-full max-w-lg rounded-2xl bg-(--surface-card) border border-(--border-primary) shadow-2xl text-start">
+                <div x-show="showRejectModal" @click.away="showRejectModal = false" x-transition:enter="ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" class="relative w-full max-w-xl rounded-2xl bg-(--surface-card) border border-(--border-primary) shadow-2xl text-start">
                     <div class="px-6 py-5 border-b border-(--border-primary) bg-(--bg-main) flex justify-between items-center">
                         <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-xl bg-red-50 text-red-600 flex items-center justify-center border border-red-100"><i class="fa-solid fa-ban"></i></div>
+                            <div class="w-10 h-10 rounded-xl bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 flex items-center justify-center border border-red-100 dark:border-red-500/20"><i class="fa-solid fa-ban"></i></div>
                             <div>
                                 <h3 class="font-bold text-(--text-primary)">رفض جدول الزيارة</h3>
                                 <p class="text-xs text-(--text-secondary)">أدخل أسباب الرفض أو المقترحات</p>
                             </div>
                         </div>
-                        <button @click="showRejectModal = false" class="text-(--text-secondary)"><i class="fa-solid fa-xmark"></i></button>
+                        <button @click="showRejectModal = false" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors cursor-pointer">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
                     </div>
                     <form method="POST" :action="rejectActionUrl">
                         @csrf @method('PATCH')
@@ -485,13 +565,15 @@
         <div x-show="showReasonsModal" style="display:none" class="relative z-[200]" role="dialog" aria-modal="true">
             <div x-transition:enter="ease-out duration-200" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" class="fixed inset-0 bg-black/60 backdrop-blur-sm"></div>
             <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
-                <div x-show="showReasonsModal" @click.away="showReasonsModal = false" class="relative w-full max-w-md rounded-2xl bg-(--surface-card) border border-(--border-primary) shadow-2xl text-start">
+                <div x-show="showReasonsModal" @click.away="showReasonsModal = false" class="relative w-full max-w-xl rounded-2xl bg-(--surface-card) border border-(--border-primary) shadow-2xl text-start">
                     <div class="px-6 py-5 border-b border-(--border-primary) bg-(--bg-main) flex justify-between items-center">
                         <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-xl bg-red-50 text-red-600 flex items-center justify-center"><i class="fa-solid fa-info-circle"></i></div>
+                            <div class="w-10 h-10 rounded-xl bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 flex items-center justify-center"><i class="fa-solid fa-info-circle"></i></div>
                             <h3 class="font-bold text-(--text-primary)">أسباب الرفض</h3>
                         </div>
-                        <button @click="showReasonsModal = false" class="text-(--text-secondary)"><i class="fa-solid fa-xmark"></i></button>
+                        <button @click="showReasonsModal = false" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors cursor-pointer">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
                     </div>
                     <div class="p-6 space-y-3 max-h-[60vh] overflow-y-auto">
                         <template x-for="(reason, index) in viewReasons" :key="index">

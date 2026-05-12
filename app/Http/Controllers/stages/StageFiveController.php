@@ -109,6 +109,62 @@ class StageFiveController extends Controller
     }
 
     /**
+     * Validate the visit schedule data via AJAX.
+     */
+    public function validateSchedule(AccreditationRequest $accreditationRequest, VisitSchedule $visitSchedule)
+    {
+        $this->authorizeChairEvaluator($accreditationRequest);
+
+        if ($visitSchedule->accreditation_request_id !== $accreditationRequest->id) {
+            return response()->json(['success' => false, 'message' => 'الجدول غير موجود.'], 404);
+        }
+
+        $data = $visitSchedule->schedule_data;
+        $days = $data['days'] ?? [];
+
+        $errors = [];
+        $counts = [];
+
+        // Check each of the first 3 days
+        $requiredLabels = ['اليوم الأول', 'اليوم الثاني', 'اليوم الثالث'];
+        
+        foreach ($requiredLabels as $index => $label) {
+            $day = $days[$index] ?? null;
+            $dayName = $label;
+            
+            // Check Date
+            if (!$day || empty($day['date'])) {
+                $errors[] = "تاريخ {$dayName} مطلوب.";
+            }
+            
+            // Check Activities
+            $activityCount = 0;
+            if ($day && !empty($day['rows'])) {
+                foreach ($day['rows'] as $row) {
+                    if (!empty($row['task'])) {
+                        $activityCount++;
+                    }
+                }
+            }
+            
+            if ($activityCount === 0) {
+                $errors[] = "يجب إضافة نشاط واحد على الأقل في {$dayName}.";
+            }
+            
+            $counts[] = [
+                'label' => $dayName,
+                'count' => $activityCount
+            ];
+        }
+
+        return response()->json([
+            'success' => empty($errors),
+            'errors' => $errors,
+            'counts' => $counts
+        ]);
+    }
+
+    /**
      * Submit the schedule to the council.
      */
     public function submit(Request $request, AccreditationRequest $accreditationRequest, VisitSchedule $visitSchedule)
@@ -119,10 +175,30 @@ class StageFiveController extends Controller
             return back()->with('error', 'لا يمكن إرسال هذا الجدول.');
         }
 
-        // Validate that data is not empty
+        // Perform full validation before submission
         $data = $visitSchedule->schedule_data;
-        if (! $data || empty($data['days'])) {
-            return back()->with('error', 'لا يوجد بيانات في الجدول لإرسالها.');
+        $days = $data['days'] ?? [];
+        $requiredLabels = ['اليوم الأول', 'اليوم الثاني', 'اليوم الثالث'];
+        
+        foreach ($requiredLabels as $index => $label) {
+            $day = $days[$index] ?? null;
+            if (!$day || empty($day['date'])) {
+                return back()->with('error', "تاريخ {$label} مطلوب.");
+            }
+            
+            $hasActivity = false;
+            if ($day && !empty($day['rows'])) {
+                foreach ($day['rows'] as $row) {
+                    if (!empty($row['task'])) {
+                        $hasActivity = true;
+                        break;
+                    }
+                }
+            }
+            
+            if (!$hasActivity) {
+                return back()->with('error', "يجب إضافة نشاط واحد على الأقل في {$label}.");
+            }
         }
 
         $visitSchedule->update([

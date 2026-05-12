@@ -104,6 +104,25 @@
     /* View Mode overrides */
     .view-mode input, .view-mode textarea { pointer-events: none; opacity: 0.8; }
     .view-mode .btn-del, .view-mode .results-add-btn, .view-mode button[onclick^="addInterviewRow"], .view-mode button[onclick^="addResultItem"] { display: none !important; }
+
+    /* Color Scheme */
+    html.dark {
+      color-scheme: dark;
+    }
+
+    /* Date and Time picker icons */
+    input[type="date"]::-webkit-calendar-picker-indicator,
+    input[type="time"]::-webkit-calendar-picker-indicator {
+      cursor: pointer;
+      filter: brightness(0); /* Force to black in light mode */
+      transition: all 0.2s;
+      font-size: 1.1rem;
+    }
+    
+    .dark input[type="date"]::-webkit-calendar-picker-indicator,
+    .dark input[type="time"]::-webkit-calendar-picker-indicator {
+      filter: brightness(0) invert(1) !important; /* Force to black then invert to white in dark mode */
+    }
   </style>
 </head>
 
@@ -117,8 +136,7 @@
     id="theme-toggle"
     onclick="toggleDark()"
     title="تبديل الوضع">
-    <i class="fa-solid fa-moon text-base dark:hidden"></i>
-    <i class="fa-solid fa-sun text-base hidden dark:block"></i>
+    <i class="fa-solid fa-moon text-base"></i>
   </div>
 
   <div class="max-w-5xl mx-auto">
@@ -133,7 +151,13 @@
           <h1 class="text-2xl md:text-3xl font-black text-(--text-primary)">نموذج تقرير الزيارة الميدانية</h1>
         </div>
       </div>
-      <div>
+      <div class="flex items-center gap-3">
+         @if(isset($isEditMode) && $isEditMode)
+         <button type="button" onclick="document.getElementById('save-draft').click()" 
+            class="hidden md:inline-flex items-center gap-2 px-5 py-2.5 text-sm font-bold rounded-xl border-none cursor-pointer transition-all hover:shadow-lg active:scale-95 bg-emerald-600 text-white hover:bg-emerald-700 shadow-emerald-500/20">
+            <i class="fa-solid fa-floppy-disk"></i> حفظ التغييرات
+         </button>
+         @endif
          <a href="{{ route('requests.stage', ['accreditationRequest' => $accreditationRequest, 'stage' => 'stage_six']) }}" 
             class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-bold rounded-xl border border-(--border-primary) bg-(--bg-main) text-(--text-primary) hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
              العودة للوحة الطلب <i class="fa-solid fa-arrow-left text-xs ms-1"></i>
@@ -706,8 +730,8 @@
         <div class="flex gap-3">
           @if(isset($isEditMode) && $isEditMode)
           <button id="save-draft"
-            class="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-bold rounded-xl border cursor-pointer transition-all hover:shadow-sm active:scale-95 bg-(--surface-card) border-(--border-primary) text-(--text-secondary)">
-            <i class="fa-solid fa-floppy-disk text-xs"></i> حفظ التغييرات
+            class="inline-flex items-center gap-2 px-6 py-2.5 text-sm font-bold rounded-xl border-none cursor-pointer transition-all hover:shadow-lg active:scale-95 bg-emerald-600 text-white hover:bg-emerald-700 shadow-emerald-500/20">
+            <i class="fa-solid fa-floppy-disk"></i> حفظ التغييرات
           </button>
           @endif
         </div>
@@ -720,13 +744,28 @@
        DARK MODE
     ====================================================== */
     function toggleDark() {
-      document.documentElement.classList.toggle('dark');
-      localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+      const isDark = document.documentElement.classList.toggle('dark');
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+      updateThemeIcon(isDark);
     }
+
+    function updateThemeIcon(isDark) {
+      const icon = document.querySelector('#theme-toggle i');
+      if (isDark) {
+        icon.className = 'fa-solid fa-sun text-base text-amber-400';
+      } else {
+        icon.className = 'fa-solid fa-moon text-base';
+      }
+    }
+
     // Initialize theme from localStorage
-    if (localStorage.getItem('theme') === 'dark' ||
-        (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    const savedTheme = localStorage.getItem('theme');
+    const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if (savedTheme === 'dark' || (!savedTheme && systemDark)) {
       document.documentElement.classList.add('dark');
+      updateThemeIcon(true);
+    } else {
+      updateThemeIcon(false);
     }
 
     /* ======================================================

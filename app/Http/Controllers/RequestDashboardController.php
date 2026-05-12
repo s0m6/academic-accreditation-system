@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\AccreditationRequest;
 use App\Models\CommitteeApproval;
-use App\Models\ReportScore;
 use App\Models\Standard;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -140,7 +139,7 @@ class RequestDashboardController extends Controller
                     ->with('member.user')
                     ->get()
                     ->groupBy('member_id')
-                    ->map(fn($group) => $group->sortByDesc('iteration_number')->first())
+                    ->map(fn ($group) => $group->sortByDesc('iteration_number')->first())
                     ->values();
 
             } else {
@@ -161,44 +160,6 @@ class RequestDashboardController extends Controller
             }
         }
 
-        // Fetch null-scored indicators for validation (grouped by standard > sub-standard)
-        $nullScoredIndicators = [];
-        if (($activeStage === 'stage_six' || $activeStage === 'stage_eight') && $report) {
-            $scoreType = $activeStage === 'stage_eight' ? 'final' : 'Initial';
-
-            // Collect indicator IDs that already have a score (including score = 0)
-            $scoredIndicatorIds = ReportScore::where('report_id', $report->id)
-                ->where('score_type', $scoreType)
-                ->whereNotNull('score')
-                ->pluck('indicator_id');
-
-            $standards = Standard::with(['subStandards.indicators'])->orderBy('id')->get();
-
-            foreach ($standards as $standard) {
-                $subGroups = [];
-
-                foreach ($standard->subStandards as $sub) {
-                    $missing = $sub->indicators->filter(
-                        fn ($ind) => ! $scoredIndicatorIds->contains($ind->id)
-                    );
-
-                    if ($missing->isNotEmpty()) {
-                        $subGroups[] = [
-                            'sub_standard_name' => $sub->name,
-                            'indicators' => $missing->pluck('name')->toArray(),
-                        ];
-                    }
-                }
-
-                if (! empty($subGroups)) {
-                    $nullScoredIndicators[] = [
-                        'standard_name' => $standard->name,
-                        'sub_groups' => $subGroups,
-                    ];
-                }
-            }
-        }
-
         return [
             'accreditationRequest' => $accreditationRequest,
             'stages' => self::STAGES,
@@ -209,7 +170,7 @@ class RequestDashboardController extends Controller
             'coordinators' => $coordinators,
             'visitSchedules' => $visitSchedules,
             'committeeApprovals' => $committeeApprovals,
-            'nullScoredIndicators' => $nullScoredIndicators,
+            'nullScoredIndicators' => [], // Handled via Axios real-time validation
         ];
     }
 
