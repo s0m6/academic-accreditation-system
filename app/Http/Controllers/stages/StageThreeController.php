@@ -460,6 +460,197 @@ class StageThreeController extends Controller
         return back()->with('success', 'تم رفع تقرير الدراسة الذاتية للأمانة بنجاح.');
     }
 
+    // Validate the stage three form data before submission.
+    public function validateSubmission(Request $request, AccreditationRequest $accreditationRequest, FormSubmission $formSubmission)
+    {
+        $this->ensureAuthorized($request, $accreditationRequest, $formSubmission);
+
+        $formData = $formSubmission->form_data ?? [];
+        $indicatorEvaluations = $formSubmission->indicatorEvaluations()->get();
+        $missing = [];
+
+        // 1. Part One: Basic Program Data (Mandatory)
+        $section1 = [
+            'general' => [
+                'review_date' => 'تاريخ التقييم / المراجعة',
+                'review_team_head' => 'رئيس فريق المراجعة',
+            ],
+            'program' => [
+                'executive_summary' => 'الملخص التنفيذي للبرنامج',
+                'coordinator_name' => 'اسم منسق إعداد التقرير',
+                'coordinator_title' => 'صفة منسق إعداد التقرير',
+                'coordinator_email' => 'البريد الإلكتروني للمنسق',
+                'coordinator_phone' => 'رقم هاتف المنسق',
+                'report_date' => 'تاريخ إعداد التقرير (بيانات المنسق)',
+            ],
+            'profile' => [
+                'program_mission' => 'رسالة البرنامج',
+                'program_objectives_list' => 'أهداف البرنامج',
+                'program_system' => 'نظام البرنامج',
+                'credit_hours' => 'عدد الساعات المعتمدة',
+                'courses_total' => 'عدد المقررات',
+                'male_students_count' => 'عدد الطلاب (الذكور)',
+                'female_students_count' => 'عدد الطلاب (الإناث)',
+                'dept_council_date' => 'تاريخ اعتماد مجلس القسم',
+                'college_council_date' => 'تاريخ اعتماد مجلس الكلية',
+                'academic_council_date' => 'تاريخ اعتماد المجلس الأكاديمي',
+                'university_council_date' => 'تاريخ اعتماد مجلس الجامعة',
+                'program_history' => 'موجز عن تاريخ البرنامج',
+                'env_changes' => 'التغيرات في البيئة الداخلية والخارجية',
+                'self_study_arrangements' => 'ترتيبات إجراء الدراسة الذاتية',
+                'comparison_methodology' => 'منهجية المقارنة الداخلية والخارجية',
+            ],
+        ];
+
+        foreach ($section1 as $sec => $fields) {
+            foreach ($fields as $key => $label) {
+                $val = $formData[$sec][$key] ?? '';
+                
+                // Special handling for program_objectives_list (JSON string)
+                if ($key === 'program_objectives_list') {
+                    if (is_string($val)) {
+                        $val = json_decode($val, true) ?? [];
+                    }
+                    $nonEmptyPoints = array_filter((array)$val, fn($p) => !empty(trim($p)));
+                    if (empty($nonEmptyPoints)) {
+                        $missing[] = "الجزء الأول: حقل «{$label}» مطلوب (يجب إدخال نقطة واحدة على الأقل).";
+                    }
+                    continue;
+                }
+
+                if (empty($val) || $val === '[]' || $val === '[""]') {
+                    $missing[] = "الجزء الأول: حقل «{$label}» مطلوب.";
+                }
+            }
+        }
+
+        // 1.1 Tables Validation (Summarized warnings)
+        $tables = $formData['tables'] ?? [];
+
+        // Graduates Table (15 numeric fields + 3 year labels = 18 fields)
+        $gradYears = ['last_year', 'prev_year', 'two_years_ago'];
+        $grades = ['excellent', 'very_good', 'good', 'pass', 'fail'];
+        $gradMissing = false;
+
+        foreach ($gradYears as $y) {
+            // 1. Check Year Label (ft_graduates_last_year_year_display)
+            $labelKey = "ft_graduates_{$y}_year_display";
+            $labelVal = $tables[$labelKey] ?? '';
+            if (empty($labelVal) || (is_string($labelVal) && trim($labelVal) === '')) {
+                $gradMissing = true;
+                break;
+            }
+
+            // 2. Check Grade Values (ft_graduates_last_year_excellent)
+            foreach ($grades as $g) {
+                $fieldKey = "ft_graduates_{$y}_{$g}";
+                $val = $tables[$fieldKey] ?? '';
+                
+                // Check if the flat key is empty
+                if ($val === null || (is_string($val) && trim($val) === '')) {
+                    $gradMissing = true;
+                    break 2;
+                }
+            }
+        }
+
+        if ($gradMissing) {
+            $missing[] = 'الجزء الأول: بيانات «جدول تقديرات الخريجين» غير مكتملة (يرجى التأكد من ملء جميع الأعوام والتقديرات   ).';
+        }
+
+        // Research Table (9 indicators)
+        $researchKeys = [
+            'intl_journals_indexed', 'arabic_journals_reviewed', 'local_journals_reviewed',
+            'faculty_publications', 'faculty_textbooks', 'faculty_translated_books',
+            'master_theses_discussed', 'phd_dissertations_discussed', 'conferences_workshops_organized'
+        ];
+        $resMissing = false;
+        foreach ($researchKeys as $rk) {
+            $val = $tables["res_{$rk}_count"] ?? null;
+            if ($val === null || ($val === '' && $val !== 0 && $val !== "0")) {
+                $resMissing = true;
+                break;
+            }
+        }
+        if ($resMissing) {
+            $missing[] = 'الجزء الأول: بيانات «جدول البحث العلمي والأنشطة البحثية» غير مكتملة.';
+        }
+
+        // Facilities Table (7 indicators * 4 fields = 28 fields)
+        $facilityKeys = ['classrooms', 'spec_labs', 'comp_labs', 'library', 'admin_offices', 'student_lounges', 'sports'];
+        $facFields = ['count', 'area', 'students', 'hours'];
+        $facMissing = false;
+        foreach ($facilityKeys as $fk) {
+            foreach ($facFields as $ff) {
+                $val = $tables["fac_{$fk}_{$ff}"] ?? null;
+                if ($val === null || ($val === '' && $val !== 0 && $val !== "0")) {
+                    $facMissing = true;
+                    break 2;
+                }
+            }
+        }
+        if ($facMissing) {
+            $missing[] = 'الجزء الأول: بيانات «جدول المرافق التعليمية والخدمية» غير مكتملة.';
+        }
+
+        // 2. Part Two: Indicator Ratings (Mandatory)
+        $unratedCount = $indicatorEvaluations->whereNull('score')->count();
+        if ($unratedCount > 0) {
+            $missing[] = "الجزء الثاني: يوجد عدد ({$unratedCount}) مؤشرات لم يتم تقييمها بعد.";
+        }
+
+        // 3. Part Three: Evaluations & Results (At least one point)
+        $section3 = [
+            'evaluations' => [
+                'evaluation_procedures' => 'إجراءات التقييم',
+                'evaluator_recommendations' => 'توصيات المقيمين المستقلين',
+                'actions_taken' => 'الإجراءات المتخذة حيالها',
+            ],
+            'results' => [
+                'success_aspects' => 'أبرز جوانب النجاح',
+                'priority_improvements' => 'أولويات التحسين',
+            ],
+        ];
+
+        foreach ($section3 as $sec => $fields) {
+            foreach ($fields as $key => $label) {
+                $list = $formData[$sec][$key] ?? [];
+                if (! is_array($list)) {
+                    $list = json_decode($list, true) ?? [];
+                }
+                $nonEmpty = array_filter($list, fn ($p) => ! empty(trim($p)));
+                if (empty($nonEmpty)) {
+                    $missing[] = "الجزء الثالث: يجب إدخال نقطة واحدة على الأقل في «{$label}».";
+                }
+            }
+        }
+
+        // 4. Executive Proposals (Mandatory if listed, and at least one must exist)
+        $proposals = $formData['tables']['proposals'] ?? [];
+        if (empty($proposals)) {
+            $missing[] = 'الجزء الثالث: يجب إضافة مقترح تنفيذي واحد على الأقل في خطة التحسين.';
+        } else {
+            foreach ($proposals as $index => $p) {
+                if (empty($p['recommendation']) || empty($p['responsible']) || empty($p['timeline']) || empty($p['resources'])) {
+                    $missing[] = 'الجزء الثالث: بيانات المقترح رقم ('.($index + 1).') غير مكتملة.';
+                }
+            }
+        }
+
+        if (count($missing) > 0) {
+            return response()->json([
+                'success' => false,
+                'message' => 'يوجد بيانات ناقصة يجب إكمالها قبل الرفع.',
+                'missing' => $missing,
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'البيانات مكتملة وجاهزة للرفع.',
+        ]);
+    }
+
     // Reject the stage three submission with reasons.
     public function reject(Request $request, AccreditationRequest $accreditationRequest, FormSubmission $formSubmission)
     {
