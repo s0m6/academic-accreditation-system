@@ -28,7 +28,7 @@ Route::middleware('auth')->group(function () {
 });
 
 // Import Notification Routes
-require __DIR__ . '/notifications.php';
+require __DIR__.'/notifications.php';
 // UI design playground / testing routes
 
 Route::get('/blank', function () {
@@ -179,6 +179,8 @@ Route::middleware('auth')->group(function () {
         ->name('requests.stage_six.rubrics_save');
 
     // Stage Six approval workflow actions
+    Route::post('/requests/{accreditationRequest}/stage-six/validate', [StageSixController::class, 'validateIndicators'])
+        ->name('requests.stage_six.validate');
     Route::patch('/requests/{accreditationRequest}/stage-six/request-approval', [StageSixController::class, 'requestMemberApproval'])
         ->name('requests.stage_six.request_approval');
     Route::post('/requests/{accreditationRequest}/stage-six/member-reject', [StageSixController::class, 'memberReject'])
@@ -221,6 +223,8 @@ Route::middleware('auth')->group(function () {
         ->name('requests.stage_eight.rubrics_save');
 
     // Stage Eight approval workflow actions
+    Route::post('/requests/{accreditationRequest}/stage-eight/validate', [StageEightController::class, 'validateIndicators'])
+        ->name('requests.stage_eight.validate');
     Route::patch('/requests/{accreditationRequest}/stage-eight/request-approval', [StageEightController::class, 'requestMemberApproval'])
         ->name('requests.stage_eight.request_approval');
     Route::post('/requests/{accreditationRequest}/stage-eight/member-reject', [StageEightController::class, 'memberReject'])

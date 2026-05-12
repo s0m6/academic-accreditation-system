@@ -173,6 +173,103 @@ class StageSixController extends Controller
         return response()->json(['success' => true, 'message' => 'تم حفظ التغييرات بنجاح.']);
     }
 
+    // Validate that all indicators are scored (Initial assessment) and Form 5 is complete
+    public function validateIndicators(AccreditationRequest $accreditationRequest)
+    {
+        $this->authorizeAccess($accreditationRequest);
+
+        $report = $accreditationRequest->committeeReport;
+        if (! $report) {
+            return response()->json(['valid' => false, 'nullScoredIndicators' => [], 'form5Issues' => ['التقرير غير موجود']]);
+        }
+
+        // --- Form 6 Validation (Indicators) ---
+        $standards = Standard::with(['subStandards.indicators'])->orderBy('id')->get();
+        $savedScores = ReportScore::where('report_id', $report->id)
+            ->where('score_type', 'initial')
+            ->pluck('score', 'indicator_id');
+
+        $nullScoredIndicators = [];
+        foreach ($standards as $standard) {
+            $missingIndicators = [];
+            foreach ($standard->subStandards as $subStandard) {
+                foreach ($subStandard->indicators as $indicator) {
+                    if (! $savedScores->has($indicator->id) || $savedScores->get($indicator->id) === null) {
+                        $missingIndicators[$subStandard->name][] = $indicator->indicator_name;
+                    }
+                }
+            }
+
+            if (! empty($missingIndicators)) {
+                $subGroups = [];
+                $totalMissing = 0;
+                foreach ($missingIndicators as $subName => $inds) {
+                    $subGroups[] = [
+                        'sub_standard_name' => $subName,
+                        'indicators' => $inds,
+                    ];
+                    $totalMissing += count($inds);
+                }
+
+                $nullScoredIndicators[] = [
+                    'standard_name' => $standard->name,
+                    'sub_groups' => $subGroups,
+                    'total_missing' => $totalMissing,
+                ];
+            }
+        }
+
+        // --- Form 5 Validation (Visit Report) ---
+        $form5Issues = [];
+        $form5Info = [];
+        $f5 = $report->form5_data ?? [];
+
+        // 1. General Notes (7 points)
+        $genNotes = $f5['general_notes'] ?? [];
+        if (count($genNotes) < 7) {
+            $form5Issues[] = 'يجب تقييم جميع النقاط السبعة في قسم الملاحظات العامة.';
+        }
+
+        // 2. Interviews (At least one)
+        $interviews = $f5['interviews'] ?? [];
+        $validInterviews = array_filter($interviews, fn ($i) => ! empty($i['name']) && ! empty($i['date']));
+        if (empty($validInterviews)) {
+            $form5Issues[] = 'يجب تسجيل مقابلة واحدة على الأقل (الاسم والتاريخ مطلوبان).';
+        }
+
+        // 3. General Results (Info only)
+        $pos = count($f5['interview_positives'] ?? []);
+        $neg = count($f5['interview_negatives'] ?? []);
+        $form5Info[] = "النتائج العامة للمقابلات: تم تسجيل ({$pos}) إيجابيات و ({$neg}) سلبيات.";
+
+        // 4. Site Tours (Date and Count for all)
+        if (empty($f5['tours_date'])) {
+            $form5Issues[] = 'تاريخ الجولات الميدانية مطلوب.';
+        }
+        $tours = $f5['tours'] ?? [];
+        $missingTours = array_filter($tours, fn ($t) => empty($t['count']));
+        if (! empty($missingTours)) {
+            $form5Issues[] = 'يجب تحديد العدد لجميع المرافق في الجولات الميدانية.';
+        }
+
+        // 5. Document Review (Date and at least one row)
+        if (empty($f5['docs_date'])) {
+            $form5Issues[] = 'تاريخ الإطلاع على الوثائق مطلوب.';
+        }
+        $docPos = count($f5['docs_positives'] ?? []);
+        $docNeg = count($f5['docs_negatives'] ?? []);
+        if (($docPos + $docNeg) === 0) {
+            $form5Issues[] = 'يجب إضافة ملاحظة واحدة على الأقل في قسم الإطلاع على الوثائق.';
+        }
+
+        return response()->json([
+            'valid' => empty($nullScoredIndicators) && empty($form5Issues),
+            'nullScoredIndicators' => $nullScoredIndicators,
+            'form5Issues' => $form5Issues,
+            'form5Info' => $form5Info,
+        ]);
+    }
+
     // Authorize that the current user is the committee chair evaluator and optionally check if report is editable.
     private function authorizeAccess(AccreditationRequest $accreditationRequest, bool $checkEditable = false): void
     {

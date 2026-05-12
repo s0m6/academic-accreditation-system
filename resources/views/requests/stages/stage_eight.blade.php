@@ -64,8 +64,9 @@
 @else
 
 <div class="w-full text-start space-y-6" x-data="{
-    nullScoredIndicators: {{ Js::from($nullScoredIndicators ?? []) }},
+    nullScoredIndicators: [],
     showNullModal: false,
+    isValidating: false,
     showRequestModal: false,
     showWithdrawModal: false,
     
@@ -82,11 +83,24 @@
     padFinal: null,
     submitType: 'member',
 
-    tryRequestApproval() {
-        if (this.nullScoredIndicators.length > 0) {
-            this.showNullModal = true;
-        } else {
-            this.showRequestModal = true;
+    async tryRequestApproval() {
+        if (this.isValidating) return;
+        
+        this.isValidating = true;
+        try {
+            const response = await axios.post('{{ route('requests.stage_eight.validate', $accreditationRequest) }}');
+            this.nullScoredIndicators = response.data.nullScoredIndicators;
+            
+            if (this.nullScoredIndicators.length > 0) {
+                this.showNullModal = true;
+            } else {
+                this.showRequestModal = true;
+            }
+        } catch (error) {
+            console.error('Validation error:', error);
+            alert('حدث خطأ أثناء التحقق من البيانات. يرجى المحاولة مرة أخرى.');
+        } finally {
+            this.isValidating = false;
         }
     },
     
@@ -163,15 +177,17 @@
                      class="relative w-full max-w-2xl rounded-2xl bg-(--surface-card) shadow-2xl border border-(--border-primary) flex flex-col max-h-[85vh]">
 
                     {{-- Header --}}
-                    <div class="px-6 py-5 border-b border-(--border-primary) bg-(--bg-main) flex items-center gap-3 shrink-0">
-                        <div class="w-10 h-10 rounded-xl bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 flex items-center justify-center border border-red-100 dark:border-red-500/20 shadow-inner shrink-0">
-                            <i class="fa-solid fa-triangle-exclamation"></i>
+                    <div class="px-6 py-5 border-b border-(--border-primary) bg-(--bg-main) flex items-center justify-between shrink-0">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 flex items-center justify-center border border-red-100 dark:border-red-500/20 shadow-inner shrink-0">
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-(--text-primary)">مؤشرات غير مكتملة التقييم</h3>
+                                <p class="text-xs text-(--text-secondary)">يجب تقييم جميع المؤشرات قبل طلب موافقة الأعضاء</p>
+                            </div>
                         </div>
-                        <div>
-                            <h3 class="font-bold text-(--text-primary)">مؤشرات غير مكتملة التقييم</h3>
-                            <p class="text-xs text-(--text-secondary)">يجب تقييم جميع المؤشرات قبل طلب موافقة الأعضاء</p>
-                        </div>
-                        <button @click="showNullModal = false" class="mr-auto text-(--text-secondary) hover:text-(--text-primary) transition">
+                        <button @click="showNullModal = false" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors cursor-pointer">
                             <i class="fa-solid fa-xmark text-xl"></i>
                         </button>
                     </div>
@@ -183,36 +199,28 @@
                             <span>المؤشرات التالية لم يتم تقييمها بعد (التقييم الختامي).</span>
                         </div>
 
-                        <template x-for="(standard, si) in nullScoredIndicators" :key="si">
-                            <div class="rounded-xl border border-(--border-primary) overflow-hidden">
-                                {{-- Standard header --}}
-                                <div class="px-4 py-3 bg-blue-50 dark:bg-blue-500/10 border-b border-(--border-primary) flex items-center gap-2">
-                                    <i class="fa-solid fa-layer-group text-blue-600 dark:text-blue-400 text-sm"></i>
-                                    <span class="font-bold text-blue-700 dark:text-blue-300 text-sm" x-text="standard.standard_name"></span>
-                                </div>
-
-                                <div class="divide-y divide-(--border-primary)">
-                                    <template x-for="(sub, ssi) in standard.sub_groups" :key="ssi">
-                                        <div class="px-4 py-3">
-                                            {{-- Sub-standard --}}
-                                            <p class="text-xs font-bold text-(--text-secondary) mb-2 flex items-center gap-1.5">
-                                                <i class="fa-solid fa-chevron-left text-[10px]"></i>
-                                                <span x-text="sub.sub_standard_name"></span>
-                                            </p>
-                                            {{-- Indicators list --}}
-                                            <ul class="space-y-1.5 pr-4">
-                                                <template x-for="(ind, ii) in sub.indicators" :key="ii">
-                                                    <li class="flex items-start gap-2 text-sm text-(--text-primary)">
-                                                        <span class="mt-1 w-1.5 h-1.5 rounded-full bg-red-400 shrink-0"></span>
-                                                        <span x-text="ind"></span>
-                                                    </li>
-                                                </template>
-                                            </ul>
+                        <div class="grid grid-cols-1 gap-3">
+                            <template x-for="(standard, si) in nullScoredIndicators" :key="si">
+                                <div class="flex items-center justify-between p-4 rounded-xl border border-(--border-primary) bg-(--surface-card) hover:bg-(--bg-main) transition-colors group">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-lg bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center border border-blue-100 dark:border-blue-500/20 shadow-sm group-hover:scale-110 transition-transform">
+                                            <i class="fa-solid fa-layer-group"></i>
                                         </div>
-                                    </template>
+                                        <div>
+                                            <p class="text-sm font-bold text-(--text-primary)" x-text="standard.standard_name"></p>
+                                            <p class="text-[11px] text-(--text-secondary) mt-0.5">المعيار الرئيسي رقم <span x-text="si + 1"></span></p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <div class="px-3 py-1.5 rounded-lg bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-500/20 flex items-center gap-2">
+                                            <span class="text-base font-black" x-text="standard.total_missing"></span>
+                                            <span class="text-[10px] font-bold">مؤشر غير مقيم</span>
+                                        </div>
+                                        <i class="fa-solid fa-circle-exclamation text-red-500 animate-pulse"></i>
+                                    </div>
                                 </div>
-                            </div>
-                        </template>
+                            </template>
+                        </div>
                     </div>
 
                     {{-- Footer --}}
@@ -478,9 +486,20 @@
     <div class="flex flex-wrap items-center gap-3 mt-6 border-t border-(--border-primary) pt-6">
         @if($isChairEvaluator)
             @if(in_array($currentStatus, ['uni_responded', 'returned_for_edit']))
-                <button @click="tryRequestApproval()" class="px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-md transition-colors flex items-center gap-2">
-                    <i class="fa-solid fa-paper-plane"></i> طلب موافقة الأعضاء
-                </button>
+                    <button @click="tryRequestApproval()" 
+                            :disabled="isValidating"
+                            class="px-6 py-3 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold shadow-md transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-wait">
+                        <template x-if="!isValidating">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-paper-plane"></i> طلب موافقة الأعضاء (المراجعة النهائية)
+                            </div>
+                        </template>
+                        <template x-if="isValidating">
+                            <div class="flex items-center gap-2">
+                                <i class="fa-solid fa-spinner fa-spin"></i> جاري التحقق...
+                            </div>
+                        </template>
+                    </button>
             @endif
 
             @if($currentStatus === 'final_under_review')
