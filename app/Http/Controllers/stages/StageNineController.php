@@ -142,7 +142,7 @@ class StageNineController extends Controller
         // Generate QR code URL (points back to this page)
         $certificateUrl = route('certificate.show', $certificateNumber);
 
-        return view('certificates.show', compact('certificate', 'data', 'isValid', 'certificateUrl'));
+        return view('public.show', compact('certificate', 'data', 'isValid', 'certificateUrl'));
     }
 
     /**

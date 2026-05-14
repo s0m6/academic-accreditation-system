@@ -16,10 +16,17 @@ use App\Http\Controllers\RequestDashboardController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
+use App\Http\Controllers\PublicCertificateController;
+
 // Public landing page
 Route::get('/', function () {
-    return view('welcome');
-});
+    $latestCertificates = app(PublicCertificateController::class)->getLatest();
+    return view('public.index', compact('latestCertificates'));
+})->name('welcome');
+
+// Public certificates explorer
+Route::get('/certificates/explorer', [PublicCertificateController::class, 'index'])->name('certificates.explorer');
+Route::get('/api/certificates/search', [PublicCertificateController::class, 'search'])->name('api.certificates.search');
 
 // Unified dashboard route that redirects users to their role-specific dashboard
 Route::get('/dashboard', function () {
