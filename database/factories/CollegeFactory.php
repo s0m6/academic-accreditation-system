@@ -17,7 +17,7 @@ class CollegeFactory extends Factory
         return [
             'name' => 'كلية '.fake('ar_SA')->randomElement(['الهندسة', 'العلوم', 'إدارة الأعمال', 'الحاسبات', 'الطب', 'القانون', 'التربية']),
             'university_id' => University::factory(),
-            'city_id' => City::factory(),
+            'city_id' => City::inRandomOrder()->first()->id,
             'dean_name' => fake('ar_SA')->name(),
             'dean_email' => fake()->unique()->safeEmail(),
             'dean_mobile' => '05'.fake()->numerify('########'),

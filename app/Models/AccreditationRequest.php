@@ -68,4 +68,12 @@ class AccreditationRequest extends Model
     {
         return $this->hasOne(CommitteeReport::class);
     }
+
+    /**
+     * Get the final decision for this request.
+     */
+    public function finalDecision()
+    {
+        return $this->hasOne(FinalDecision::class);
+    }
 }

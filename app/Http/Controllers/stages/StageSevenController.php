@@ -213,7 +213,7 @@ class StageSevenController extends Controller
             'program.department.college.university.officer',
             'councilCoordinator',
             'committee.chairEvaluator.user',
-            'committee.acceptedMembers.evaluator.user'
+            'committee.acceptedMembers.evaluator.user',
         ]);
 
         $councilCoordinator = $accreditationRequest->councilCoordinator;

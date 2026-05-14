@@ -78,7 +78,7 @@ class AcademicStructureSeeder extends Seeder
             $college = College::factory()->create([
                 'name' => $collegeData['college_name'],
                 'university_id' => $university->id,
-                'city_id' => $university->city_id ?? City::inRandomOrder()->first()?->id ?? City::factory(),
+                'city_id' => $university->city_id ?? City::inRandomOrder()->first()->id,
             ]);
 
             foreach ($collegeData['departments'] as $deptData) {

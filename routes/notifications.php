@@ -1,9 +1,10 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\NotificationController;
+use App\Models\User;
 use App\Notifications\RealTimeNotification;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -23,13 +24,13 @@ Route::middleware(['auth'])->group(function () {
 
 // Test notification route (can be restricted to local environment if needed)
 Route::get('/test-notification', function () {
-    if (!Auth::check()) {
+    if (! Auth::check()) {
         return 'أنت غير مسجل الدخول من منظور هذا المسار! يرجى التأكد من أنك مسجل الدخول في نفس المتصفح والرابط (localhost).';
     }
 
-    /** @var \App\Models\User $user */
+    /** @var User $user */
     $user = Auth::user();
-    
+
     $user->notify(new RealTimeNotification(
         title: 'تنبيه تجريبي',
         message: 'هذا إشعار لحظي تم إرساله بنجاح عبر Laravel Reverb!',
@@ -37,5 +38,5 @@ Route::get('/test-notification', function () {
         actionUrl: route('dashboard')
     ));
 
-    return 'تم إرسال الإشعار! افحص الجرس في الأعلى. (المستخدم: ' . $user->name . ')';
+    return 'تم إرسال الإشعار! افحص الجرس في الأعلى. (المستخدم: '.$user->name.')';
 });

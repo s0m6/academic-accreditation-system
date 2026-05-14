@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class NotificationController extends Controller
 {
@@ -13,9 +13,10 @@ class NotificationController extends Controller
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
-        
+
         $notifications = $user->notifications()->latest()->limit(50)->get()->map(function ($n) {
             $n->created_at_human = $n->created_at->diffForHumans();
+
             return $n;
         });
         $unreadCount = $user->unreadNotifications()->count();

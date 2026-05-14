@@ -27,6 +27,17 @@ class EvaluatorSeeder extends Seeder
             ->create();
 
         $evaluators->each(function ($evaluator) use ($universities) {
+            $conflictReasons = [
+                'عمل سابق في الجامعة أو أحد مراكزها البحثية',
+                'عضو سابق أو حالي في مجلس الكلية أو اللجان الأكاديمية',
+                'تعاون بحثي مشترك قائم مع أعضاء هيئة التدريس بالجامعة',
+                'وجود صلة قرابة مع أحد منسوبي الكلية أو البرنامج المعني',
+                'خريج سابق من أحد برامج الدراسات العليا بالجامعة',
+                'المشاركة في لجان تحكيم ترقيات علمية أو مناقشة رسائل علمية بالجامعة',
+                'تقديم خدمات استشارية سابقة أو حالية للجامعة',
+                'انتداب سابق للتدريس أو التدريب في الجامعة',
+            ];
+
             // Get several universities for conflicts (between 1 and 3, but not all)
             // We exclude the evaluator's current university
             $conflictUniversities = $universities->where('id', '!=', $evaluator->current_university_id)
@@ -36,7 +47,7 @@ class EvaluatorSeeder extends Seeder
                 EvaluatorConflict::create([
                     'evaluator_id' => $evaluator->id,
                     'university_id' => $university->id,
-                    'conflict_text' => 'تعارض مصالح بسبب العمل السابق أو التعاون الأكاديمي',
+                    'conflict_text' => fake()->randomElement($conflictReasons),
                 ]);
             }
         });
