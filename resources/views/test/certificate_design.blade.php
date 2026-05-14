@@ -4,9 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>شهادة اعتماد - مجلس الاعتماد الأكاديمي</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
         .cert-scale { transform: scale(0.6); }
@@ -19,8 +16,13 @@
 
     <div class="w-full h-full p-4 flex items-center justify-center">
         <!-- Certificate Card (A4 Landscape) -->
-        <div class="cert-scale relative w-[297mm] h-[210mm] bg-white flex flex-col p-0 overflow-hidden shadow-[0_40px_80px_rgba(0,37,70,0.12)] border border-[#002546]/10 origin-center shrink-0 z-10">
+        <div class="cert-scale relative w-[297mm] h-[210mm] bg-white flex flex-col p-0 overflow-hidden shadow-[0_40px_80px_rgba(0,37,70,0.12)] origin-center shrink-0 z-10">
             
+            <!-- Professional Certificate Frame -->
+            <div class="absolute inset-[16px] border border-[#e9c176]/50 pointer-events-none z-40"></div>
+            <div class="absolute inset-[22px] border-[3px] border-[#e9c176] pointer-events-none z-40"></div>
+            <div class="absolute inset-[28px] border border-[#002546]/30 pointer-events-none z-40"></div>
+
             <!-- Watermark Background (z-0) -->
             <img src="{{ asset('images/logo.png') }}" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] opacity-[0.03] pointer-events-none z-0" alt="">
 

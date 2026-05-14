@@ -34,9 +34,7 @@ require __DIR__.'/notifications.php';
 Route::get('/blank', function () {
     return view('partials.blank');
 });
-Route::get('/test/visit-schedule', function () {
-    return view('test.visit_schedule_design');
-})->name('test.visit_schedule');
+
 Route::get('/test/certificate', function () {
     return view('test.certificate_design');
 })->name('test.certificate');
