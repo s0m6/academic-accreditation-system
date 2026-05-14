@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\stages\StageNineController;
 use App\Models\AccreditationRequest;
 use App\Models\CommitteeApproval;
 use App\Models\Standard;
@@ -160,6 +161,17 @@ class RequestDashboardController extends Controller
             }
         }
 
+        // Load final decision data for stage nine
+        $finalDecision = $accreditationRequest->finalDecision;
+        if ($finalDecision) {
+            $finalDecision->load('certificate', 'issuedBy');
+        }
+
+        // Resolve suggested decision from Stage 8 committee report scores
+        $stageNineSuggestion = $activeStage === 'stage_nine'
+            ? StageNineController::resolveAchievementFromReport($accreditationRequest)
+            : [];
+
         return [
             'accreditationRequest' => $accreditationRequest,
             'stages' => self::STAGES,
@@ -171,6 +183,8 @@ class RequestDashboardController extends Controller
             'visitSchedules' => $visitSchedules,
             'committeeApprovals' => $committeeApprovals,
             'nullScoredIndicators' => [], // Handled via Axios real-time validation
+            'finalDecision' => $finalDecision,
+            'stageNineSuggestion' => $stageNineSuggestion,
         ];
     }
 
