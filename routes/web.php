@@ -3,11 +3,30 @@
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\stages\StageNineController;
+use App\Http\Controllers\stages\StageEightController;
+use App\Http\Controllers\stages\StageSevenController;
+use App\Http\Controllers\stages\StageSixController;
+use App\Http\Controllers\stages\StageFiveController;
+use App\Http\Controllers\stages\StageFourController;
+use App\Http\Controllers\stages\StageThreeController;
+use App\Http\Controllers\stages\StageTwoController;
+use App\Http\Controllers\stages\StageOneController;
+use App\Http\Controllers\RequestDashboardController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+
+use App\Http\Controllers\PublicCertificateController;
 
 // Public landing page
 Route::get('/', function () {
-    return view('welcome');
-});
+    $latestCertificates = app(PublicCertificateController::class)->getLatest();
+    return view('public.index', compact('latestCertificates'));
+})->name('welcome');
+
+// Public certificates explorer
+Route::get('/certificates/explorer', [PublicCertificateController::class, 'index'])->name('certificates.explorer');
+Route::get('/api/certificates/search', [PublicCertificateController::class, 'search'])->name('api.certificates.search');
 
 // Unified dashboard route that redirects users to their role-specific dashboard
 Route::get('/dashboard', function () {
@@ -34,26 +53,20 @@ require __DIR__.'/notifications.php';
 Route::get('/blank', function () {
     return view('partials.blank');
 });
-Route::get('/test/visit-schedule', function () {
-    return view('test.visit_schedule_design');
-})->name('test.visit_schedule');
+
+// Public certificate verification (no auth required)
+Route::get('/certificate/{certificateNumber}', [StageNineController::class, 'showCertificate'])
+    ->name('certificate.show');
 require __DIR__.'/auth.php';
 require __DIR__.'/council_coordinator.php';
 
 // ------------------------------------------------------------------
 // Accreditation Request Dashboard — accessible to multiple roles
 // ------------------------------------------------------------------
-use App\Http\Controllers\RequestDashboardController;
-use App\Http\Controllers\stages\StageEightController;
-use App\Http\Controllers\stages\StageFiveController;
-use App\Http\Controllers\stages\StageFourController;
-use App\Http\Controllers\stages\StageOneController;
-use App\Http\Controllers\stages\StageSevenController;
-use App\Http\Controllers\stages\StageSixController;
-use App\Http\Controllers\stages\StageThreeController;
-use App\Http\Controllers\stages\StageTwoController;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
+// ------------------------------------------------------------------
+// Accreditation Request Dashboard — accessible to multiple roles
+// ------------------------------------------------------------------
+
 
 // Dashboard and stage navigation routes for accreditation requests
 Route::middleware('auth')->group(function () {
@@ -241,5 +254,9 @@ Route::middleware('auth')->group(function () {
         ->name('requests.stage_eight.final_decision');
     Route::get('/requests/{accreditationRequest}/stage-eight/comparison', [StageEightController::class, 'showComparison'])
         ->name('requests.stage_eight.comparison');
+
+    // Stage Nine — Final Decision
+    Route::post('/requests/{accreditationRequest}/stage-nine/issue-decision', [StageNineController::class, 'issueDecision'])
+        ->name('requests.stage_nine.issue_decision');
 
 });

@@ -146,6 +146,7 @@
 
     handleSubmission(sub, url) {
         const errors = this.validateSubmission(sub);
+        this.viewData = sub;
         if (errors.length > 0) {
             this.missingFields = errors;
             this.showValidationModal = true;
@@ -611,7 +612,7 @@
                                     class="px-6 py-2.5 rounded-xl border border-(--border-primary) font-bold text-(--text-primary) hover:bg-(--surface-card) transition-all cursor-pointer text-sm">
                                 إغلاق
                             </button>
-                            <a href="{{ route('requests.stage_two.edit', [$accreditationRequest, $sub]) }}"
+                             <a :href="'{{ url('/requests/' . $accreditationRequest->id . '/stage-two') }}/' + (viewData?.id || '') + '/edit'"
                                class="px-6 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold transition-all shadow-lg shadow-orange-500/20 flex items-center gap-2 text-sm no-underline">
                                 <i class="fa-solid fa-pen-to-square"></i> الذهاب للتعديل الآن
                             </a>
