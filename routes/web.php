@@ -118,6 +118,8 @@ Route::middleware('auth')->group(function () {
     // Print actions
     Route::get('/requests/{accreditationRequest}/stage-two/{formSubmission}/print', [PrintController::class, 'printStageTwo'])
         ->name('requests.stage_two.print');
+    Route::get('/requests/{accreditationRequest}/stage-three/{formSubmission}/print', [PrintController::class, 'printStageThree'])
+        ->name('requests.stage_three.print');
 
     // Stage Three actions
     Route::post('/requests/{accreditationRequest}/stage-three/draft', [StageThreeController::class, 'createDraft'])

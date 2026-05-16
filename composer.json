@@ -11,6 +11,8 @@
         "laravel/reverb": "^1.10",
         "laravel/tinker": "^3.0",
         "pusher/pusher-php-server": "7.2",
+        "setasign/fpdf": "^1.8",
+        "setasign/fpdi": "^2.6",
         "simplesoftwareio/simple-qrcode": "*",
         "spatie/browsershot": "^5.3",
         "spatie/laravel-pdf": "^2.8"
