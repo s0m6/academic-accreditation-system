@@ -243,6 +243,13 @@ function ratingColor($rating) {
       {{-- Sidebar Footer --}}
       <div class="p-4 border-t border-slate-100 dark:border-slate-800 mt-auto flex flex-col gap-3">
         @if(!isset($readonly) || !$readonly)
+        {{-- TEST BUTTON - REMOVE ANYTIME --}}
+        <button type="button" onclick="fillRandomRatings()" 
+          class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold shadow-lg shadow-amber-500/30 transition-all cursor-pointer">
+          <i class="fa-solid fa-dice"></i>
+          <span>ملئ الدرجات (تجريبي)</span>
+        </button>
+
         <button id="save-draft-btn" onclick="saveDraft()"
           class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-500/30 transition-all cursor-pointer">
           <i id="save-draft-icon" class="fa-solid fa-floppy-disk"></i>
@@ -2181,6 +2188,47 @@ function ratingColor($rating) {
       // Recalculate standard average from this standard's indicators
       updateStandardScoreById(standardId);
       hasChanges = true;
+    }
+
+    // ✦ Random Rating Filler (Experimental - Remove Anytime)
+    function fillRandomRatings() {
+      if (!confirm('هل أنت متأكد من ملء جميع الدرجات بشكل عشوائي؟ سيتم تغيير كافة التقييمات الحالية.')) return;
+      
+      const indicatorRows = document.querySelectorAll('.indicator-row[data-indicator-id]');
+      indicatorRows.forEach(row => {
+        const indicatorId = parseInt(row.dataset.indicatorId);
+        const standardContent = row.closest('.std-content');
+        if (!standardContent) return;
+        
+        // Extract standard ID from standard-XX-tab-content
+        const standardId = parseInt(standardContent.id.split('-')[1]);
+        
+        // Random rating 0-5 (0 = Non-compliant)
+        // We'll give '0' a 35% chance to appear to make it more noticeable
+        let randomRating;
+        const rand = Math.random();
+        if (rand < 0.35) {
+          randomRating = 0;
+        } else {
+          randomRating = Math.floor(Math.random() * 5) + 1; // 1 to 5
+        }
+        
+        // Directly set score and call update if already has same rating to avoid "toggle off"
+        if (scores[indicatorId] === randomRating) {
+          // Already set to this rating, but we re-trigger to be safe
+          scores[indicatorId] = randomRating; 
+        } else {
+          setRatingById(indicatorId, standardId, randomRating);
+        }
+      });
+      
+      // Force recalculation for all standards to ensure totals are correct
+      document.querySelectorAll('.std-content').forEach(std => {
+          const stdId = parseInt(std.id.split('-')[1]);
+          if (!isNaN(stdId)) updateStandardScoreById(stdId);
+      });
+      
+      showToast('تم ملء جميع الدرجات بشكل عشوائي بنجاح (مع زيادة فرصة غير متطابق)', 'success');
     }
 
     function updateStandardScoreById(standardId) {
