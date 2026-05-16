@@ -179,27 +179,45 @@
 
                                     {{-- Time --}}
                                     <div class="col-span-3 px-3 py-3 border-s" style="border-color:var(--border-primary);">
-                                        <input type="text" x-model="row.time" :disabled="readonly"
-                                            placeholder="08:00 – 09:30"
-                                            dir="ltr"
-                                            class="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all disabled:opacity-70"
-                                            style="border-color:var(--border-primary); background:var(--surface-card); color:var(--text-primary);">
+                                        <div class="flex items-center gap-2" dir="rtl">
+                                            <div class="flex-1 relative">
+                                                <input type="time" x-model="row.start_time" :disabled="readonly"
+                                                    @input="row.time = (row.start_time || '') + ' - ' + (row.end_time || '')"
+                                                    class="w-full px-2 py-2 rounded-lg border text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all disabled:opacity-70"
+                                                    style="border-color:var(--border-primary); background:var(--surface-card); color:var(--text-primary);">
+                                                <div class="text-[9px] absolute -top-2 right-2 px-1 bg-(--surface-card) text-(--text-secondary)">من</div>
+                                            </div>
+                                            <span class="text-(--text-secondary) opacity-50">/</span>
+                                            <div class="flex-1 relative">
+                                                <input type="time" x-model="row.end_time" :disabled="readonly"
+                                                    @input="row.time = (row.start_time || '') + ' - ' + (row.end_time || '')"
+                                                    class="w-full px-2 py-2 rounded-lg border text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all disabled:opacity-70"
+                                                    style="border-color:var(--border-primary); background:var(--surface-card); color:var(--text-primary);">
+                                                <div class="text-[9px] absolute -top-2 right-2 px-1 bg-(--surface-card) text-(--text-secondary)">إلى</div>
+                                            </div>
+                                        </div>
                                     </div>
 
                                     {{-- Task --}}
                                     <div class="col-span-5 px-3 py-3 border-s" style="border-color:var(--border-primary);">
-                                        <input type="text" x-model="row.task" :disabled="readonly"
+                                        <textarea x-model="row.task" :disabled="readonly"
                                             placeholder="المهمة أو النشاط المقرر"
-                                            class="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all disabled:opacity-70"
-                                            style="border-color:var(--border-primary); background:var(--surface-card); color:var(--text-primary);">
+                                            rows="1"
+                                            x-init="$nextTick(() => { $el.style.height = 'auto'; $el.style.height = $el.scrollHeight + 'px' })"
+                                            @input="$el.style.height = 'auto'; $el.style.height = $el.scrollHeight + 'px'"
+                                            class="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all disabled:opacity-70 resize-none overflow-hidden"
+                                            style="border-color:var(--border-primary); background:var(--surface-card); color:var(--text-primary);"></textarea>
                                     </div>
 
                                     {{-- Notes --}}
                                     <div :class="readonly ? 'col-span-3' : 'col-span-2'" class="px-3 py-3 border-s" style="border-color:var(--border-primary);">
-                                        <input type="text" x-model="row.notes" :disabled="readonly"
+                                        <textarea x-model="row.notes" :disabled="readonly"
                                             placeholder="ملاحظات"
-                                            class="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all disabled:opacity-70"
-                                            style="border-color:var(--border-primary); background:var(--surface-card); color:var(--text-primary);">
+                                            rows="1"
+                                            x-init="$nextTick(() => { $el.style.height = 'auto'; $el.style.height = $el.scrollHeight + 'px' })"
+                                            @input="$el.style.height = 'auto'; $el.style.height = $el.scrollHeight + 'px'"
+                                            class="w-full px-3 py-2 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all disabled:opacity-70 resize-none overflow-hidden"
+                                            style="border-color:var(--border-primary); background:var(--surface-card); color:var(--text-primary);"></textarea>
                                     </div>
 
                                     {{-- Delete --}}
@@ -215,7 +233,7 @@
                     </div>
 
                     {{-- Add Row --}}
-                    <button type="button" @click="day.rows.push({ time: '', task: '', notes: '' })" x-show="!readonly"
+                    <button type="button" @click="day.rows.push({ time: '', start_time: '', end_time: '', task: '', notes: '' })" x-show="!readonly"
                         class="w-full py-2.5 rounded-xl border-2 border-dashed font-bold text-sm flex items-center justify-center gap-2 transition-all cursor-pointer"
                         style="border-color:var(--border-primary); color:var(--text-secondary);"
                         @mouseenter="$el.style.borderColor='#2563eb'; $el.style.color='#2563eb'; $el.style.backgroundColor='var(--bg-main)'"
@@ -261,6 +279,24 @@
                 ]) !!},
                 init() {
                     this.$watch('darkMode', val => localStorage.setItem('vs-dark', val));
+                    
+                    // Initialize start_time and end_time from existing time string
+                    this.days.forEach(day => {
+                        day.rows.forEach(row => {
+                            if (row.time && row.time.includes('-')) {
+                                const parts = row.time.split('-').map(s => s.trim());
+                                row.start_time = parts[0] || '';
+                                row.end_time = parts[1] || '';
+                            } else if (row.time && row.time.includes('–')) {
+                                const parts = row.time.split('–').map(s => s.trim());
+                                row.start_time = parts[0] || '';
+                                row.end_time = parts[1] || '';
+                            } else {
+                                row.start_time = row.time || '';
+                                row.end_time = '';
+                            }
+                        });
+                    });
                 },
                 async saveSchedule() {
                     const hasAny = this.days.some(d => d.rows.length > 0);

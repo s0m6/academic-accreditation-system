@@ -180,6 +180,8 @@ Route::middleware('auth')->group(function () {
         ->name('requests.stage_five.university_accept');
     Route::get('/requests/{accreditationRequest}/stage-five/{visitSchedule}/view-pdf', [StageFiveController::class, 'viewPdf'])
         ->name('requests.stage_five.view_pdf');
+    Route::get('/requests/{accreditationRequest}/stage-five/{visitSchedule}/print', [PrintController::class, 'printVisitSchedule'])
+        ->name('requests.stage_five.print');
 
     // Stage Six Visit Report actions
     Route::get('/requests/{accreditationRequest}/stage-six/visit-report/edit', [StageSixController::class, 'edit'])

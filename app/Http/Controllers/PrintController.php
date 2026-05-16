@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AccreditationRequest;
 use App\Models\FormSubmission;
 use App\Models\Standard;
+use App\Models\VisitSchedule;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
@@ -61,23 +62,23 @@ class PrintController extends Controller
                 ->withBrowsershot(function ($browsershot) {
                     $browsershot->waitUntilNetworkIdle();
                 })
-                ->name($program->program_name . '.pdf')
+                ->name($program->program_name.'.pdf')
                 ->generatePdfContent();
         } catch (\Exception $e) {
-            return back()->with('error', 'خطأ في إنشاء ملف PDF (Spatie): ' . $e->getMessage());
+            return back()->with('error', 'خطأ في إنشاء ملف PDF (Spatie): '.$e->getMessage());
         }
 
         // 3. ZIP Creation
-        $zipName = 'Program_Data_' . Carbon::now()->format('YmdHis') . '.zip';
-        $tempDir = storage_path('app/temp_print_' . uniqid());
+        $zipName = 'Program_Data_'.Carbon::now()->format('YmdHis').'.zip';
+        $tempDir = storage_path('app/temp_print_'.uniqid());
         File::makeDirectory($tempDir);
 
         // Save PDF to temp dir
-        $pdfFileName = 'البيانات_الأساسية_' . str_replace(['/', '\\'], '_', $program->program_name) . '.pdf';
-        File::put($tempDir . '/' . $pdfFileName, $pdfContent);
+        $pdfFileName = 'البيانات_الأساسية_'.str_replace(['/', '\\'], '_', $program->program_name).'.pdf';
+        File::put($tempDir.'/'.$pdfFileName, $pdfContent);
 
         // Create Decisions folder
-        $decisionsDir = $tempDir . '/ملفات القرارات';
+        $decisionsDir = $tempDir.'/ملفات القرارات';
         File::makeDirectory($decisionsDir);
 
         // Copy attachments
@@ -92,15 +93,15 @@ class PrintController extends Controller
 
             if ($fileContent) {
                 $extension = pathinfo($path, PATHINFO_EXTENSION) ?: 'pdf';
-                $decisionName = $decisionNames[$index] ?? 'قرار_' . $index;
-                $newFileName = $decisionName . '.' . $extension;
+                $decisionName = $decisionNames[$index] ?? 'قرار_'.$index;
+                $newFileName = $decisionName.'.'.$extension;
 
-                File::put($decisionsDir . '/' . $newFileName, $fileContent);
+                File::put($decisionsDir.'/'.$newFileName, $fileContent);
             }
         }
 
         // Zip everything
-        $zipPath = storage_path('app/' . $zipName);
+        $zipPath = storage_path('app/'.$zipName);
         $zip = new ZipArchive;
         if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) === true) {
             $files = new \RecursiveIteratorIterator(
@@ -109,7 +110,7 @@ class PrintController extends Controller
             );
 
             foreach ($files as $name => $file) {
-                if (!$file->isDir()) {
+                if (! $file->isDir()) {
                     $filePath = $file->getRealPath();
                     $relativePath = substr($filePath, strlen($tempDir) + 1);
                     $zip->addFile($filePath, $relativePath);
@@ -122,7 +123,7 @@ class PrintController extends Controller
 
         return response()->streamDownload(function () use ($zipPath) {
             $stream = fopen($zipPath, 'rb');
-            while (!feof($stream)) {
+            while (! feof($stream)) {
                 echo fread($stream, 8192);
                 flush();
             }
@@ -172,12 +173,12 @@ class PrintController extends Controller
             return [$ie->indicator_id => $ie->evidences];
         });
 
-        $indicatorScores = $indicatorEvaluations->map(fn($ie) => $ie->score);
+        $indicatorScores = $indicatorEvaluations->map(fn ($ie) => $ie->score);
 
         // 4. Create temp directory
-        $tempDir = storage_path('app/temp_s3_' . uniqid());
+        $tempDir = storage_path('app/temp_s3_'.uniqid());
         File::makeDirectory($tempDir, 0755, true);
-        $standardsDir = $tempDir . '/المعايير';
+        $standardsDir = $tempDir.'/المعايير';
         File::makeDirectory($standardsDir, 0755, true);
 
         try {
@@ -195,11 +196,11 @@ class PrintController extends Controller
                 'isPrint' => true,
             ])
                 ->format('a4')
-                ->withBrowsershot(fn($b) => $b->waitUntilNetworkIdle())
+                ->withBrowsershot(fn ($b) => $b->waitUntilNetworkIdle())
                 ->generatePdfContent();
 
-            $selfStudyFileName = 'الدراسة_الذاتية_' . str_replace([' ', '/', '\\'], '_', $program->program_name) . '.pdf';
-            File::put($tempDir . '/' . $selfStudyFileName, $selfStudyPdf);
+            $selfStudyFileName = 'الدراسة_الذاتية_'.str_replace([' ', '/', '\\'], '_', $program->program_name).'.pdf';
+            File::put($tempDir.'/'.$selfStudyFileName, $selfStudyPdf);
 
             // 6. Generate one PDF per standard, merged with evidence files
             foreach ($standards as $std) {
@@ -213,19 +214,19 @@ class PrintController extends Controller
                     $tempDir
                 );
 
-                $safeName = $this->safeName('المعيار_' . $std->number . '_' . $std->name);
-                File::move($standardPdfPath, $standardsDir . '/' . $safeName . '.pdf');
+                $safeName = $this->safeName('المعيار_'.$std->number.'_'.$std->name);
+                File::move($standardPdfPath, $standardsDir.'/'.$safeName.'.pdf');
             }
 
         } catch (\Exception $e) {
             File::deleteDirectory($tempDir);
 
-            return back()->with('error', 'خطأ أثناء إنشاء التقارير: ' . $e->getMessage());
+            return back()->with('error', 'خطأ أثناء إنشاء التقارير: '.$e->getMessage());
         }
 
         // 7. Bundle everything in a ZIP
-        $zipName = 'Self-Study-' . $accreditationRequest->id . '.zip';
-        $zipPath = storage_path('app/' . $zipName);
+        $zipName = 'Self-Study-'.$accreditationRequest->id.'.zip';
+        $zipPath = storage_path('app/'.$zipName);
 
         $zip = new ZipArchive;
         if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) === true) {
@@ -234,7 +235,7 @@ class PrintController extends Controller
                 \RecursiveIteratorIterator::LEAVES_ONLY
             );
             foreach ($files as $file) {
-                if (!$file->isDir()) {
+                if (! $file->isDir()) {
                     $filePath = $file->getRealPath();
                     $relativePath = substr($filePath, strlen($tempDir) + 1);
                     $zip->addFile($filePath, $relativePath);
@@ -247,7 +248,7 @@ class PrintController extends Controller
 
         return response()->streamDownload(function () use ($zipPath) {
             $stream = fopen($zipPath, 'rb');
-            while (!feof($stream)) {
+            while (! feof($stream)) {
                 echo fread($stream, 8192);
                 flush();
             }
@@ -285,10 +286,10 @@ class PrintController extends Controller
             'college' => $college,
         ])
             ->format('a4')
-            ->withBrowsershot(fn($b) => $b->waitUntilNetworkIdle())
+            ->withBrowsershot(fn ($b) => $b->waitUntilNetworkIdle())
             ->generatePdfContent();
 
-        $stdReportPath = $tempDir . '/std_report_' . $std->id . '_' . uniqid() . '.pdf';
+        $stdReportPath = $tempDir.'/std_report_'.$std->id.'_'.uniqid().'.pdf';
         File::put($stdReportPath, $standardReportContent);
 
         // Collect all evidence PDF files for this standard in order
@@ -337,10 +338,10 @@ class PrintController extends Controller
                 'standardName' => $ev['standardName'],
             ])
                 ->format('a4')
-                ->withBrowsershot(fn($b) => $b->waitUntilNetworkIdle())
+                ->withBrowsershot(fn ($b) => $b->waitUntilNetworkIdle())
                 ->generatePdfContent();
 
-            $coverPath = $tempDir . '/cover_' . uniqid() . '.pdf';
+            $coverPath = $tempDir.'/cover_'.uniqid().'.pdf';
             File::put($coverPath, $coverContent);
 
             $filesToMerge[] = $coverPath;
@@ -348,12 +349,12 @@ class PrintController extends Controller
         }
 
         // Merge into a single PDF using FPDI
-        $mergedPath = $tempDir . '/merged_std_' . $std->id . '_' . uniqid() . '.pdf';
+        $mergedPath = $tempDir.'/merged_std_'.$std->id.'_'.uniqid().'.pdf';
         $this->mergePdfs($filesToMerge, $mergedPath);
 
         // Cleanup temp cover pages and the intermediate standard report
         foreach ($filesToMerge as $f) {
-            if (!str_contains($f, 'merged_std') && file_exists($f) && str_starts_with($f, $tempDir)) {
+            if (! str_contains($f, 'merged_std') && file_exists($f) && str_starts_with($f, $tempDir)) {
                 @unlink($f);
             }
         }
@@ -372,7 +373,7 @@ class PrintController extends Controller
         $fpdi->SetAutoPageBreak(false);
 
         foreach ($pdfPaths as $pdfPath) {
-            if (!file_exists($pdfPath)) {
+            if (! file_exists($pdfPath)) {
                 continue;
             }
 
@@ -392,6 +393,33 @@ class PrintController extends Controller
         }
 
         $fpdi->Output($outputPath, 'F');
+    }
+
+    /**
+     * Print Stage Five Visit Schedule as PDF.
+     */
+    public function printVisitSchedule(AccreditationRequest $accreditationRequest, VisitSchedule $visitSchedule)
+    {
+        $accreditationRequest->load([
+            'program.department.college.university',
+            'committee.chairEvaluator.user',
+        ]);
+
+        $program = $accreditationRequest->program;
+        $university = $program->department->college->university;
+        $scheduleData = $visitSchedule->schedule_data;
+
+        return Pdf::view('print_templates.visit_schedule_template', [
+            'accreditationRequest' => $accreditationRequest,
+            'visitSchedule' => $visitSchedule,
+            'program' => $program,
+            'university' => $university,
+            'scheduleData' => $scheduleData,
+            'isPrint' => true,
+        ])
+            ->format('a4')
+            ->name('Visit_Schedule_req_'.$accreditationRequest->id.'.pdf')
+            ->download();
     }
 
     /**
