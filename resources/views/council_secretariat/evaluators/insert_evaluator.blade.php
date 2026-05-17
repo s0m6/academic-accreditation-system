@@ -23,7 +23,7 @@
     <title>{{ $title }} | نظام الاعتماد الأكاديمي</title>
 
     {{-- Google Font: Tajawal --}}
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('fonts/fonts.css') }}">
 
     {{-- Vite compiled assets (Tailwind v4 + Alpine.js) --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -457,8 +457,7 @@
         {{-- ============ END FORM ============ --}}
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    {{-- Font Awesome & Swal loaded globally via Vite (app.css / app.js) --}}
     <script>
         function evaluatorForm() {
             @php

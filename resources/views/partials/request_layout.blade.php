@@ -14,6 +14,8 @@
 
     {{-- Vite-compiled assets --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    {{-- Local Fonts --}}
+    <link rel="stylesheet" href="{{ asset('fonts/fonts.css') }}" />
 
     @stack('styles')
     <script>

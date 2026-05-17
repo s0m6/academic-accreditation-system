@@ -6,8 +6,11 @@ import "flyonui/flyonui"
 import Alpine from 'alpinejs';
 import SignaturePad from 'signature_pad';
 
-// Expose SignaturePad globally for use in Blade templates
+import Swal from 'sweetalert2';
+
+// Expose globals for use in Blade templates
 window.SignaturePad = SignaturePad;
+window.Swal = Swal;
 
 window.Alpine = Alpine;
 

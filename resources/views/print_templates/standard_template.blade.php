@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>تقرير المعيار: {{ $standard->name }}</title>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    @include('print_templates.fonts')
     <style>
         :root {
             --primary-color: #1a3c5e;

@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>التقرير النهائي للجنة المقيمين والتقدير الكلي</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap');
+        @import url('/fonts/fonts.css');
 
         :root {
             --primary-color: #1a3c5e;

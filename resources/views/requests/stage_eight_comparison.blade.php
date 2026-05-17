@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>مقارنة التقييم (الأولي vs الختامي) — {{ $accreditationRequest->program->name }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
     <style>
         .diff-added { background-color: rgba(16, 185, 129, 0.05); border-right: 4px solid #10b981; }
         .diff-removed { background-color: rgba(239, 68, 68, 0.05); border-right: 4px solid #ef4444; }

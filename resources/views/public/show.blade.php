@@ -12,7 +12,7 @@
         @media (min-height: 1000px) { .cert-scale { transform: scale(0.9); } }
     </style>
 </head>
-<body class="bg-[#f0f4f8] font-['Cairo'] antialiased min-h-screen">
+<body class="bg-[#f0f4f8] font-sans antialiased min-h-screen">
 
     {{-- Top status bar --}}
     <div class="w-full py-3 px-6 flex items-center justify-between text-sm font-bold

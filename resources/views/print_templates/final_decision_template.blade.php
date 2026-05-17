@@ -5,7 +5,7 @@
     <title>نموذج 10 - القرار النهائي - {{ $program->program_name }}</title>
 
     @vite(['resources/css/app.css'])
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    @include('print_templates.fonts')
 
     <style>
         @page { margin: 15mm; size: a4; }

@@ -9,8 +9,6 @@
 
 
 
-    {{-- Font Awesome 6.4.0 --}}
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
     {{-- Vite-compiled assets (Tailwind v4 + FlyonUI) --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])

@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <title>جدول الزيارة الميدانية - {{ $program->program_name }}</title>
     
-    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <script src="{{ public_path('js/tailwind-browser.js') }}"></script>
+    @include('print_templates.fonts')
     
     <style>
         :root {

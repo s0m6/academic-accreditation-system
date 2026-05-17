@@ -5,42 +5,10 @@
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>@yield('title', 'CAAQAHE YEMEN')</title>
-   {{-- Vite-compiled assets --}}
+    {{-- Vite-compiled assets (Tailwind v4 + Alpine.js) --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <!-- Font: Cairo -->
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&amp;display=swap"
-        rel="stylesheet" />
-    <link
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
-        rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <script id="tailwind-config">
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        "primary": "#002546",
-                        "primary-dark": "#001a33",
-                        "accent": "#e9c176",
-                        "accent-dark": "#c39f58",
-                        "surface": "#f7fafc",
-                        "surface-dark": "#020617"
-                    },
-                    fontFamily: {
-                        "sans": ["Cairo", "sans-serif"],
-                        "headline": ["Cairo", "sans-serif"],
-                        "body": ["Cairo", "sans-serif"]
-                    },
-                    borderRadius: {
-                        "xl": "0.75rem",
-                        "2xl": "1.5rem"
-                    }
-                }
-            }
-        }
-    </script>
+    {{-- Local Fonts (Cairo & Material Symbols Outlined) --}}
+    <link rel="stylesheet" href="{{ asset('fonts/fonts.css') }}" />
     <style>
         :root {
             --text-primary: #1e293b;
@@ -56,10 +24,6 @@
             --surface-card: #0f172a;
             --bg-main: #020617;
         }
-        body {
-            font-family: 'Cairo', sans-serif;
-        }
-
         .material-symbols-outlined {
             font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
             display: inline-block;

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>دليل: {{ $evidenceName }}</title>
-    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&display=swap" rel="stylesheet">
+    @include('print_templates.fonts')
     <style>
         body {
             font-family: 'Tajawal', Arial, sans-serif;
