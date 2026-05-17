@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>نموذج 5 - تقرير الزيارة الميدانية</title>
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="{{ asset('vendor/fontawesome-free/css/all.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('fonts/fontawesome/css/all.min.css') }}">
     <style>
         @import url('/fonts/fonts.css');
 
