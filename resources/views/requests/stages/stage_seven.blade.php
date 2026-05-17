@@ -202,12 +202,24 @@
                                             class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-(--surface-card) border border-(--border-primary) hover:bg-(--bg-main) text-(--text-primary) text-xs font-bold transition">
                                             <i class="fa-solid fa-eye text-indigo-500"></i> عرض
                                         </a>
+                                        <a href="{{ route('requests.stage_seven.form9.print', $accreditationRequest) }}"
+                                            x-data="{ loading: false, finished: false }"
+                                            x-on:click="loading = true; finished = false; setTimeout(() => { loading = false; finished = true; setTimeout(() => finished = false, 5000) }, 5000)"
+                                            class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border text-xs font-bold transition-all hover:-translate-y-0.5 cursor-pointer no-underline"
+                                            :class="finished ? 'bg-green-50 text-green-700 border-green-200 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/20 dark:hover:bg-green-500/30' : 'bg-red-50 hover:bg-red-100 text-red-700 border border-red-100 dark:bg-red-500/10 dark:hover:bg-red-500/20 dark:text-red-400 dark:border-red-500/20'"
+                                            :class="{ 'opacity-60 pointer-events-none': loading }">
+                                            <i x-show="!loading && !finished" class="fa-solid fa-file-pdf text-red-500"></i>
+                                            <i x-show="loading" class="fa-solid fa-circle-notch animate-spin text-red-500"></i>
+                                            <i x-show="finished" class="fa-solid fa-check text-green-600 dark:text-green-400"></i>
+                                            <span x-text="loading ? 'جاري التحميل...' : (finished ? 'تم التحميل' : 'تحميل الرد (PDF)')"></span>
+                                        </a>
                                     @else
                                         <button type="button" disabled
                                             class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 text-slate-400 border border-slate-200 text-xs font-bold transition cursor-not-allowed">
                                             <i class="fa-solid fa-eye text-slate-400"></i> عرض
                                         </button>
                                     @endif
+
 
                                     {{-- Send Button (Coordinator only) --}}
                                     @if($isProgramCoord)

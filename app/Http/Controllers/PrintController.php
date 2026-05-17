@@ -898,6 +898,77 @@ class PrintController extends Controller
     }
 
     /**
+     * Print Stage Seven Response to Recommendations (Form 9) as PDF.
+     */
+    public function printFormNine(AccreditationRequest $accreditationRequest)
+    {
+        $user = request()->user();
+        if (! $user) {
+            abort(401);
+        }
+
+        $allowed = match ($user->role) {
+            'accreditation_officer', 'council_secretariat' => true,
+            'program_coordinator' => $accreditationRequest->program_coord_id === $user->id,
+            'council_coordinator' => $accreditationRequest->council_coord_id === $user->id,
+            'evaluator' => $accreditationRequest->committee && $accreditationRequest->committee->members()
+                ->where('evaluator_id', $user->evaluator->id ?? 0)
+                ->where('member_status', 'accepted')
+                ->exists(),
+            default => false,
+        };
+
+        if (! $allowed) {
+            abort(403, 'غير مصرح لك بالوصول إلى هذه الملفات.');
+        }
+
+        $report = $accreditationRequest->committeeReport;
+        if (! $report) {
+            abort(404, 'التقرير غير موجود.');
+        }
+
+        $accreditationRequest->load([
+            'program.department.college.university.officer',
+            'programCoordinator',
+        ]);
+
+        $program = $accreditationRequest->program;
+        $department = $program->department;
+        $college = $department->college;
+        $university = $college->university;
+
+        // Build detailed standards and improvements
+        $detailedStandards = $this->buildDetailedStandards($report);
+
+        // Fetch form9_data responses
+        $savedForm9Data = $report->form9_data ?? [];
+        $savedBySubId = collect($savedForm9Data)->keyBy('sub_id');
+
+        // Augment detailedStandards with the institution's responses
+        foreach ($detailedStandards as &$std) {
+            foreach ($std['subs'] as &$sub) {
+                $saved = $savedBySubId->get($sub['id']);
+                $sub['decision'] = $saved ? $saved['decision'] : null;
+                $sub['rejection_points'] = ($saved && ! empty($saved['rejection_points'])) ? $saved['rejection_points'] : [];
+            }
+        }
+
+        return Pdf::view('print_templates.form_nine_response_template', [
+            'accreditationRequest' => $accreditationRequest,
+            'report' => $report,
+            'program' => $program,
+            'department' => $department,
+            'college' => $college,
+            'university' => $university,
+            'detailedStandards' => $detailedStandards,
+            'isPrint' => true,
+        ])
+            ->format('a4')
+            ->name('Form9_Response_req_'.$accreditationRequest->id.'.pdf')
+            ->download();
+    }
+
+    /**
      * Sanitize a string for use as a filename.
      */
     private function safeName(string $name): string
