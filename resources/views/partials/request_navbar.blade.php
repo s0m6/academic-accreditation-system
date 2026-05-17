@@ -66,7 +66,7 @@
                 
                 <template x-if="unreadCount > 0">
                     <div class="absolute -top-1.5 -right-1.5">
-                        <span class="relative flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[10px] font-black text-white ring-2 ring-(--surface-card) shadow-md z-10"
+                        <span class="relative flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-[13px] font-black text-white ring-2 ring-(--surface-card) shadow-md z-10"
                             x-text="unreadCount">
                         </span>
                         <span class="absolute top-0 right-0 h-5 w-5 animate-ping rounded-full bg-red-500 opacity-30"></span>

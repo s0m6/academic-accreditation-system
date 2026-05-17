@@ -16,6 +16,32 @@
         .page-break {
             page-break-before: always;
         }
+
+        /* ── Signature Custom Styling (Borderless & Transparent matching Visit Report) ── */
+        .signature-wrapper {
+            position: relative !important;
+            width: 100% !important;
+            height: 90px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            overflow: hidden !important;
+            background: transparent !important;
+            padding: 8px !important;
+            box-sizing: border-box !important;
+        }
+        .signature-wrapper svg {
+            position: relative !important;
+            display: block !important;
+            max-height: 70px !important;
+            max-width: 100% !important;
+            width: auto !important;
+            height: auto !important;
+            margin: 0 auto !important;
+        }
+        .signature-wrapper svg * {
+            position: static !important;
+        }
     </style>
 </head>
 <body class="font-['Tajawal',Arial,sans-serif] bg-white text-slate-800 antialiased [print-color-adjust:exact]">
@@ -388,14 +414,12 @@
                                 @endif
                             </td>
                             <td class="border border-[#2c3e50] p-3 text-center">
-                                <div class="flex items-center justify-center h-[45px]">
+                                <div class="signature-wrapper">
                                     @if($member['signature_path'] && \Illuminate\Support\Facades\Storage::exists($member['signature_path']))
                                         @php
                                             $svg = \Illuminate\Support\Facades\Storage::get($member['signature_path']);
                                         @endphp
-                                        <div class="max-h-[40px] w-auto">
-                                            {!! $svg !!}
-                                        </div>
+                                        {!! $svg !!}
                                     @else
                                         <span class="text-slate-400 font-medium text-xs opacity-75">(لم يتم التوقيع بعد)</span>
                                     @endif
