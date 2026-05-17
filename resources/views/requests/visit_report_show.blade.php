@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>نموذج 5 - تقرير الزيارة الميدانية</title>
-    <link rel="stylesheet" href="{{ asset('fonts/fontawesome/css/all.min.css') }}">
     <style>
         @import url('/fonts/fonts.css');
 
@@ -445,15 +444,15 @@
     <!-- ======= Screen-only Action Bar ======= -->
     <div class="action-bar print:hidden">
         <div class="action-bar-title">
-            <i class="fa-solid fa-file-lines text-2xl"></i>
+            <span class="material-symbols-outlined text-2xl">description</span>
             <span>تقرير الزيارة الميدانية للبرنامج الدراسي</span>
         </div>
         <div class="action-buttons">
             <a href="{{ route('requests.stage_six.visit_report.print', $accreditationRequest) }}" class="btn btn-primary">
-                <i class="fa-solid fa-download"></i> تحميل كملف PDF
+                <span class="material-symbols-outlined">download</span> تحميل كملف PDF
             </a>
             <a href="{{ route('requests.stage', ['accreditationRequest' => $accreditationRequest, 'stage' => 'stage_six']) }}" class="btn btn-secondary">
-                العودة للوحة الطلب <i class="fa-solid fa-arrow-left"></i>
+                العودة للوحة الطلب <span class="material-symbols-outlined">arrow_left</span>
             </a>
         </div>
     </div>
@@ -594,7 +593,7 @@
             <!-- Positives -->
             <div class="grid-card">
                 <div class="grid-card-header positives">
-                    <i class="fa-solid fa-square-plus"></i> الجوانب الإيجابية ونقاط القوة المرصودة في المقابلات
+                    <span class="material-symbols-outlined align-middle" style="font-size: 1.25rem; margin-left: 5px;">add_circle</span> الجوانب الإيجابية ونقاط القوة المرصودة في المقابلات
                 </div>
                 <div class="grid-card-body">
                     @if(isset($form5Data['interview_positives']) && count($form5Data['interview_positives']) > 0)
@@ -612,7 +611,7 @@
             <!-- Negatives -->
             <div class="grid-card">
                 <div class="grid-card-header negatives">
-                    <i class="fa-solid fa-square-minus"></i> الجوانب السلبية وفرص التحسين المرصودة في المقابلات
+                    <span class="material-symbols-outlined align-middle" style="font-size: 1.25rem; margin-left: 5px;">remove_circle</span> الجوانب السلبية وفرص التحسين المرصودة في المقابلات
                 </div>
                 <div class="grid-card-body">
                     @if(isset($form5Data['interview_negatives']) && count($form5Data['interview_negatives']) > 0)
@@ -674,7 +673,7 @@
             <!-- Positives -->
             <div class="grid-card">
                 <div class="grid-card-header positives">
-                    <i class="fa-solid fa-square-plus"></i> الجوانب الإيجابية المرتبطة بالشواهد والملفات
+                    <span class="material-symbols-outlined align-middle" style="font-size: 1.25rem; margin-left: 5px;">add_circle</span> الجوانب الإيجابية المرتبطة بالشواهد والملفات
                 </div>
                 <div class="grid-card-body">
                     @if(isset($form5Data['docs_positives']) && count($form5Data['docs_positives']) > 0)
@@ -692,7 +691,7 @@
             <!-- Negatives -->
             <div class="grid-card">
                 <div class="grid-card-header negatives">
-                    <i class="fa-solid fa-square-minus"></i> النواقص والجوانب السلبية في الوثائق
+                    <span class="material-symbols-outlined align-middle" style="font-size: 1.25rem; margin-left: 5px;">remove_circle</span> النواقص والجوانب السلبية في الوثائق
                 </div>
                 <div class="grid-card-body">
                     @if(isset($form5Data['docs_negatives']) && count($form5Data['docs_negatives']) > 0)
