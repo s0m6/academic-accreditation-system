@@ -188,6 +188,8 @@ Route::middleware('auth')->group(function () {
         ->name('requests.stage_six.visit_report.edit');
     Route::get('/requests/{accreditationRequest}/stage-six/visit-report/show', [StageSixController::class, 'show'])
         ->name('requests.stage_six.visit_report.show');
+    Route::get('/requests/{accreditationRequest}/stage-six/visit-report/print', [PrintController::class, 'printVisitReport'])
+        ->name('requests.stage_six.visit_report.print');
     Route::post('/requests/{accreditationRequest}/stage-six/visit-report/save', [StageSixController::class, 'save'])
         ->name('requests.stage_six.visit_report.save');
 

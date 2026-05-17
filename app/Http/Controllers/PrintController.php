@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\AccreditationRequest;
+use App\Models\CommitteeApproval;
 use App\Models\FormSubmission;
+use App\Models\ReportSignature;
 use App\Models\Standard;
 use App\Models\VisitSchedule;
 use Illuminate\Support\Carbon;
@@ -419,6 +421,93 @@ class PrintController extends Controller
         ])
             ->format('a4')
             ->name('Visit_Schedule_req_'.$accreditationRequest->id.'.pdf')
+            ->download();
+    }
+
+    /**
+     * Print Stage Six Field Visit Report as PDF.
+     */
+    public function printVisitReport(AccreditationRequest $accreditationRequest)
+    {
+        $report = $accreditationRequest->committeeReport;
+        if (! $report) {
+            abort(404, 'التقرير غير موجود.');
+        }
+
+        $accreditationRequest->load([
+            'program.department.college.university.officer',
+            'programCoordinator',
+            'committee.chairEvaluator.user',
+        ]);
+
+        $program = $accreditationRequest->program;
+        $department = $program->department;
+        $college = $department->college;
+        $university = $college->university;
+
+        $committee = $accreditationRequest->committee;
+
+        // Build members data for signatures (same logic as Final Report but form_type is 'form_5')
+        $membersData = [];
+
+        // 1. Get Chair
+        $chairEvaluator = $committee?->chairEvaluator;
+        if ($chairEvaluator) {
+            $chairSig = ReportSignature::where('report_id', $report->id)
+                ->whereNull('approval_id')
+                ->where('form_type', 'form_5')
+                ->latest()
+                ->first();
+
+            $membersData[] = [
+                'name' => $chairEvaluator->user->name,
+                'signature_path' => $chairSig?->signature_path,
+                'is_chair' => true,
+            ];
+        }
+
+        // 2. Get Members
+        $members = $committee ? $committee->activeMembers->filter(fn ($m) => $m->evaluator_id !== $committee->chair_evaluator_id) : collect();
+
+        foreach ($members as $member) {
+            $latestApproval = CommitteeApproval::where('report_id', $report->id)
+                ->where('member_id', $member->evaluator_id)
+                ->where('review_round', 'stage6')
+                ->where('status', 'approved')
+                ->latest()
+                ->first();
+
+            $sigPath = null;
+            if ($latestApproval) {
+                $sig = ReportSignature::where('approval_id', $latestApproval->id)
+                    ->where('form_type', 'form_5')
+                    ->latest()
+                    ->first();
+                $sigPath = $sig?->signature_path;
+            }
+
+            $membersData[] = [
+                'name' => $member->evaluator->user->name,
+                'signature_path' => $sigPath,
+                'is_chair' => false,
+            ];
+        }
+
+        $form5Data = $report->form5_data ?? [];
+
+        return Pdf::view('print_templates.visit_report_template', [
+            'accreditationRequest' => $accreditationRequest,
+            'report' => $report,
+            'program' => $program,
+            'department' => $department,
+            'college' => $college,
+            'university' => $university,
+            'membersData' => $membersData,
+            'form5Data' => $form5Data,
+            'isPrint' => true,
+        ])
+            ->format('a4')
+            ->name('Visit_Report_req_'.$accreditationRequest->id.'.pdf')
             ->download();
     }
 

@@ -37,9 +37,75 @@ class StageSixController extends Controller
     public function show(AccreditationRequest $accreditationRequest)
     {
         $report = $accreditationRequest->committeeReport;
-        $isEditMode = false;
+        if (! $report) {
+            abort(404, 'التقرير غير موجود.');
+        }
 
-        return view('requests.stage_six_visit_report', compact('accreditationRequest', 'report', 'isEditMode'));
+        $program = $accreditationRequest->program;
+        $department = $program->department;
+        $college = $department->college;
+        $university = $college->university;
+
+        $committee = $accreditationRequest->committee;
+
+        // Build members data for signatures (same logic as Final Report but form_type is 'form_5')
+        $membersData = [];
+
+        // 1. Get Chair
+        $chairEvaluator = $committee?->chairEvaluator;
+        if ($chairEvaluator) {
+            $chairSig = ReportSignature::where('report_id', $report->id)
+                ->whereNull('approval_id')
+                ->where('form_type', 'form_5')
+                ->latest()
+                ->first();
+
+            $membersData[] = [
+                'name' => $chairEvaluator->user->name,
+                'signature_path' => $chairSig?->signature_path,
+                'is_chair' => true,
+            ];
+        }
+
+        // 2. Get Members
+        $members = $committee ? $committee->activeMembers->filter(fn ($m) => $m->evaluator_id !== $committee->chair_evaluator_id) : collect();
+
+        foreach ($members as $member) {
+            $latestApproval = CommitteeApproval::where('report_id', $report->id)
+                ->where('member_id', $member->evaluator_id)
+                ->where('review_round', 'stage6')
+                ->where('status', 'approved')
+                ->latest()
+                ->first();
+
+            $sigPath = null;
+            if ($latestApproval) {
+                $sig = ReportSignature::where('approval_id', $latestApproval->id)
+                    ->where('form_type', 'form_5')
+                    ->latest()
+                    ->first();
+                $sigPath = $sig?->signature_path;
+            }
+
+            $membersData[] = [
+                'name' => $member->evaluator->user->name,
+                'signature_path' => $sigPath,
+                'is_chair' => false,
+            ];
+        }
+
+        $form5Data = $report->form5_data ?? [];
+
+        return view('requests.visit_report_show', compact(
+            'accreditationRequest',
+            'report',
+            'program',
+            'department',
+            'college',
+            'university',
+            'membersData',
+            'form5Data'
+        ));
     }
 
     // Save the visit report form data as JSON into form5_data.
