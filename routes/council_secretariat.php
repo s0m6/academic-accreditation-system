@@ -28,6 +28,7 @@ Route::prefix('requests')->name('requests.')->group(function () {
     Route::get('/stage-six', [RequestController::class, 'stageSix'])->name('stage_six');
     Route::get('/stage-seven', [RequestController::class, 'stageSeven'])->name('stage_seven');
     Route::get('/stage-eight', [RequestController::class, 'stageEight'])->name('stage_eight');
+    Route::get('/stage-nine', [RequestController::class, 'stageNine'])->name('stage_nine');
 });
 
 // Evaluators management routes

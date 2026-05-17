@@ -50,6 +50,7 @@
     showApproveModal: false,
     showViewReasonsModal: false,
     showValidationModal: false,
+    showDownloadModal: false,
     isValidating: false,
     validationMissing: [],
     submitActionUrl: '',
@@ -58,6 +59,67 @@
     approveSubmissionId: null,
     reasons: [''],
     rejectionReasons: [],
+    downloadStep: 0,
+    downloadDone: false,
+    downloadError: false,
+    downloadSteps: [
+        { label: 'إنشاء تقرير الدراسة الذاتية', icon: '📄', pct: 12 },
+        { label: 'إنشاء تقرير المعيار الأول', icon: '📊', pct: 22 },
+        { label: 'إنشاء تقرير المعيار الثاني', icon: '📊', pct: 32 },
+        { label: 'إنشاء تقرير المعيار الثالث', icon: '📊', pct: 42 },
+        { label: 'إنشاء تقرير المعيار الرابع', icon: '📊', pct: 52 },
+        { label: 'إنشاء تقرير المعيار الخامس', icon: '📊', pct: 62 },
+        { label: 'إنشاء تقرير المعيار السادس', icon: '📊', pct: 72 },
+        { label: 'إنشاء تقرير المعيار السابع', icon: '📊', pct: 82 },
+        { label: 'دمج الأدلة وضغط الملفات', icon: '🗜️', pct: 92 },
+        { label: 'التقرير جاهز للتحميل!', icon: '✅', pct: 100 }
+    ],
+    downloadProgressPct: 0,
+    _stepTimer: null,
+    async startDownload(url) {
+        this.showDownloadModal = true;
+        this.downloadDone = false;
+        this.downloadError = false;
+        this.downloadStep = 0;
+        this.downloadProgressPct = 0;
+        // Animate progress steps while fetch is in progress
+        let stepIndex = 0;
+        const maxStepBeforeDone = this.downloadSteps.length - 2; // leave last step for completion
+        this._stepTimer = setInterval(() => {
+            if (stepIndex < maxStepBeforeDone) {
+                stepIndex++;
+                this.downloadStep = stepIndex;
+                this.downloadProgressPct = this.downloadSteps[stepIndex].pct;
+            }
+        }, 3500);
+        try {
+            const response = await fetch(url, { method: 'GET', headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+            if (!response.ok) throw new Error('Server error: ' + response.status);
+            const blob = await response.blob();
+            // Done!
+            clearInterval(this._stepTimer);
+            this.downloadStep = this.downloadSteps.length - 1;
+            this.downloadProgressPct = 100;
+            this.downloadDone = true;
+            // Trigger download
+            const blobUrl = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = blobUrl;
+            const cd = response.headers.get('Content-Disposition');
+            a.download = cd ? cd.split('filename=')[1]?.replace(/\x22/g,'') || 'report.zip' : 'report.zip';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(blobUrl);
+        } catch(e) {
+            clearInterval(this._stepTimer);
+            this.downloadError = true;
+        }
+    },
+    closeDownloadModal() {
+        clearInterval(this._stepTimer);
+        this.showDownloadModal = false;
+    },
     addReason() { this.reasons.push(''); },
     removeReason(i) { if (this.reasons.length > 1) this.reasons.splice(i, 1); },
     async startValidation(subId, submitUrl) {
@@ -183,6 +245,12 @@
                                             class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-400 dark:border-indigo-500/20 text-xs font-bold transition-colors cursor-pointer">
                                             <i class="fa-solid fa-eye"></i> عرض
                                         </a>
+
+                                        <button
+                                            @click="startDownload('{{ route('requests.stage_three.print', [$accreditationRequest->id, $sub->id]) }}')"
+                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20 text-xs font-bold transition-colors cursor-pointer">
+                                            <i class="fa-solid fa-file-zipper"></i> تحميل التقرير
+                                        </button>
                                         
                                         @if($sub->status === 'draft' && $userRole === 'program_coordinator')
                                             <button type="button" 
@@ -524,6 +592,153 @@
         </div>
     </template>
 
+    {{-- ── Download Progress Modal ── --}}
+    <template x-teleport="body">
+        <div
+            x-show="showDownloadModal"
+            x-transition:enter="transition ease-out duration-300"
+            x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100"
+            x-transition:leave="transition ease-in duration-200"
+            x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0"
+            class="fixed inset-0 z-[9999] flex items-center justify-center p-4"
+            style="display:none">
+
+            {{-- Backdrop --}}
+            <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+
+            {{-- Modal Card --}}
+            <div
+                x-show="showDownloadModal"
+                x-transition:enter="transition ease-out duration-300"
+                x-transition:enter-start="opacity-0 scale-95 translate-y-4"
+                x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                x-transition:leave="transition ease-in duration-200"
+                x-transition:leave-start="opacity-100 scale-100"
+                x-transition:leave-end="opacity-0 scale-95"
+                class="relative z-10 w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-700"
+                style="display:none">
+
+                {{-- Header --}}
+                <div class="bg-gradient-to-l from-[#1a3c5e] to-[#0f2340] px-6 py-5 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
+                            <i class="fa-solid fa-file-zipper text-white text-lg"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-white text-base">إنشاء حزمة التقرير</h3>
+                            <p class="text-white/60 text-xs">الدراسة الذاتية + المعايير + الأدلة</p>
+                        </div>
+                    </div>
+                    <button
+                        @click="closeDownloadModal()"
+                        x-show="downloadDone || downloadError"
+                        class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white/70 hover:text-white transition-all cursor-pointer">
+                        <i class="fa-solid fa-times text-sm"></i>
+                    </button>
+                </div>
+
+                {{-- Progress Bar --}}
+                <div class="px-6 pt-5">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-bold text-slate-500 dark:text-slate-400">التقدم</span>
+                        <span class="text-xs font-black text-[#1a3c5e] dark:text-blue-400" x-text="downloadProgressPct + '%'"></span>
+                    </div>
+                    <div class="w-full h-2.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                        <div
+                            class="h-full rounded-full transition-all duration-700 ease-out"
+                            :class="downloadDone ? 'bg-emerald-500' : (downloadError ? 'bg-red-500' : 'bg-[#1a3c5e]')"
+                            :style="'width:' + downloadProgressPct + '%'"></div>
+                    </div>
+                </div>
+
+                {{-- Steps List --}}
+                <div class="px-6 py-4 space-y-2 max-h-64 overflow-y-auto">
+                    <template x-for="(step, i) in downloadSteps" :key="i">
+                        <div class="flex items-center gap-3 py-1.5 transition-all duration-300"
+                            :class="i <= downloadStep ? 'opacity-100' : 'opacity-25'">
+                            {{-- Status indicator --}}
+                            <div class="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 text-xs transition-all"
+                                :class="{
+                                    'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400': i < downloadStep || (i === downloadStep && downloadDone),
+                                    'bg-blue-100 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400': i === downloadStep && !downloadDone && !downloadError,
+                                    'bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-600': i > downloadStep
+                                }">
+                                <template x-if="i < downloadStep || (i === downloadStep && downloadDone)">
+                                    <i class="fa-solid fa-check text-[10px]"></i>
+                                </template>
+                                <template x-if="i === downloadStep && !downloadDone && !downloadError">
+                                    <i class="fa-solid fa-circle-notch fa-spin text-[10px]"></i>
+                                </template>
+                                <template x-if="i > downloadStep">
+                                    <span class="text-[9px] font-bold" x-text="i + 1"></span>
+                                </template>
+                            </div>
+                            {{-- Step label --}}
+                            <span class="text-sm font-medium"
+                                :class="{
+                                    'text-slate-600 dark:text-slate-300': i <= downloadStep && !downloadDone,
+                                    'text-emerald-600 dark:text-emerald-400 font-bold': i === downloadStep && downloadDone,
+                                    'text-slate-400 dark:text-slate-600': i > downloadStep
+                                }"
+                                x-text="step.label"></span>
+                        </div>
+                    </template>
+                </div>
+
+                {{-- Footer --}}
+                <div class="px-6 py-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+
+                    {{-- Error state --}}
+                    <template x-if="downloadError">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-red-100 dark:bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fa-solid fa-triangle-exclamation text-red-500 text-xs"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-sm font-bold text-red-700 dark:text-red-400">حدث خطأ أثناء الإنشاء</p>
+                                <p class="text-xs text-slate-500">تحقق من الاتصال وحاول مرة أخرى</p>
+                            </div>
+                            <button @click="closeDownloadModal()" class="px-4 py-2 rounded-lg bg-red-500 text-white text-sm font-bold hover:bg-red-600 transition-colors cursor-pointer">
+                                إغلاق
+                            </button>
+                        </div>
+                    </template>
+
+                    {{-- Done state --}}
+                    <template x-if="downloadDone">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fa-solid fa-circle-check text-emerald-500"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="text-sm font-bold text-emerald-700 dark:text-emerald-400">تم التحميل بنجاح!</p>
+                                <p class="text-xs text-slate-500">تحقق من مجلد التنزيلات لديك</p>
+                            </div>
+                            <button @click="closeDownloadModal()" class="px-4 py-2 rounded-lg bg-emerald-500 text-white text-sm font-bold hover:bg-emerald-600 transition-colors cursor-pointer">
+                                إغلاق
+                            </button>
+                        </div>
+                    </template>
+
+                    {{-- Loading state --}}
+                    <template x-if="!downloadDone && !downloadError">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fa-solid fa-circle-notch fa-spin text-blue-500 text-sm"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-slate-700 dark:text-slate-300">جاري المعالجة...</p>
+                                <p class="text-xs text-slate-400">قد تستغرق العملية بضع دقائق</p>
+                            </div>
+                        </div>
+                    </template>
+
+                </div>
+            </div>
+        </div>
+    </template>
 
 </div>
 @endif

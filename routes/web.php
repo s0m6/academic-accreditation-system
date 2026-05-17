@@ -1,26 +1,27 @@
 <?php
 
+use App\Http\Controllers\PrintController;
 use App\Http\Controllers\ProfileController;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\stages\StageNineController;
+use App\Http\Controllers\PublicCertificateController;
+use App\Http\Controllers\RequestDashboardController;
 use App\Http\Controllers\stages\StageEightController;
-use App\Http\Controllers\stages\StageSevenController;
-use App\Http\Controllers\stages\StageSixController;
 use App\Http\Controllers\stages\StageFiveController;
 use App\Http\Controllers\stages\StageFourController;
+use App\Http\Controllers\stages\StageNineController;
+use App\Http\Controllers\stages\StageOneController;
+use App\Http\Controllers\stages\StageSevenController;
+use App\Http\Controllers\stages\StageSixController;
 use App\Http\Controllers\stages\StageThreeController;
 use App\Http\Controllers\stages\StageTwoController;
-use App\Http\Controllers\stages\StageOneController;
-use App\Http\Controllers\RequestDashboardController;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
-
-use App\Http\Controllers\PublicCertificateController;
 
 // Public landing page
 Route::get('/', function () {
     $latestCertificates = app(PublicCertificateController::class)->getLatest();
+
     return view('public.index', compact('latestCertificates'));
 })->name('welcome');
 
@@ -66,7 +67,6 @@ require __DIR__.'/council_coordinator.php';
 // ------------------------------------------------------------------
 // Accreditation Request Dashboard — accessible to multiple roles
 // ------------------------------------------------------------------
-
 
 // Dashboard and stage navigation routes for accreditation requests
 Route::middleware('auth')->group(function () {
@@ -114,6 +114,12 @@ Route::middleware('auth')->group(function () {
         ->name('requests.stage_two.reject');
     Route::patch('/requests/{accreditationRequest}/stage-two/{formSubmission}/approve', [StageTwoController::class, 'approve'])
         ->name('requests.stage_two.approve');
+
+    // Print actions
+    Route::get('/requests/{accreditationRequest}/stage-two/{formSubmission}/print', [PrintController::class, 'printStageTwo'])
+        ->name('requests.stage_two.print');
+    Route::get('/requests/{accreditationRequest}/stage-three/{formSubmission}/print', [PrintController::class, 'printStageThree'])
+        ->name('requests.stage_three.print');
 
     // Stage Three actions
     Route::post('/requests/{accreditationRequest}/stage-three/draft', [StageThreeController::class, 'createDraft'])
@@ -174,12 +180,16 @@ Route::middleware('auth')->group(function () {
         ->name('requests.stage_five.university_accept');
     Route::get('/requests/{accreditationRequest}/stage-five/{visitSchedule}/view-pdf', [StageFiveController::class, 'viewPdf'])
         ->name('requests.stage_five.view_pdf');
+    Route::get('/requests/{accreditationRequest}/stage-five/{visitSchedule}/print', [PrintController::class, 'printVisitSchedule'])
+        ->name('requests.stage_five.print');
 
     // Stage Six Visit Report actions
     Route::get('/requests/{accreditationRequest}/stage-six/visit-report/edit', [StageSixController::class, 'edit'])
         ->name('requests.stage_six.visit_report.edit');
     Route::get('/requests/{accreditationRequest}/stage-six/visit-report/show', [StageSixController::class, 'show'])
         ->name('requests.stage_six.visit_report.show');
+    Route::get('/requests/{accreditationRequest}/stage-six/visit-report/print', [PrintController::class, 'printVisitReport'])
+        ->name('requests.stage_six.visit_report.print');
     Route::post('/requests/{accreditationRequest}/stage-six/visit-report/save', [StageSixController::class, 'save'])
         ->name('requests.stage_six.visit_report.save');
 
@@ -188,6 +198,8 @@ Route::middleware('auth')->group(function () {
         ->name('requests.stage_six.rubrics_edit');
     Route::get('/requests/{accreditationRequest}/stage-six/rubrics/show', [StageSixController::class, 'showRubrics'])
         ->name('requests.stage_six.rubrics_show');
+    Route::get('/requests/{accreditationRequest}/stage-six/rubrics/print', [PrintController::class, 'printRubrics'])
+        ->name('requests.stage_six.rubrics_print');
     Route::post('/requests/{accreditationRequest}/stage-six/rubrics/save', [StageSixController::class, 'saveRubrics'])
         ->name('requests.stage_six.rubrics_save');
 
@@ -208,8 +220,12 @@ Route::middleware('auth')->group(function () {
         ->name('requests.stage_six.council_upload');
     Route::get('/requests/{accreditationRequest}/stage-six/final-report', [StageSixController::class, 'showFinalReport'])
         ->name('requests.stage_six.final_report');
+    Route::get('/requests/{accreditationRequest}/stage-six/final-report/print', [PrintController::class, 'printFinalReport'])
+        ->name('requests.stage_six.final_report.print');
     Route::get('/requests/{accreditationRequest}/stage-six/recommendations-letter', [StageSixController::class, 'showRecommendationsLetter'])
         ->name('requests.stage_six.recommendations_letter');
+    Route::get('/requests/{accreditationRequest}/stage-six/recommendations-letter/print', [PrintController::class, 'printRecommendationsLetter'])
+        ->name('requests.stage_six.recommendations_letter.print');
 
     // Stage Seven actions
     Route::get('/requests/{accreditationRequest}/stage-seven/recommendations/view', [StageSevenController::class, 'viewRecommendations'])
@@ -226,6 +242,8 @@ Route::middleware('auth')->group(function () {
         ->name('requests.stage_seven.form9.show');
     Route::post('/requests/{accreditationRequest}/stage-seven/form9/save', [StageSevenController::class, 'saveForm9'])
         ->name('requests.stage_seven.form9.save');
+    Route::get('/requests/{accreditationRequest}/stage-seven/form9/print', [PrintController::class, 'printFormNine'])
+        ->name('requests.stage_seven.form9.print');
 
     // Stage Eight rubrics form actions
     Route::get('/requests/{accreditationRequest}/stage-eight/rubrics/edit', [StageEightController::class, 'editRubrics'])
@@ -234,8 +252,12 @@ Route::middleware('auth')->group(function () {
         ->name('requests.stage_eight.rubrics_show');
     Route::post('/requests/{accreditationRequest}/stage-eight/rubrics/save', [StageEightController::class, 'saveRubrics'])
         ->name('requests.stage_eight.rubrics_save');
+    Route::get('/requests/{accreditationRequest}/stage-eight/rubrics/print', [PrintController::class, 'printFinalRubrics'])
+        ->name('requests.stage_eight.rubrics_print');
 
     // Stage Eight approval workflow actions
+    Route::get('/requests/{accreditationRequest}/stage-eight/response/download', [StageEightController::class, 'downloadForm9Response'])
+        ->name('requests.stage_eight.response.download');
     Route::post('/requests/{accreditationRequest}/stage-eight/validate', [StageEightController::class, 'validateIndicators'])
         ->name('requests.stage_eight.validate');
     Route::patch('/requests/{accreditationRequest}/stage-eight/request-approval', [StageEightController::class, 'requestMemberApproval'])
@@ -250,8 +272,12 @@ Route::middleware('auth')->group(function () {
         ->name('requests.stage_eight.final_submit');
     Route::get('/requests/{accreditationRequest}/stage-eight/final-report', [StageEightController::class, 'showFinalReport'])
         ->name('requests.stage_eight.final_report');
+    Route::get('/requests/{accreditationRequest}/stage-eight/final-report/print', [PrintController::class, 'printFinalReport'])
+        ->name('requests.stage_eight.final_report.print');
     Route::get('/requests/{accreditationRequest}/stage-eight/final-decision', [StageEightController::class, 'showFinalDecision'])
         ->name('requests.stage_eight.final_decision');
+    Route::get('/requests/{accreditationRequest}/stage-eight/final-decision/print', [PrintController::class, 'printFinalDecision'])
+        ->name('requests.stage_eight.final_decision.print');
     Route::get('/requests/{accreditationRequest}/stage-eight/comparison', [StageEightController::class, 'showComparison'])
         ->name('requests.stage_eight.comparison');
 

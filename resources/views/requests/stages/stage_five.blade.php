@@ -209,6 +209,20 @@
                                             <i class="fa-solid fa-eye text-(--text-secondary)"></i> عرض
                                         </a>
 
+                                        {{-- Print Action --}}
+                                        <a href="{{ route('requests.stage_five.print', [$accreditationRequest, $schedule]) }}" 
+                                            x-data="{ loading: false, finished: false }"
+                                            x-on:click="loading = true; finished = false; setTimeout(() => { loading = false; finished = true; setTimeout(() => finished = false, 5000) }, 5000)"
+                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-bold transition-all hover:-translate-y-0.5 cursor-pointer no-underline"
+                                            :class="finished ? 'bg-green-50 text-green-700 border-green-200 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/20 dark:hover:bg-green-500/30' : 'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-400 dark:border-indigo-500/20 dark:hover:bg-indigo-500/30'"
+                                            :class="{ 'opacity-60 pointer-events-none': loading }"
+                                            title="تحميل نسخة للطباعة (PDF)">
+                                            <i x-show="!loading && !finished" class="fa-solid fa-print"></i>
+                                            <i x-show="loading" class="fa-solid fa-circle-notch animate-spin"></i>
+                                            <i x-show="finished" class="fa-solid fa-check"></i>
+                                            <span x-text="loading ? 'جاري التجهيز...' : (finished ? 'تم التحميل' : 'طباعة الجدول')"></span>
+                                        </a>
+
                                         {{-- PDF Download (Visible to all if exists) --}}
                                         @if($schedule->council_pdf_path)
                                             <a href="{{ route('requests.stage_five.view_pdf', [$accreditationRequest, $schedule]) }}" target="_blank"

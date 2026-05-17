@@ -249,37 +249,37 @@
                                         {{-- Edit Action (Only for Draft and Program Coordinator) --}}
                                         @if($sub->status === 'draft' && $userRole === 'program_coordinator')
                                             <a href="{{ route('requests.stage_two.edit', [$accreditationRequest, $sub]) }}" 
-                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20 text-xs font-bold transition-colors cursor-pointer">
+                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 hover:-translate-y-0.5 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20 dark:hover:bg-blue-500/30 text-xs font-bold transition-all cursor-pointer">
                                                 <i class="fa-solid fa-edit"></i> تعديل
                                             </a>
                                             
                                             {{-- View Action (For Coordinator in Draft) --}}
                                             <a href="{{ route('requests.stage_two.show', [$accreditationRequest, $sub]) }}" target="_blank"
-                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-50 text-slate-700 border border-slate-200 hover:bg-slate-100 dark:bg-slate-500/10 dark:text-slate-400 dark:border-slate-500/20 text-xs font-bold transition-colors cursor-pointer">
-                                                <i class="fa-solid fa-eye"></i> عرض
+                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-50 text-slate-700 border border-slate-200 hover:bg-slate-100 hover:-translate-y-0.5 dark:bg-slate-500/10 dark:text-slate-400 dark:border-slate-500/20 dark:hover:bg-slate-500/30 text-xs font-bold transition-all cursor-pointer no-underline">
+                                                <i class="fa-solid fa-eye"></i> عرض النموذج
                                             </a>
                                             
                                             {{-- Submit Action --}}
                                             <button type="button" @click="handleSubmission({{ Js::from($sub) }}, '{{ route('requests.stage_two.submit', [$accreditationRequest, $sub]) }}')"
-                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/20 text-xs font-bold transition-colors cursor-pointer">
+                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 hover:-translate-y-0.5 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/20 dark:hover:bg-green-500/30 text-xs font-bold transition-all cursor-pointer">
                                                 <i class="fa-solid fa-paper-plane"></i> رفع للمجلس
                                             </button>
                                         @else
                                             {{-- View Action (For everyone else or other statuses) --}}
                                             <a href="{{ route('requests.stage_two.show', [$accreditationRequest, $sub]) }}" target="_blank"
-                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-50 text-slate-700 border border-slate-200 hover:bg-slate-100 dark:bg-slate-500/10 dark:text-slate-400 dark:border-slate-500/20 text-xs font-bold transition-colors cursor-pointer">
-                                                <i class="fa-solid fa-eye"></i> عرض
+                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-50 text-slate-700 border border-slate-200 hover:bg-slate-100 hover:-translate-y-0.5 dark:bg-slate-500/10 dark:text-slate-400 dark:border-slate-500/20 dark:hover:bg-slate-500/30 text-xs font-bold transition-all cursor-pointer no-underline">
+                                                <i class="fa-solid fa-eye"></i> عرض النموذج
                                             </a>
                                         @endif
 
                                         {{-- Secretariat Actions --}}
                                         @if($sub->status === 'pending' && $userRole === 'council_secretariat')
                                             <button @click="approveSubmissionId = {{ $sub->id }}; showApproveModal = true"
-                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/20 text-xs font-bold transition-colors cursor-pointer">
+                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 hover:-translate-y-0.5 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/20 dark:hover:bg-green-500/30 text-xs font-bold transition-all cursor-pointer">
                                                 <i class="fa-solid fa-circle-check"></i> موافقة
                                             </button>
                                             <button @click="rejectSubmissionId = {{ $sub->id }}; reasons = ['']; showRejectModal = true"
-                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20 text-xs font-bold transition-colors cursor-pointer">
+                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 hover:-translate-y-0.5 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20 dark:hover:bg-red-500/30 text-xs font-bold transition-all cursor-pointer">
                                                 <i class="fa-solid fa-circle-xmark"></i> رفض
                                             </button>
                                         @endif
@@ -287,16 +287,25 @@
                                         {{-- Rejection Reasons (View) --}}
                                         @if($sub->status === 'rejected')
                                             <button @click="showViewReasonsModal = true; rejectionReasons = {{ json_encode($sub->decision_reasons) }}"
-                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20 text-xs font-bold transition-colors cursor-pointer">
+                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 hover:-translate-y-0.5 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20 dark:hover:bg-red-500/30 text-xs font-bold transition-all cursor-pointer">
                                                 <i class="fa-solid fa-circle-info"></i> الأسباب
                                             </button>
                                         @endif
 
                                         {{-- Print Action (Always available if not draft) --}}
                                         @if($sub->status !== 'draft')
-                                            <button type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100 text-xs font-bold transition-colors cursor-pointer" onclick="alert('تحت التطوير')">
-                                                <i class="fa-solid fa-print"></i>
-                                            </button>
+                                            <a href="{{ route('requests.stage_two.print', [$accreditationRequest, $sub]) }}" 
+                                                x-data="{ loading: false, finished: false }"
+                                                x-on:click="loading = true; finished = false; setTimeout(() => { loading = false; finished = true; setTimeout(() => finished = false, 5000) }, 8000)"
+                                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-bold transition-all hover:-translate-y-0.5 cursor-pointer no-underline"
+                                                :class="finished ? 'bg-green-50 text-green-700 border-green-200 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/20 dark:hover:bg-green-500/30' : 'bg-indigo-50 text-indigo-700 border-indigo-200 hover:bg-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-400 dark:border-indigo-500/20 dark:hover:bg-indigo-500/30'"
+                                                :class="{ 'opacity-60 pointer-events-none': loading }"
+                                                title="طباعة وتحميل القرارات (ZIP)">
+                                                <i x-show="!loading && !finished" class="fa-solid fa-download"></i>
+                                                <i x-show="loading" class="fa-solid fa-circle-notch animate-spin"></i>
+                                                <i x-show="finished" class="fa-solid fa-check"></i>
+                                                <span x-text="loading ? 'جاري التجهيز...' : (finished ? 'تم التحميل' : 'تحميل النموذج')"></span>
+                                            </a>
                                         @endif
                                     </div>
                                 </td>

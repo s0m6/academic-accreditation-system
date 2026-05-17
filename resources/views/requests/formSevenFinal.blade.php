@@ -138,26 +138,30 @@
             font-weight: 500;
         }
 
-        .committee-table td.signature-cell {
-            height: 120px;
-            background: #fdfdfd;
-            padding: 0;
-        }
-
+        /* ── Signature Custom Styling (Borderless & Transparent matching Visit Report) ── */
         .signature-wrapper {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 10px;
+            position: relative !important;
+            width: 100% !important;
+            height: 90px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            overflow: hidden !important;
+            background: transparent !important;
+            padding: 8px !important;
+            box-sizing: border-box !important;
         }
-
         .signature-wrapper svg {
-            max-height: 100px;
-            max-width: 100%;
+            position: relative !important;
+            display: block !important;
+            max-height: 70px !important;
+            max-width: 100% !important;
             width: auto !important;
             height: auto !important;
+            margin: 0 auto !important;
+        }
+        .signature-wrapper svg * {
+            position: static !important;
         }
 
         .main-table th.num-col {
@@ -345,11 +349,77 @@
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
             }
+            .no-print {
+                display: none !important;
+            }
+        }
+
+        /* ── Sticky Top Bar Styling ── */
+        .no-print-bar {
+            position: sticky;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-family: 'Tajawal', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+        .btn-primary {
+            background: #1a3c5e;
+            color: #ffffff;
+            box-shadow: 0 2px 4px rgba(26, 60, 94, 0.15);
+        }
+        .btn-primary:hover {
+            background: #122b44;
+            transform: translateY(-1px);
+        }
+        .btn-secondary {
+            background: #ffffff;
+            border-color: #cbd5e1;
+            color: #475569;
+        }
+        .btn-secondary:hover {
+            background: #f8fafc;
+            transform: translateY(-1px);
         }
     </style>
 </head>
 
 <body>
+
+    <!-- ── Interactive Sticky Navigation Bar ── -->
+    <div class="no-print no-print-bar">
+        <a href="{{ route('requests.stage_six.final_report.print', $accreditationRequest) }}" class="btn btn-primary">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="margin-left: 6px;">
+                <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+            </svg>
+            تحميل التقرير كـ PDF
+        </a>
+        <a href="{{ route('requests.stage_six.visit_report.show', $accreditationRequest) }}" class="btn btn-secondary">
+            رجوع
+        </a>
+    </div>
 
     <div class="page-container">
         <div class="report-header center">
@@ -402,18 +472,16 @@
                                 @endif
                             </td>
                             <td class="signature-cell">
-                                @if($member['signature_path'] && \Illuminate\Support\Facades\Storage::exists($member['signature_path']))
-                                    @php
-                                        $svg = \Illuminate\Support\Facades\Storage::get($member['signature_path']);
-                                    @endphp
-                                    <div class="signature-wrapper">
+                                <div class="signature-wrapper">
+                                    @if($member['signature_path'] && \Illuminate\Support\Facades\Storage::exists($member['signature_path']))
+                                        @php
+                                            $svg = \Illuminate\Support\Facades\Storage::get($member['signature_path']);
+                                        @endphp
                                         {!! $svg !!}
-                                    </div>
-                                @else
-                                    <div class="signature-wrapper">
-                                        <span style="color: #94a3b8; font-weight: 500; font-size: 14px; opacity: 0.7;">(لم يتم التوقيع بعد)</span>
-                                    </div>
-                                @endif
+                                    @else
+                                        <span style="color: #94a3b8; font-weight: 500; font-size: 12px; opacity: 0.7;">(لم يتم التوقيع بعد)</span>
+                                    @endif
+                                </div>
                             </td>
                         </tr>
                     @endforeach

@@ -96,6 +96,12 @@
               <i class="fa-solid fa-floppy-disk"></i>
               <span>حفظ التغييرات</span>
             </button>
+          @else
+            <a href="{{ route('requests.stage_six.rubrics_print', $accreditationRequest) }}" 
+               class="flex items-center gap-2 px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold transition-all shadow-lg shadow-blue-500/20 active:scale-95 no-underline">
+              <i class="fa-solid fa-download"></i>
+              <span>تحميل بصيغة PDF</span>
+            </a>
           @endif
         </div>
 
