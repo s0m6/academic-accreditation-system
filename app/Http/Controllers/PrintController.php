@@ -613,6 +613,109 @@ class PrintController extends Controller
     }
 
     /**
+     * Print Stage Eight Program Assessment Metrics (Final Rubrics) as PDF.
+     */
+    public function printFinalRubrics(AccreditationRequest $accreditationRequest)
+    {
+        $report = $accreditationRequest->committeeReport;
+        if (! $report) {
+            abort(404, 'التقرير غير موجود.');
+        }
+
+        $accreditationRequest->load([
+            'program.department.college.university.officer',
+            'programCoordinator',
+            'committee.chairEvaluator.user',
+        ]);
+
+        $program = $accreditationRequest->program;
+        $department = $program->department;
+        $college = $department->college;
+        $university = $college->university;
+
+        $committee = $accreditationRequest->committee;
+
+        // Load all standards with sub-standards and indicators
+        $standards = Standard::with(['subStandards.indicators'])
+            ->orderBy('id')
+            ->get();
+
+        // Load all final scores keyed by indicator_id.
+        $savedScores = ReportScore::where('report_id', $report->id)
+            ->where('score_type', 'final')
+            ->pluck('score', 'indicator_id');
+
+        $savedFormData = $report->form6_final_data ?? [];
+
+        // Build members data for signatures (form_type = 'form_6_final' for stage 8)
+        $membersData = [];
+
+        // 1. Get Chair — look for latest stage8 approved record; chair has no approval_id entry
+        //    so we fall back to a NULL-approval_id signature created after stage6 is done.
+        $chairEvaluator = $committee?->chairEvaluator;
+        if ($chairEvaluator) {
+            // Chair signs via a NULL-approval_id record saved by StageEightController
+            $chairSig = ReportSignature::where('report_id', $report->id)
+                ->whereNull('approval_id')
+                ->where('form_type', 'form_6_final')
+                ->latest()
+                ->first();
+
+            $membersData[] = [
+                'name' => $chairEvaluator->user->name,
+                'signature_path' => $chairSig?->signature_path,
+                'is_chair' => true,
+            ];
+        }
+
+        // 2. Get Members — use stage8 CommitteeApproval records
+        $members = $committee ? $committee->activeMembers->filter(fn ($m) => $m->evaluator_id !== $committee->chair_evaluator_id) : collect();
+
+        foreach ($members as $member) {
+            // Find the latest stage8 approved record for this member
+            $latestApproval = CommitteeApproval::where('report_id', $report->id)
+                ->where('member_id', $member->evaluator_id)
+                ->where('review_round', 'stage8')
+                ->where('status', 'approved')
+                ->latest()
+                ->first();
+
+            $sigPath = null;
+            if ($latestApproval) {
+                $sig = ReportSignature::where('approval_id', $latestApproval->id)
+                    ->where('form_type', 'form_6_final')
+                    ->latest()
+                    ->first();
+                $sigPath = $sig?->signature_path;
+            }
+
+            $membersData[] = [
+                'name' => $member->evaluator->user->name,
+                'signature_path' => $sigPath,
+                'is_chair' => false,
+            ];
+        }
+
+        return Pdf::view('print_templates.rubrics_report_template', [
+            'accreditationRequest' => $accreditationRequest,
+            'report' => $report,
+            'program' => $program,
+            'department' => $department,
+            'college' => $college,
+            'university' => $university,
+            'standards' => $standards,
+            'savedScores' => $savedScores,
+            'savedFormData' => $savedFormData,
+            'membersData' => $membersData,
+            'isPrint' => true,
+            'isFinal' => true,
+        ])
+            ->format('a4')
+            ->name('Final_Assessment_Metrics_req_'.$accreditationRequest->id.'.pdf')
+            ->download();
+    }
+
+    /**
      * Print Stage Six Evaluators Committee Final Report (Form 7) as PDF.
      */
     public function printFinalReport(AccreditationRequest $accreditationRequest)
@@ -635,16 +738,21 @@ class PrintController extends Controller
 
         $committee = $accreditationRequest->committee;
 
+        // Detect whether called from Stage 8 route to use the correct signatures
+        $isStage8Route = request()->routeIs('requests.stage_eight.*');
+        $reviewRound = $isStage8Route ? 'stage8' : 'stage6';
+        $chairFormType = $isStage8Route ? 'form_6_final' : 'form_6_initial';
+        $memberFormType = $isStage8Route ? 'form_6_final' : 'form_6_initial';
+
         // Build members data for the table/signatures
         $membersData = [];
 
         // 1. Get Chair
         $chairEvaluator = $committee?->chairEvaluator;
         if ($chairEvaluator) {
-            // Add Chair (Signature where approval_id is NULL)
             $chairSig = ReportSignature::where('report_id', $report->id)
                 ->whereNull('approval_id')
-                ->where('form_type', 'form_6_initial')
+                ->where('form_type', $chairFormType)
                 ->latest()
                 ->first();
 
@@ -655,13 +763,13 @@ class PrintController extends Controller
             ];
         }
 
-        // 2. Add Members (Latest approved signature for stage6)
+        // 2. Add Members
         $members = $committee ? $committee->activeMembers->filter(fn ($m) => $m->evaluator_id !== $committee->chair_evaluator_id) : collect();
 
         foreach ($members as $member) {
             $latestApproval = CommitteeApproval::where('report_id', $report->id)
                 ->where('member_id', $member->evaluator_id)
-                ->where('review_round', 'stage6')
+                ->where('review_round', $reviewRound)
                 ->where('status', 'approved')
                 ->latest()
                 ->first();
@@ -669,7 +777,7 @@ class PrintController extends Controller
             $sigPath = null;
             if ($latestApproval) {
                 $sig = ReportSignature::where('approval_id', $latestApproval->id)
-                    ->where('form_type', 'form_6_initial')
+                    ->where('form_type', $memberFormType)
                     ->latest()
                     ->first();
                 $sigPath = $sig?->signature_path;
@@ -682,7 +790,9 @@ class PrintController extends Controller
             ];
         }
 
-        $standardsScores = $this->calculateStandardsScores($report->id);
+        // Use final scores for Stage 8, initial scores for Stage 6
+        $scoreType = $isStage8Route ? 'final' : 'Initial';
+        $standardsScores = $this->calculateStandardsScores($report->id, $scoreType);
 
         // Build detailed sub-standards data for the assessment table (Section 2 of Form 7).
         $detailedStandards = $this->buildDetailedStandards($report);
@@ -707,13 +817,13 @@ class PrintController extends Controller
     /**
      * Calculate per-standard scores from report_scores (initial type, scores 1-5 only).
      */
-    private function calculateStandardsScores(int $reportId): array
+    private function calculateStandardsScores(int $reportId, string $scoreType = 'Initial'): array
     {
         $standards = Standard::with(['subStandards.indicators'])->orderBy('id')->get();
 
-        // Load all initial scores for this report keyed by indicator_id.
+        // Load all scores for this report keyed by indicator_id.
         $scores = ReportScore::where('report_id', $reportId)
-            ->where('score_type', 'Initial')
+            ->where('score_type', $scoreType)
             ->pluck('score', 'indicator_id');
 
         $standardRows = [];
@@ -965,6 +1075,93 @@ class PrintController extends Controller
         ])
             ->format('a4')
             ->name('Form9_Response_req_'.$accreditationRequest->id.'.pdf')
+            ->download();
+    }
+
+    /**
+     * Print Stage Eight Final Decision (Form 10) as PDF.
+     */
+    public function printFinalDecision(AccreditationRequest $accreditationRequest)
+    {
+        $report = $accreditationRequest->committeeReport;
+        if (! $report) {
+            abort(404, 'التقرير غير موجود.');
+        }
+
+        $program = $accreditationRequest->program;
+        $department = $program->department;
+        $college = $department->college;
+        $university = $college->university;
+
+        $committee = $accreditationRequest->committee;
+
+        // Calculate scores to get average and achievement level using final scores
+        $standardsScores = $this->calculateStandardsScores($report->id, 'final');
+        $grandAverage = $standardsScores['total']['average'];
+        $achievementLevel = $standardsScores['achievement_level'];
+
+        // Build members data for signatures (form_type = 'form_10')
+        $membersData = [];
+
+        // 1. Get Chair (Signature where approval_id is NULL)
+        $chairEvaluator = $committee->chairEvaluator;
+        if ($chairEvaluator) {
+            $chairSig = ReportSignature::where('report_id', $report->id)
+                ->whereNull('approval_id')
+                ->where('form_type', 'form_10')
+                ->latest()
+                ->first();
+
+            $membersData[] = [
+                'name' => $chairEvaluator->user->name,
+                'signature_path' => $chairSig?->signature_path,
+                'signed_at' => $chairSig?->created_at,
+                'is_chair' => true,
+            ];
+        }
+
+        // 2. Add Members (Latest approved signature for stage8)
+        $members = $committee->activeMembers->filter(fn ($m) => $m->evaluator_id !== $committee->chair_evaluator_id);
+
+        foreach ($members as $member) {
+            $latestApproval = CommitteeApproval::where('report_id', $report->id)
+                ->where('member_id', $member->evaluator_id)
+                ->where('review_round', 'stage8')
+                ->where('status', 'approved')
+                ->latest()
+                ->first();
+
+            $sigPath = null;
+            $signedAt = null;
+            if ($latestApproval) {
+                $sig = ReportSignature::where('approval_id', $latestApproval->id)
+                    ->where('form_type', 'form_10')
+                    ->latest()
+                    ->first();
+                $sigPath = $sig?->signature_path;
+                $signedAt = $sig?->created_at;
+            }
+
+            $membersData[] = [
+                'name' => $member->evaluator->user->name,
+                'signature_path' => $sigPath,
+                'signed_at' => $signedAt,
+                'is_chair' => false,
+            ];
+        }
+
+        return Pdf::view('print_templates.final_decision_template', compact(
+            'accreditationRequest',
+            'program',
+            'department',
+            'college',
+            'university',
+            'grandAverage',
+            'achievementLevel',
+            'membersData'
+        ))
+            ->format('a4')
+            ->name('Final_Decision_req_'.$accreditationRequest->id.'.pdf')
             ->download();
     }
 

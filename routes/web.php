@@ -252,8 +252,12 @@ Route::middleware('auth')->group(function () {
         ->name('requests.stage_eight.rubrics_show');
     Route::post('/requests/{accreditationRequest}/stage-eight/rubrics/save', [StageEightController::class, 'saveRubrics'])
         ->name('requests.stage_eight.rubrics_save');
+    Route::get('/requests/{accreditationRequest}/stage-eight/rubrics/print', [PrintController::class, 'printFinalRubrics'])
+        ->name('requests.stage_eight.rubrics_print');
 
     // Stage Eight approval workflow actions
+    Route::get('/requests/{accreditationRequest}/stage-eight/response/download', [StageEightController::class, 'downloadForm9Response'])
+        ->name('requests.stage_eight.response.download');
     Route::post('/requests/{accreditationRequest}/stage-eight/validate', [StageEightController::class, 'validateIndicators'])
         ->name('requests.stage_eight.validate');
     Route::patch('/requests/{accreditationRequest}/stage-eight/request-approval', [StageEightController::class, 'requestMemberApproval'])
@@ -268,8 +272,12 @@ Route::middleware('auth')->group(function () {
         ->name('requests.stage_eight.final_submit');
     Route::get('/requests/{accreditationRequest}/stage-eight/final-report', [StageEightController::class, 'showFinalReport'])
         ->name('requests.stage_eight.final_report');
+    Route::get('/requests/{accreditationRequest}/stage-eight/final-report/print', [PrintController::class, 'printFinalReport'])
+        ->name('requests.stage_eight.final_report.print');
     Route::get('/requests/{accreditationRequest}/stage-eight/final-decision', [StageEightController::class, 'showFinalDecision'])
         ->name('requests.stage_eight.final_decision');
+    Route::get('/requests/{accreditationRequest}/stage-eight/final-decision/print', [PrintController::class, 'printFinalDecision'])
+        ->name('requests.stage_eight.final_decision.print');
     Route::get('/requests/{accreditationRequest}/stage-eight/comparison', [StageEightController::class, 'showComparison'])
         ->name('requests.stage_eight.comparison');
 

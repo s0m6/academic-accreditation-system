@@ -103,7 +103,7 @@
                     تقرير مقاييس تقييم البرنامج (الروبريك)
                 </h1>
                 <p class="text-lg font-bold text-slate-600 mt-3">
-                    التقييم الأولي للجنة المقيمين الخارجية
+                    {{ isset($isFinal) && $isFinal ? 'التقييم الختامي' : 'التقييم الأولي' }} للجنة المقيمين الخارجية
                 </p>
                 <div class="w-20 h-1.5 bg-[#1a3c5e] mx-auto mt-6 rounded-full"></div>
             </div>

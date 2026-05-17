@@ -338,9 +338,9 @@
                                 <a href="{{ route('requests.stage_seven.form9.show', $accreditationRequest) }}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-(--surface-card) border border-(--border-primary) hover:bg-(--bg-main) text-(--text-primary) text-xs font-bold transition">
                                     <i class="fa-solid fa-eye text-(--text-secondary)"></i> عرض
                                 </a>
-                                <button type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-(--surface-card) border border-(--border-primary) hover:bg-(--bg-main) text-(--text-primary) text-xs font-bold transition">
-                                    <i class="fa-solid fa-download text-(--text-secondary)"></i> تحميل
-                                </button>
+                                <a href="{{ route('requests.stage_eight.response.download', $accreditationRequest) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-700 dark:bg-emerald-500/10 dark:border-emerald-500/20 dark:text-emerald-400 dark:hover:bg-emerald-500/20 text-xs font-bold transition shadow-sm">
+                                    <i class="fa-solid fa-download"></i> تحميل (نسخة موقعة)
+                                </a>
                             </div>
                         </td>
                     </tr>
@@ -359,9 +359,9 @@
                                 <a href="{{ route('requests.stage_eight.comparison', $accreditationRequest) }}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-orange-50 hover:bg-orange-100 text-orange-600 border border-orange-200 dark:bg-orange-500/10 dark:hover:bg-orange-500/20 dark:text-orange-400 dark:border-orange-500/20 text-xs font-bold transition shadow-sm">
                                     <i class="fa-solid fa-code-compare"></i> مقارنة مع النسخة الأولية
                                 </a>
-                                <button type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-(--surface-card) border border-(--border-primary) hover:bg-(--bg-main) text-(--text-primary) text-xs font-bold transition">
+                                <a href="{{ route('requests.stage_eight.rubrics_print', $accreditationRequest) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-(--surface-card) border border-(--border-primary) hover:bg-(--bg-main) text-(--text-primary) text-xs font-bold transition">
                                     <i class="fa-solid fa-download text-(--text-secondary)"></i> تحميل
-                                </button>
+                                </a>
                             </div>
                         </td>
                     </tr>
@@ -372,9 +372,9 @@
                                 <a href="{{ route('requests.stage_eight.final_report', $accreditationRequest) }}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-(--surface-card) border border-(--border-primary) hover:bg-(--bg-main) text-(--text-primary) text-xs font-bold transition">
                                     <i class="fa-solid fa-eye text-(--text-secondary)"></i> عرض
                                 </a>
-                                <button type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-(--surface-card) border border-(--border-primary) hover:bg-(--bg-main) text-(--text-primary) text-xs font-bold transition">
+                                <a href="{{ route('requests.stage_eight.final_report.print', $accreditationRequest) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-(--surface-card) border border-(--border-primary) hover:bg-(--bg-main) text-(--text-primary) text-xs font-bold transition">
                                     <i class="fa-solid fa-download text-(--text-secondary)"></i> تحميل
-                                </button>
+                                </a>
                             </div>
                         </td>
                     </tr>
@@ -385,9 +385,9 @@
                                 <a href="{{ route('requests.stage_eight.final_decision', $accreditationRequest) }}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-(--surface-card) border border-(--border-primary) hover:bg-(--bg-main) text-(--text-primary) text-xs font-bold transition">
                                     <i class="fa-solid fa-eye text-(--text-secondary)"></i> عرض
                                 </a>
-                                <button type="button" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-(--surface-card) border border-(--border-primary) hover:bg-(--bg-main) text-(--text-primary) text-xs font-bold transition">
+                                <a href="{{ route('requests.stage_eight.final_decision.print', $accreditationRequest) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-(--surface-card) border border-(--border-primary) hover:bg-(--bg-main) text-(--text-primary) text-xs font-bold transition">
                                     <i class="fa-solid fa-download text-(--text-secondary)"></i> تحميل
-                                </button>
+                                </a>
                             </div>
                         </td>
                     </tr>
