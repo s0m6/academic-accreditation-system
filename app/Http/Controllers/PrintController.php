@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AccreditationRequest;
 use App\Models\CommitteeApproval;
 use App\Models\FormSubmission;
+use App\Models\ReportScore;
 use App\Models\ReportSignature;
 use App\Models\Standard;
 use App\Models\VisitSchedule;
@@ -508,6 +509,105 @@ class PrintController extends Controller
         ])
             ->format('a4')
             ->name('Visit_Report_req_'.$accreditationRequest->id.'.pdf')
+            ->download();
+    }
+
+    /**
+     * Print Stage Six Program Assessment Metrics (Form 6 Rubrics) as PDF.
+     */
+    public function printRubrics(AccreditationRequest $accreditationRequest)
+    {
+        $report = $accreditationRequest->committeeReport;
+        if (! $report) {
+            abort(404, 'التقرير غير موجود.');
+        }
+
+        $accreditationRequest->load([
+            'program.department.college.university.officer',
+            'programCoordinator',
+            'committee.chairEvaluator.user',
+        ]);
+
+        $program = $accreditationRequest->program;
+        $department = $program->department;
+        $college = $department->college;
+        $university = $college->university;
+
+        $committee = $accreditationRequest->committee;
+
+        // Load all standards with sub-standards and indicators
+        $standards = Standard::with(['subStandards.indicators'])
+            ->orderBy('id')
+            ->get();
+
+        // Load all initial scores keyed by indicator_id.
+        $savedScores = ReportScore::where('report_id', $report->id)
+            ->where('score_type', 'Initial')
+            ->pluck('score', 'indicator_id');
+
+        $savedFormData = $report->form6_initial_data ?? [];
+
+        // Build members data for signatures (same logic as Final Report but form_type is 'form_6_initial')
+        $membersData = [];
+
+        // 1. Get Chair
+        $chairEvaluator = $committee?->chairEvaluator;
+        if ($chairEvaluator) {
+            $chairSig = ReportSignature::where('report_id', $report->id)
+                ->whereNull('approval_id')
+                ->where('form_type', 'form_6_initial')
+                ->latest()
+                ->first();
+
+            $membersData[] = [
+                'name' => $chairEvaluator->user->name,
+                'signature_path' => $chairSig?->signature_path,
+                'is_chair' => true,
+            ];
+        }
+
+        // 2. Get Members
+        $members = $committee ? $committee->activeMembers->filter(fn ($m) => $m->evaluator_id !== $committee->chair_evaluator_id) : collect();
+
+        foreach ($members as $member) {
+            $latestApproval = CommitteeApproval::where('report_id', $report->id)
+                ->where('member_id', $member->evaluator_id)
+                ->where('review_round', 'stage6')
+                ->where('status', 'approved')
+                ->latest()
+                ->first();
+
+            $sigPath = null;
+            if ($latestApproval) {
+                $sig = ReportSignature::where('approval_id', $latestApproval->id)
+                    ->where('form_type', 'form_6_initial')
+                    ->latest()
+                    ->first();
+                $sigPath = $sig?->signature_path;
+            }
+
+            $membersData[] = [
+                'name' => $member->evaluator->user->name,
+                'signature_path' => $sigPath,
+                'is_chair' => false,
+            ];
+        }
+
+        return Pdf::view('print_templates.rubrics_report_template', [
+            'accreditationRequest' => $accreditationRequest,
+            'report' => $report,
+            'program' => $program,
+            'department' => $department,
+            'college' => $college,
+            'university' => $university,
+            'standards' => $standards,
+            'savedScores' => $savedScores,
+            'savedFormData' => $savedFormData,
+            'membersData' => $membersData,
+            'isPrint' => true,
+        ])
+            ->format('a4')
+            ->name('Program_Assessment_Metrics_req_'.$accreditationRequest->id.'.pdf')
             ->download();
     }
 

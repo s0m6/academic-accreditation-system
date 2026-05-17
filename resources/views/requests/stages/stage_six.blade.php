@@ -317,6 +317,17 @@
                                     class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-(--surface-card) border border-(--border-primary) hover:bg-(--bg-main) text-(--text-primary) text-xs font-bold transition cursor-pointer">
                                     <i class="fa-solid fa-eye text-(--text-secondary)"></i> عرض
                                 </a>
+                                <a href="{{ route('requests.stage_six.rubrics_print', $accreditationRequest) }}"
+                                    x-data="{ loading: false, finished: false }"
+                                    x-on:click="loading = true; finished = false; setTimeout(() => { loading = false; finished = true; setTimeout(() => finished = false, 5000) }, 5000)"
+                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-bold transition-all hover:-translate-y-0.5 cursor-pointer no-underline"
+                                    :class="finished ? 'bg-green-50 text-green-700 border-green-200 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/20 dark:hover:bg-green-500/30' : 'bg-(--surface-card) border border-(--border-primary) hover:bg-(--bg-main) text-(--text-primary)'"
+                                    :class="{ 'opacity-60 pointer-events-none': loading }">
+                                    <i x-show="!loading && !finished" class="fa-solid fa-download text-(--text-secondary)"></i>
+                                    <i x-show="loading" class="fa-solid fa-circle-notch animate-spin text-blue-600 dark:text-blue-400"></i>
+                                    <i x-show="finished" class="fa-solid fa-check text-green-600 dark:text-green-400"></i>
+                                    <span x-text="loading ? 'جاري التحميل...' : (finished ? 'تم التحميل' : 'تحميل')"></span>
+                                </a>
                             </div>
                         </td>
                     </tr>

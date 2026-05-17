@@ -198,6 +198,8 @@ Route::middleware('auth')->group(function () {
         ->name('requests.stage_six.rubrics_edit');
     Route::get('/requests/{accreditationRequest}/stage-six/rubrics/show', [StageSixController::class, 'showRubrics'])
         ->name('requests.stage_six.rubrics_show');
+    Route::get('/requests/{accreditationRequest}/stage-six/rubrics/print', [PrintController::class, 'printRubrics'])
+        ->name('requests.stage_six.rubrics_print');
     Route::post('/requests/{accreditationRequest}/stage-six/rubrics/save', [StageSixController::class, 'saveRubrics'])
         ->name('requests.stage_six.rubrics_save');
 
