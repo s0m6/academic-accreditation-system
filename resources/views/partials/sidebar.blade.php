@@ -140,6 +140,12 @@
                         <span class="w-6 h-6 flex items-center justify-center rounded-full bg-orange-100 text-orange-700 text-[12px] font-black dark:bg-orange-500/20 dark:text-orange-400 border border-orange-200 dark:border-orange-500/30">8</span>
                         تقارير نتائج التقييم(الختامية)
                     </a>
+
+                    <a href="{{ route('council_secretariat.requests.stage_nine') }}" 
+                        class="flex items-center gap-2 py-2 text-sm font-medium transition-all hover:text-orange-600 dark:hover:text-orange-400 {{ request()->routeIs('council_secretariat.requests.stage_nine') ? 'text-orange-600 dark:text-orange-400 font-bold translate-x-1' : 'text-(--text-secondary)' }}">
+                        <span class="w-6 h-6 flex items-center justify-center rounded-full bg-orange-100 text-orange-700 text-[12px] font-black dark:bg-orange-500/20 dark:text-orange-400 border border-orange-200 dark:border-orange-500/30">9</span>
+                        قرار الاعتماد
+                    </a>
                 </div>
             </div>
         @endif

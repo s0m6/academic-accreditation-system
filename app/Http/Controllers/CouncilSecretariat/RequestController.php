@@ -112,4 +112,16 @@ class RequestController extends Controller
 
         return view('council_secretariat.requests.stage_eight', compact('requests'));
     }
+    /**
+     * Display a listing of requests in stage_nine (قرار الاعتماد).
+     */
+    public function stageNine(Request $request)
+    {
+        $requests = AccreditationRequest::where('current_stage', 'stage_nine')
+            ->with(['program.department.college.university'])
+            ->orderByDesc('created_at')
+            ->get();
+
+        return view('council_secretariat.requests.stage_nine', compact('requests'));
+    }
 }
