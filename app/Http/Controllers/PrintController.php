@@ -860,6 +860,44 @@ class PrintController extends Controller
     }
 
     /**
+     * Print Stage Six Recommendations Letter (Form 8) as PDF.
+     */
+    public function printRecommendationsLetter(AccreditationRequest $accreditationRequest)
+    {
+        $report = $accreditationRequest->committeeReport;
+        if (! $report) {
+            abort(404, 'التقرير غير موجود.');
+        }
+
+        $accreditationRequest->load([
+            'program.department.college.university.officer',
+            'programCoordinator',
+        ]);
+
+        $program = $accreditationRequest->program;
+        $department = $program->department;
+        $college = $department->college;
+        $university = $college->university;
+
+        // Build detailed standards data for the assessment table.
+        $detailedStandards = $this->buildDetailedStandards($report);
+
+        return Pdf::view('print_templates.recommendations_letter_template', [
+            'accreditationRequest' => $accreditationRequest,
+            'report' => $report,
+            'program' => $program,
+            'department' => $department,
+            'college' => $college,
+            'university' => $university,
+            'detailedStandards' => $detailedStandards,
+            'isPrint' => true,
+        ])
+            ->format('a4')
+            ->name('Recommendations_Letter_req_'.$accreditationRequest->id.'.pdf')
+            ->download();
+    }
+
+    /**
      * Sanitize a string for use as a filename.
      */
     private function safeName(string $name): string

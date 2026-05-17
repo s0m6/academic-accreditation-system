@@ -224,6 +224,8 @@ Route::middleware('auth')->group(function () {
         ->name('requests.stage_six.final_report.print');
     Route::get('/requests/{accreditationRequest}/stage-six/recommendations-letter', [StageSixController::class, 'showRecommendationsLetter'])
         ->name('requests.stage_six.recommendations_letter');
+    Route::get('/requests/{accreditationRequest}/stage-six/recommendations-letter/print', [PrintController::class, 'printRecommendationsLetter'])
+        ->name('requests.stage_six.recommendations_letter.print');
 
     // Stage Seven actions
     Route::get('/requests/{accreditationRequest}/stage-seven/recommendations/view', [StageSevenController::class, 'viewRecommendations'])
