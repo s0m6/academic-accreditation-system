@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <title>نموذج البيانات الأساسية - {{ $program->program_name }}</title>
-    
     <script src="{{ public_path('js/tailwind-browser.js') }}"></script>
     @include('print_templates.fonts')
     
