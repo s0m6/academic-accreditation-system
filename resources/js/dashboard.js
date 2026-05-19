@@ -46,11 +46,13 @@ function initDarkMode() {
   const stored = localStorage.getItem('theme');
   const isDark = stored === 'dark' || (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches);
   document.documentElement.classList.toggle('dark', isDark);
+  document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
   updateThemeIcon(isDark);
 }
 
 function toggleDarkMode() {
   const isDark = document.documentElement.classList.toggle('dark');
+  document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
   localStorage.setItem('theme', isDark ? 'dark' : 'light');
   updateThemeIcon(isDark);
 }

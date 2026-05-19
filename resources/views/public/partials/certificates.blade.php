@@ -10,14 +10,14 @@
             <a href="{{ route('certificates.explorer') }}" 
                class="group flex items-center gap-3 text-primary dark:text-accent font-black text-lg hover:gap-5 transition-all">
                 تصفح كافة الشهادات
-                <span class="material-symbols-outlined rtl:rotate-180">arrow_forward</span>
+                <i class="fa-solid fa-arrow-left"></i>
             </a>
         </div>
 
         @if($latestCertificates->isEmpty())
             <div class="text-center py-20 bg-white dark:bg-slate-900 rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-800">
                 <div class="w-20 h-20 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-300">
-                    <span class="material-symbols-outlined text-4xl">verified_user</span>
+                    <i class="fa-solid fa-user-shield text-4xl"></i>
                 </div>
                 <p class="text-slate-500 font-bold">لا توجد شهادات صادرة حالياً</p>
             </div>
@@ -44,14 +44,14 @@
                     <div class="absolute inset-y-0 -left-6 flex items-center z-20 pointer-events-none">
                         <button @click="prev()" 
                                 class="pointer-events-auto w-14 h-14 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-primary dark:text-accent hover:bg-accent hover:text-primary dark:hover:bg-accent dark:hover:text-primary transition-all shadow-[0_10px_30px_rgba(0,0,0,0.1)] active:scale-90 group">
-                            <span class="material-symbols-outlined rtl:rotate-180 group-hover:scale-110 transition-transform">arrow_back_ios_new</span>
+                            <i class="fa-solid fa-chevron-left group-hover:scale-110 transition-transform"></i>
                         </button>
                     </div>
 
                     <div class="absolute inset-y-0 -right-6 flex items-center z-20 pointer-events-none">
                         <button @click="next()" 
                                 class="pointer-events-auto w-14 h-14 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-primary dark:text-accent hover:bg-accent hover:text-primary dark:hover:bg-accent dark:hover:text-primary transition-all shadow-[0_10px_30px_rgba(0,0,0,0.1)] active:scale-90 group">
-                            <span class="material-symbols-outlined rtl:rotate-180 group-hover:scale-110 transition-transform">arrow_forward_ios</span>
+                            <i class="fa-solid fa-chevron-right group-hover:scale-110 transition-transform"></i>
                         </button>
                     </div>
 
@@ -63,7 +63,7 @@
                         <div class="shrink-0 w-[350px] group/card bg-white dark:bg-slate-900 p-8 rounded-3xl shadow-lg border border-slate-100 dark:border-slate-800 hover:border-accent hover:shadow-2xl transition-all duration-500">
                             <div class="flex justify-between items-start mb-8">
                                 <div class="w-16 h-16 bg-accent/10 rounded-2xl flex items-center justify-center text-accent group-hover/card:bg-accent group-hover/card:text-primary transition-colors">
-                                    <span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
+                                    <i class="fa-solid fa-award text-4xl"></i>
                                 </div>
                                 <span class="text-[11px] font-black uppercase tracking-widest text-emerald-600 bg-emerald-50 dark:bg-emerald-500/10 dark:text-emerald-400 px-3 py-1.5 rounded-xl border border-emerald-100 dark:border-emerald-500/20">برنامج معتمد</span>
                             </div>
@@ -73,7 +73,7 @@
                             </h4>
                             
                             <div class="flex items-start gap-3 mb-8">
-                                <span class="material-symbols-outlined text-slate-300 mt-1">account_balance</span>
+                                <i class="fa-solid fa-building-columns text-slate-300 mt-1"></i>
                                 <p class="text-slate-500 dark:text-slate-400 font-bold text-sm leading-relaxed">
                                     {{ $cert['university'] }}
                                 </p>
@@ -86,7 +86,7 @@
                                 </div>
                                 <a href="{{ $cert['url'] }}" target="_blank"
                                    class="w-10 h-10 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-300 group-hover/card:bg-accent group-hover/card:text-primary transition-all duration-500">
-                                    <span class="material-symbols-outlined text-xl" style="font-variation-settings: 'FILL' 0;">arrow_outward</span>
+                                    <i class="fa-solid fa-arrow-up-right-from-square text-xl"></i>
                                 </a>
                             </div>
                         </div>

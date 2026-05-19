@@ -24,61 +24,63 @@
             --surface-card: #0f172a;
             --bg-main: #020617;
         }
-        .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-            display: inline-block;
-            vertical-align: middle;
+
+        html:not(.dark) .dark-only {
+            display: none !important;
+        }
+        html.dark .light-only {
+            display: none !important;
         }
     </style>
     @stack('styles')
 </head>
 
-<body class="bg-surface dark:bg-surface-dark text-slate-900 dark:text-blue-50 transition-colors duration-300">
+<body class="bg-[var(--bg-main)] text-[var(--text-primary)] transition-colors duration-300">
     <!-- Top Navigation -->
     <header
-        class="bg-white/90 dark:bg-slate-950/90 backdrop-blur-xl sticky top-0 z-50 border-b border-slate-200 dark:border-slate-800 shadow-sm">
+        class="bg-white/90 dark:bg-[#020617]/90 backdrop-blur-xl sticky top-0 z-50 border-b border-slate-200 dark:border-slate-800 shadow-sm transition-colors duration-300">
         <nav class="flex justify-between items-center max-w-7xl mx-auto px-6 h-20">
             <!-- Brand Logo -->
             <a href="{{ route('welcome') }}" class="flex items-center gap-4">
-                <div class="w-12 h-12 bg-primary rounded-lg flex items-center justify-center text-accent">
-                    <span class="material-symbols-outlined text-3xl" data-icon="account_balance">account_balance</span>
+                <div class="w-12 h-12 bg-primary dark:bg-white/10 rounded-lg flex items-center justify-center text-accent">
+                    <i class="fa-solid fa-building-columns text-3xl"></i>
                 </div>
                 <div class="flex flex-col">
                     <span
                         class="text-xl font-black tracking-tight text-primary dark:text-white uppercase leading-none">CAAQAHE
                         Yemen</span>
-                    <span class="text-[10px] font-bold text-slate-500 dark:text-slate-400 mt-1">مجلس الاعتماد الأكاديمي
+                    <span class="text-[10px] font-bold text-slate-500 dark:text-slate-300 mt-1">مجلس الاعتماد الأكاديمي
                         وضمان الجودة</span>
                 </div>
             </a>
             <!-- Nav Links -->
             <ul class="hidden lg:flex items-center gap-8 text-sm font-bold">
-                <li><a class="{{ request()->routeIs('welcome') ? 'text-primary dark:text-accent border-b-2 border-accent pb-1' : 'text-slate-600 dark:text-slate-400 hover:text-primary dark:hover:text-white transition-colors' }}" href="{{ route('welcome') }}">الرئيسية</a></li>
-                <li><a class="{{ request()->routeIs('certificates.explorer') ? 'text-primary dark:text-accent border-b-2 border-accent pb-1' : 'text-slate-600 dark:text-slate-400 hover:text-primary dark:hover:text-white transition-colors' }}" href="{{ route('certificates.explorer') }}">الشهادات المعتمدة</a></li>
-                <li><a class="text-slate-600 dark:text-slate-400 hover:text-primary dark:hover:text-white transition-colors" href="#">عن المجلس</a></li>
-                <li><a class="text-slate-600 dark:text-slate-400 hover:text-primary dark:hover:text-white transition-colors" href="#">المعايير</a></li>
-                <li><a class="text-slate-600 dark:text-slate-400 hover:text-primary dark:hover:text-white transition-colors" href="#">اتصل بنا</a></li>
+                <li><a class="{{ request()->routeIs('welcome') ? 'text-primary dark:text-accent border-b-2 border-primary dark:border-accent pb-1' : 'text-slate-600 dark:text-slate-200 hover:text-primary dark:hover:text-accent transition-colors' }}" href="{{ route('welcome') }}">الرئيسية</a></li>
+                <li><a class="{{ request()->routeIs('certificates.explorer') ? 'text-primary dark:text-accent border-b-2 border-primary dark:border-accent pb-1' : 'text-slate-600 dark:text-slate-200 hover:text-primary dark:hover:text-accent transition-colors' }}" href="{{ route('certificates.explorer') }}">الشهادات المعتمدة</a></li>
+                <li><a class="text-slate-600 dark:text-slate-200 hover:text-primary dark:hover:text-accent transition-colors" href="#">عن المجلس</a></li>
+                <li><a class="text-slate-600 dark:text-slate-200 hover:text-primary dark:hover:text-accent transition-colors" href="#">المعايير</a></li>
+                <li><a class="text-slate-600 dark:text-slate-200 hover:text-primary dark:hover:text-accent transition-colors" href="#">اتصل بنا</a></li>
             </ul>
             <!-- Actions -->
             <div class="flex items-center gap-3">
                 @auth
                 <a href="{{ route('dashboard') }}"
-                    class="bg-primary text-accent px-6 py-2.5 rounded-xl font-extrabold text-sm hover:bg-primary-dark hover:scale-105 transition-all shadow-lg shadow-primary/20">
+                    class="bg-primary dark:bg-white/10 text-accent dark:text-white px-6 py-2.5 rounded-xl font-extrabold text-sm hover:bg-primary-dark dark:hover:bg-white/20 hover:scale-105 transition-all shadow-md">
                     لوحة التحكم
                 </a>
                 @else
                 <a href="{{ route('login') }}"
-                    class="hidden sm:flex items-center gap-2 px-5 py-2.5 text-primary dark:text-white font-bold text-sm hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all">
-                    <span class="material-symbols-outlined text-lg" data-icon="login">login</span>
+                    class="hidden sm:flex items-center gap-2 px-5 py-2.5 text-primary dark:text-slate-100 font-bold text-sm hover:bg-slate-100 dark:hover:bg-white/10 rounded-xl transition-all">
+                    <i class="fa-solid fa-right-to-bracket text-lg"></i>
                     تسجيل الدخول
                 </a>
                 @endauth
-                <div class="h-8 w-[1px] bg-slate-200 dark:bg-slate-800 mx-2"></div>
+                <div class="h-8 w-[1px] bg-slate-200 dark:bg-white/10 mx-2"></div>
                 <button
-                    class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-accent hover:ring-2 ring-accent/30 transition-all"
-                    onclick="document.documentElement.classList.toggle('dark')">
-                    <span class="material-symbols-outlined dark:hidden" data-icon="dark_mode">dark_mode</span>
-                    <span class="material-symbols-outlined hidden dark:block" data-icon="light_mode">light_mode</span>
+                    class="p-2.5 rounded-xl bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-accent hover:ring-2 ring-accent/30 transition-all cursor-pointer"
+                    onclick="const isDark = document.documentElement.classList.toggle('dark'); document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light'); localStorage.setItem('theme', isDark ? 'dark' : 'light');">
+                    <i class="fa-solid fa-moon light-only"></i>
+                    <i class="fa-solid fa-sun dark-only"></i>
                 </button>
             </div>
         </nav>
@@ -93,8 +95,7 @@
             <div class="col-span-1">
                 <div class="flex items-center gap-3 mb-8">
                     <div class="w-10 h-10 bg-accent rounded flex items-center justify-center text-primary">
-                        <span class="material-symbols-outlined text-2xl"
-                            data-icon="account_balance">account_balance</span>
+                        <i class="fa-solid fa-building-columns text-2xl"></i>
                     </div>
                     <span class="text-xl font-black uppercase tracking-tighter">CAAQAHE YEMEN</span>
                 </div>
@@ -126,11 +127,11 @@
                 <h4 class="font-black text-lg mb-8 text-accent">تواصل معنا</h4>
                 <ul class="space-y-6 text-sm text-blue-100/70 font-medium">
                     <li class="flex items-start gap-4">
-                        <span class="material-symbols-outlined text-accent" data-icon="location_on">location_on</span>
+                        <i class="fa-solid fa-location-dot text-accent mt-1"></i>
                         <span class="leading-relaxed">عدن، مديرية خور مكسر، مبنى وزارة التعليم العالي والبحث العلمي</span>
                     </li>
                     <li class="flex items-start gap-4">
-                        <span class="material-symbols-outlined text-accent" data-icon="phone">phone</span>
+                        <i class="fa-solid fa-phone text-accent mt-1"></i>
                         +967 2 123456
                     </li>
                 </ul>

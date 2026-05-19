@@ -21,7 +21,7 @@
             <div class="flex flex-wrap gap-5">
                 <a href="{{ route('certificates.explorer') }}"
                     class="bg-accent text-primary px-10 py-4 rounded-xl font-black text-lg hover:scale-105 transition-all shadow-xl shadow-accent/20 flex items-center gap-3">
-                    <span class="material-symbols-outlined" data-icon="verified">verified</span>
+                    <i class="fa-solid fa-circle-check"></i>
                     دليل البرامج المعتمدة
                 </a>
                 <button

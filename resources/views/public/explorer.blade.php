@@ -22,7 +22,7 @@
                 <div class="md:col-span-4">
                     <label class="block text-xs font-black text-slate-400 dark:text-slate-500 mb-3 uppercase tracking-[0.2em]">الجامعة / المؤسسة</label>
                     <div class="relative group/input">
-                        <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within/input:text-accent transition-colors">account_balance</span>
+                        <i class="fa-solid fa-building-columns absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within/input:text-accent transition-colors"></i>
                         <select x-model="filters.university_id" @change="search()"
                                 class="w-full rounded-2xl border-2 border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-primary dark:text-white pr-12 pl-4 py-4 text-sm font-bold focus:border-accent focus:ring-0 outline-none transition-all appearance-none cursor-pointer">
                             <option value="">جميع الجامعات والمؤسسات</option>
@@ -37,7 +37,7 @@
                 <div class="md:col-span-3">
                     <label class="block text-xs font-black text-slate-400 dark:text-slate-500 mb-3 uppercase tracking-[0.2em]">المدينة</label>
                     <div class="relative group/input">
-                        <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within/input:text-accent transition-colors">location_on</span>
+                        <i class="fa-solid fa-location-dot absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within/input:text-accent transition-colors"></i>
                         <select x-model="filters.city_id" @change="search()"
                                 class="w-full rounded-2xl border-2 border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-primary dark:text-white pr-12 pl-4 py-4 text-sm font-bold focus:border-accent focus:ring-0 outline-none transition-all appearance-none cursor-pointer">
                             <option value="">جميع المدن</option>
@@ -52,7 +52,7 @@
                 <div class="md:col-span-3">
                     <label class="block text-xs font-black text-slate-400 dark:text-slate-500 mb-3 uppercase tracking-[0.2em]">نوع الاعتماد</label>
                     <div class="relative group/input">
-                        <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within/input:text-accent transition-colors">verified</span>
+                        <i class="fa-solid fa-circle-check absolute right-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within/input:text-accent transition-colors"></i>
                         <select x-model="filters.decision_type" @change="search()"
                                 class="w-full rounded-2xl border-2 border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-primary dark:text-white pr-12 pl-4 py-4 text-sm font-bold focus:border-accent focus:ring-0 outline-none transition-all appearance-none cursor-pointer">
                             <option value="">جميع أنواع الاعتماد</option>
@@ -67,7 +67,7 @@
                 <div class="md:col-span-2 flex items-end">
                     <button @click="resetFilters()"
                             class="w-full h-[58px] rounded-2xl border-2 border-red-100 dark:border-red-900/30 text-red-500 font-black text-sm hover:bg-red-50 dark:hover:bg-red-900/20 transition-all flex items-center justify-center gap-2 group">
-                        <span class="material-symbols-outlined group-hover:rotate-180 transition-transform duration-500">restart_alt</span>
+                        <i class="fa-solid fa-rotate-left group-hover:rotate-180 transition-transform duration-500"></i>
                         مسح
                     </button>
                 </div>
@@ -90,7 +90,7 @@
             <!-- No Results -->
             <div x-show="!loading && results.length === 0" x-cloak class="flex flex-col items-center justify-center py-32 text-center bg-white dark:bg-slate-900 rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-800">
                 <div class="w-32 h-32 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center text-slate-300 mb-8 border border-slate-100 dark:border-slate-700 shadow-inner">
-                    <span class="material-symbols-outlined text-6xl">search_off</span>
+                    <i class="fa-solid fa-magnifying-glass text-6xl"></i>
                 </div>
                 <h3 class="text-3xl font-black text-primary dark:text-white mb-4">لا توجد نتائج مطابقة</h3>
                 <p class="text-slate-500 dark:text-slate-400 font-bold max-w-md mx-auto leading-relaxed">
@@ -108,7 +108,7 @@
                         <div class="p-8">
                             <div class="flex justify-between items-start mb-8">
                                 <div class="w-16 h-16 bg-primary dark:bg-slate-800 rounded-2xl flex items-center justify-center text-accent shadow-lg group-hover:scale-110 transition-transform duration-500">
-                                    <span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
+                                    <i class="fa-solid fa-award text-4xl"></i>
                                 </div>
                                 <div class="flex flex-col items-end gap-2">
                                     <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest border border-emerald-100 dark:border-emerald-500/20 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
@@ -120,7 +120,7 @@
 
                             <h3 class="text-2xl font-black text-primary dark:text-white mb-3 group-hover:text-accent transition-colors leading-tight" x-text="cert.program_name"></h3>
                             <p class="text-slate-500 dark:text-slate-400 font-bold mb-8 flex items-center gap-2">
-                                <span class="material-symbols-outlined text-lg opacity-50">account_balance</span>
+                                <i class="fa-solid fa-building-columns text-lg opacity-50"></i>
                                 <span x-text="cert.university_name"></span>
                             </p>
 
@@ -143,7 +143,7 @@
                                target="_blank"
                                class="w-full py-4 bg-slate-100 dark:bg-slate-800 text-primary dark:text-white font-black text-sm rounded-2xl hover:bg-primary hover:text-accent transition-all duration-300 flex items-center justify-center gap-3">
                                 التحقق من الشهادة
-                                <span class="material-symbols-outlined text-lg">arrow_outward</span>
+                                <i class="fa-solid fa-arrow-up-right-from-square text-lg"></i>
                             </a>
                         </div>
                     </div>
