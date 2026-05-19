@@ -32,7 +32,7 @@
                     @if(file_exists(public_path('images/logo.png')))
                         <img src="{{ public_path('images/logo.png') }}" class="h-20 object-contain mx-auto" alt="Logo">
                     @else
-                        <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-[#1a3c5e] to-[#2c3e50] flex items-center justify-center text-white font-black text-xl shadow-md mx-auto">AA</div>
+                        <div class="w-16 h-16 rounded-2xl bg-linear-to-tr from-[#1a3c5e] to-[#2c3e50] flex items-center justify-center text-white font-black text-xl shadow-md mx-auto">AA</div>
                     @endif
                 </div>
             </div>

@@ -6,7 +6,7 @@
     <title>نموذج 5 - تقرير الزيارة الميدانية</title>
     @vite(['resources/css/app.css'])
     <style>
-        @import url('/fonts/fonts.css');
+        @import url("{{ asset('fonts/fonts.css') }}");
 
         :root {
             --primary-color: #1a3c5e;

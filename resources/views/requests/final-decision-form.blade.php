@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>نموذج 10 - القرار النهائي</title>
   <style>
-    @import url('/fonts/fonts.css');
+    @import url("{{ asset('fonts/fonts.css') }}");
 
     :root {
       --primary-color: #1a3c5e;
