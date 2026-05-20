@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html dir="rtl" lang="ar">
 <head>
+    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
     <meta charset="utf-8">
     <title>حساب مقيم أكاديمي</title>
 </head>

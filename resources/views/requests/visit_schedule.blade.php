@@ -2,6 +2,7 @@
 <html lang="ar" dir="rtl" x-data="visitSchedule({{ $readonly ?? 'false' }})" :class="darkMode ? 'dark' : ''">
 
 <head>
+    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>تعديل جدول الزيارة الميدانية | نظام الاعتماد الأكاديمي</title>

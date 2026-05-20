@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="ar" dir="rtl" class="h-full">
 <head>
+    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>مقارنة التقييم (الأولي vs الختامي) — {{ $accreditationRequest->program->name }}</title>

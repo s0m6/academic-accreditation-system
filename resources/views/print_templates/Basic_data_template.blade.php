@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
     <meta charset="UTF-8">
     <title>نموذج البيانات الأساسية - {{ $program->program_name }}</title>
     <script src="{{ public_path('js/tailwind-browser.js') }}"></script>

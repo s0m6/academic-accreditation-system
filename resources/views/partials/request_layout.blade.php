@@ -2,6 +2,7 @@
 <html class="scroll-smooth rtl" dir="rtl" lang="ar">
 
 <head>
+    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <meta name="csrf-token" content="{{ csrf_token() }}">

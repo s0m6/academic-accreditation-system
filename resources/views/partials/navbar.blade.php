@@ -43,12 +43,21 @@
                 <div @click="open = !open" class="flex items-center gap-3 ps-2 cursor-pointer group select-none">
                     <img alt="User Avatar"
                         class="w-10 h-10 rounded-full border border-(--border-primary) group-hover:ring-2 group-hover:ring-brand-500 transition-all object-cover hidden md:block"
-                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuAGh7rFwN55QNCjBAZAGeF01alWo4529CIUd6J9gS5U0RzgPvekX_SHZvWUA2jL0Duwln1PO1RkD8RTVVoZ8HRYsGLI77pdq3jKj1i8GXdis_vQUu4duewWBflrCR-bM-WqKeUXQ3WOf1u-Fw6ZzI2K9TXh7rfxmV5jmQhfkrYfe3istf0V9R6p_S2JsBFhuyFm-jrCkJwAr1abKHTPxtn8nU5Quz-ksXvPKwAzTExTArwUs-BQ_9zUJsI5mFJ7d5zpax2V4Y6cwLEo" />
+                        src="{{ asset('images/avatar.jpg') }}" />
                     
                     <div class="flex items-center gap-2">
                         <div class="text-start hidden md:block">
                             <p class="text-sm font-black leading-none text-(--text-primary)">{{ Auth::user()->name }}</p>
-                            <p class="text-[11px] font-bold text-(--text-secondary) mt-1 uppercase tracking-wider">{{ Auth::user()->role }}</p>
+                            @php
+                                $roles = [
+                                    'council_secretariat' => 'أمانة المجلس',
+                                    'accreditation_officer' => 'ضابط الاعتماد',
+                                    'program_coordinator' => 'منسق البرنامج',
+                                    'council_coordinator' => 'منسق المجلس',
+                                    'evaluator' => 'مقيم',
+                                ];
+                            @endphp
+                            <p class="text-[11px] font-bold text-(--text-secondary) mt-1 uppercase tracking-wider">{{ $roles[Auth::user()->role] ?? Auth::user()->role }}</p>
                         </div>
                         
                         {{-- Font Awesome Chevron Icon --}}
