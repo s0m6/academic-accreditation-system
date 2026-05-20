@@ -11,7 +11,7 @@
 @section('title2', 'قائمة الجامعات المسجلة')
 @section('description', 'عرض الجامعات المسجله وحالة تسجيل مسؤول اعتماد لكل جامعة')
 @section('content')
-<div class="w-full text-start" x-data="{ showModal: false, selectedId: '', selectedName: '' }" @open-officer-modal.window="showModal = true; selectedId = $event.detail.id; selectedName = $event.detail.name">
+<div class="w-full text-start" x-data="{ showModal: false, selectedId: '', selectedName: '', showCreateModal: false }" @open-officer-modal.window="showModal = true; selectedId = $event.detail.id; selectedName = $event.detail.name" @open-create-modal.window="showCreateModal = true">
     
     <!-- Alerts / Messages -->
     @if(session('success'))
@@ -40,8 +40,9 @@
         </div>
     @endif
 
-    <div x-data="{ showModal: false, selectedId: '', selectedName: '' }"
-         @open-officer-modal.window="showModal = true; selectedId = $event.detail.id; selectedName = $event.detail.name">
+    <div x-data="{ showModal: false, selectedId: '', selectedName: '', showCreateModal: false }"
+         @open-officer-modal.window="showModal = true; selectedId = $event.detail.id; selectedName = $event.detail.name"
+         @open-create-modal.window="showCreateModal = true">
          
         <!-- Universities Table -->
        <div class="shadow-md rounded-2xl overflow-hidden border border-(--border-primary) bg-(--surface-card)">
@@ -56,6 +57,9 @@
                     <p class="text-xs md:text-sm text-(--text-secondary) mt-0.5">إدارة الجامعات ومسؤولي الاعتماد بفاعلية وموثوقية</p>
                 </div>
             </div>
+            <button @click="$dispatch('open-create-modal')" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-white bg-brand-600 dark:bg-brand-500 hover:bg-brand-700 dark:hover:bg-brand-600 transition-all shadow-sm hover:shadow hover:scale-[1.02] cursor-pointer">
+                <i class="fa-solid fa-plus text-xs"></i> إضافة جامعة جديدة
+            </button>
         </div>
 
         <div class="overflow-x-auto w-full">
@@ -234,6 +238,133 @@
                                 </button>
                                 <button type="submit" class="w-full sm:w-auto inline-flex justify-center items-center rounded-lg bg-brand-600 dark:bg-brand-500 px-5 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-brand-700 dark:hover:bg-brand-600 transition-colors cursor-pointer">
                                     <i class="fa-solid fa-user-plus me-2"></i> تأكيد الإنشاء
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <template x-teleport="body">
+        <div x-show="showCreateModal" style="display: none;" class="relative z-[100]" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+            <div x-show="showCreateModal"
+                 x-transition:enter="ease-out duration-300"
+                 x-transition:enter-start="opacity-0"
+                 x-transition:enter-end="opacity-100"
+                 x-transition:leave="ease-in duration-200"
+                 x-transition:leave-start="opacity-100"
+                 x-transition:leave-end="opacity-0"
+                 class="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"></div>
+
+            <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+                <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+                    <div x-show="showCreateModal" @click.away="showCreateModal = false"
+                         x-transition:enter="ease-out duration-300"
+                         x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                         x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                         x-transition:leave="ease-in duration-200"
+                         x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                         x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                         class="relative transform overflow-hidden rounded-2xl bg-(--surface-card) border border-(--border-primary) text-right shadow-2xl transition-all sm:my-8 w-full max-w-xl">
+                         
+                        <form action="{{ route('council_secretariat.universities.store') }}" method="POST">
+                            @csrf
+                            <div class="p-6 border-b border-(--border-primary)">
+                                <div class="flex justify-between items-center mb-6">
+                                    <h3 class="text-xl font-bold text-(--text-primary) flex items-center gap-2.5">
+                                        <span class="w-9 h-9 rounded-xl bg-brand-50 dark:bg-brand-500/10 text-brand-600 dark:text-brand-400 flex items-center justify-center border border-brand-100 dark:border-brand-500/20">
+                                            <i class="fa-solid fa-graduation-cap text-base"></i>
+                                        </span>
+                                        <span>إضافة جامعة جديدة</span>
+                                    </h3>
+                                    <button type="button" @click="showCreateModal = false" class="w-8 h-8 flex items-center justify-center rounded-lg text-(--text-secondary) hover:text-(--text-primary) bg-(--bg-main) hover:scale-110 transition-transform shrink-0">
+                                        <i class="fa-solid fa-xmark text-lg mt-0.5"></i>
+                                    </button>
+                                </div>
+                                
+                                <div class="space-y-5">
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                                        <div>
+                                            <label for="uni_name" class="block text-sm font-bold text-(--text-primary) mb-2">اسم الجامعة <span class="text-red-500 dark:text-red-400">*</span></label>
+                                            <div class="relative flex items-center">
+                                                <span class="absolute right-3.5 mt-0.5"><i class="fa-solid fa-building-columns text-(--text-secondary)"></i></span>
+                                                <input type="text" name="name" id="uni_name" required
+                                                       class="bg-(--bg-main) border border-(--border-primary) text-(--text-primary) text-sm rounded-lg block w-full pr-10 p-3 focus:outline-none focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-400 transition-all placeholder-gray-400 dark:placeholder-gray-500"
+                                                       placeholder="أدخل اسم الجامعة الكامل">
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label for="uni_type" class="block text-sm font-bold text-(--text-primary) mb-2">نوع الجامعة <span class="text-red-500 dark:text-red-400">*</span></label>
+                                            <div class="relative flex items-center">
+                                                <span class="absolute right-3.5 mt-0.5"><i class="fa-solid fa-circle-info text-(--text-secondary)"></i></span>
+                                                <select name="type" id="uni_type" required
+                                                        class="bg-(--bg-main) border border-(--border-primary) text-(--text-primary) text-sm rounded-lg block w-full pr-10 p-3 focus:outline-none focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-400 transition-all appearance-none cursor-pointer">
+                                                    <option value="government">حكومية</option>
+                                                    <option value="private">أهلية / خاصة</option>
+                                                </select>
+                                                <span class="absolute left-3 pointer-events-none mt-0.5"><i class="fa-solid fa-chevron-down text-xs text-(--text-secondary)"></i></span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="border-t border-(--border-primary) pt-4 mt-6">
+                                        <h4 class="text-sm font-bold text-brand-600 dark:text-brand-400 mb-4 flex items-center gap-2">
+                                            <i class="fa-solid fa-user-tie"></i> بيانات رئيس الجامعة (اختياري)
+                                        </h4>
+                                        
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                                            <div>
+                                                <label for="president_name" class="block text-sm font-bold text-(--text-primary) mb-2">الاسم الكامل</label>
+                                                <div class="relative flex items-center">
+                                                    <span class="absolute right-3.5 mt-0.5"><i class="fa-solid fa-user text-(--text-secondary)"></i></span>
+                                                    <input type="text" name="president_name" id="president_name"
+                                                           class="bg-(--bg-main) border border-(--border-primary) text-(--text-primary) text-sm rounded-lg block w-full pr-10 p-3 focus:outline-none focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-400 transition-all placeholder-gray-400 dark:placeholder-gray-500"
+                                                           placeholder="أدخل اسم رئيس الجامعة">
+                                                </div>
+                                            </div>
+
+                                            <div>
+                                                <label for="president_email" class="block text-sm font-bold text-(--text-primary) mb-2">البريد الإلكتروني</label>
+                                                <div class="relative flex items-center">
+                                                    <span class="absolute right-3.5 mt-0.5"><i class="fa-solid fa-envelope text-(--text-secondary)"></i></span>
+                                                    <input type="email" name="president_email" id="president_email" dir="ltr"
+                                                           class="bg-(--bg-main) border border-(--border-primary) text-(--text-primary) text-sm rounded-lg block text-left w-full pl-3 pr-10 p-3 focus:outline-none focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-400 transition-all placeholder-gray-400 dark:placeholder-gray-500"
+                                                           placeholder="president@university.edu">
+                                                </div>
+                                            </div>
+
+                                            <div>
+                                                <label for="president_phone" class="block text-sm font-bold text-(--text-primary) mb-2">الهاتف الثابت</label>
+                                                <div class="relative flex items-center">
+                                                    <span class="absolute right-3.5 mt-0.5"><i class="fa-solid fa-phone text-(--text-secondary)"></i></span>
+                                                    <input type="tel" name="president_phone" id="president_phone" dir="ltr"
+                                                           class="bg-(--bg-main) border border-(--border-primary) text-(--text-primary) text-sm rounded-lg block text-left w-full pl-3 pr-10 p-3 focus:outline-none focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-400 transition-all placeholder-gray-400 dark:placeholder-gray-500"
+                                                           placeholder="01XXXXXXX">
+                                                </div>
+                                            </div>
+
+                                            <div>
+                                                <label for="president_mobile" class="block text-sm font-bold text-(--text-primary) mb-2">رقم الجوال</label>
+                                                <div class="relative flex items-center">
+                                                    <span class="absolute right-3.5 mt-0.5"><i class="fa-solid fa-mobile-screen text-(--text-secondary)"></i></span>
+                                                    <input type="tel" name="president_mobile" id="president_mobile" dir="ltr"
+                                                           class="bg-(--bg-main) border border-(--border-primary) text-(--text-primary) text-sm rounded-lg block text-left w-full pl-3 pr-10 p-3 focus:outline-none focus:ring-2 focus:ring-brand-500 dark:focus:ring-brand-400 transition-all placeholder-gray-400 dark:placeholder-gray-500"
+                                                           placeholder="7XXXXXXXX">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-(--bg-main) px-6 py-4 flex flex-col-reverse sm:flex-row sm:justify-end gap-3 sm:gap-0 sm:space-x-3 sm:space-x-reverse rounded-b-2xl">
+                                <button type="button" @click="showCreateModal = false" class="w-full sm:w-auto inline-flex justify-center items-center rounded-lg bg-(--surface-card) px-5 py-2.5 text-sm font-bold text-(--text-primary) shadow-sm border border-(--border-primary) hover:filter hover:brightness-95 dark:hover:brightness-110 transition-all cursor-pointer">
+                                    إلغاء
+                                </button>
+                                <button type="submit" class="w-full sm:w-auto inline-flex justify-center items-center rounded-lg bg-brand-600 dark:bg-brand-500 px-5 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-brand-700 dark:hover:bg-brand-600 transition-colors cursor-pointer">
+                                    <i class="fa-solid fa-plus me-2"></i> إضافة الجامعة
                                 </button>
                             </div>
                         </form>

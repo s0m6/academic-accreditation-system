@@ -112,6 +112,7 @@ class RequestController extends Controller
 
         return view('council_secretariat.requests.stage_eight', compact('requests'));
     }
+
     /**
      * Display a listing of requests in stage_nine (قرار الاعتماد).
      */

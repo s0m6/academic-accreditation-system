@@ -11,6 +11,7 @@ Route::get('/dashboard', function () {
 })->name('dashboard');
 
 Route::get('/universities', [UniversityController::class, 'index'])->name('universities');
+Route::post('/universities', [UniversityController::class, 'store'])->name('universities.store');
 Route::post('/universities/{university}/officer', [UniversityController::class, 'storeOfficer'])->name('universities.storeOfficer');
 
 // Council Coordinators management

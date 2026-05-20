@@ -17,10 +17,10 @@ class PublicCertificateController extends Controller
     {
         $universities = University::orderBy('name')->get(['id', 'name']);
         $cities = City::orderBy('city_name')->get(['id', 'city_name']);
-        
+
         $decisionTypes = collect(FinalDecision::$decisionMeta)
-            ->filter(fn($meta) => $meta['approved'])
-            ->map(fn($meta, $key) => ['id' => $key, 'label' => $meta['label']]);
+            ->filter(fn ($meta) => $meta['approved'])
+            ->map(fn ($meta, $key) => ['id' => $key, 'label' => $meta['label']]);
 
         return view('public.explorer', compact('universities', 'cities', 'decisionTypes'));
     }
@@ -61,6 +61,7 @@ class PublicCertificateController extends Controller
 
         $certificates = $query->latest()->get()->map(function ($cert) {
             $data = $cert->certificate_data;
+
             return [
                 'id' => $cert->id,
                 'certificate_number' => $cert->certificate_number,
@@ -83,17 +84,17 @@ class PublicCertificateController extends Controller
      */
     public function getLatest()
     {
-        return AccreditationCertificate::whereHas('finalDecision', function($q) {
-                $q->whereIn('decision_type', ['approved_achieved', 'approved_with_mastery', 'approved_with_excellence']);
-            })
+        return AccreditationCertificate::whereHas('finalDecision', function ($q) {
+            $q->whereIn('decision_type', ['approved_achieved', 'approved_with_mastery', 'approved_with_excellence']);
+        })
             ->latest()
             ->take(10)
             ->get()
-            ->map(fn($cert) => [
-                'program' => $cert->certificate_data['program_name'] ?? '—',
-                'university' => $cert->certificate_data['university_name'] ?? '—',
-                'level' => $cert->certificate_data['achievement_level'] ?? '—',
-                'url' => route('certificate.show', $cert->certificate_number),
-            ]);
+            ->map(fn ($cert) => [
+            'program' => $cert->certificate_data['program_name'] ?? '—',
+            'university' => $cert->certificate_data['university_name'] ?? '—',
+            'level' => $cert->certificate_data['achievement_level'] ?? '—',
+            'url' => route('certificate.show', $cert->certificate_number),
+        ]);
     }
 }
