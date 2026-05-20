@@ -36,21 +36,23 @@
 </head>
 
 <body class="bg-[var(--bg-main)] text-[var(--text-primary)] transition-colors duration-300">
+    <!-- Global Preloader -->
+    @include('public.partials.preloader')
+    
     <!-- Top Navigation -->
     <header
         class="bg-white/90 dark:bg-[#020617]/90 backdrop-blur-xl sticky top-0 z-50 border-b border-slate-200 dark:border-slate-800 shadow-sm transition-colors duration-300">
         <nav class="flex justify-between items-center max-w-7xl mx-auto px-6 h-20">
             <!-- Brand Logo -->
-            <a href="{{ route('welcome') }}" class="flex items-center gap-4">
-                <div class="w-12 h-12 bg-primary dark:bg-white/10 rounded-lg flex items-center justify-center text-accent">
-                    <i class="fa-solid fa-building-columns text-3xl"></i>
-                </div>
-                <div class="flex flex-col">
-                    <span
-                        class="text-xl font-black tracking-tight text-primary dark:text-white uppercase leading-none">CAAQAHE
-                        Yemen</span>
-                    <span class="text-[10px] font-bold text-slate-500 dark:text-slate-300 mt-1">مجلس الاعتماد الأكاديمي
-                        وضمان الجودة</span>
+            <a href="{{ route('welcome') }}" class="flex items-center gap-3 md:gap-4 select-none">
+                <img src="{{ asset('images/logo.png') }}" alt="شعار مجلس الاعتماد الأكاديمي" class="h-12 w-auto md:h-14 object-contain transition-all duration-300">
+                <div class="flex flex-col text-right">
+                    <span class="text-base md:text-lg font-black tracking-tight text-slate-900 dark:text-white leading-tight transition-colors duration-300">
+                        مجلس الاعتماد الأكاديمي
+                    </span>
+                    <span class="text-[9px] md:text-[11px] font-bold text-slate-600 dark:text-slate-300 leading-tight mt-0.5 transition-colors duration-300">
+                        وضمان جودة التعليم العالي
+                    </span>
                 </div>
             </a>
             <!-- Nav Links -->

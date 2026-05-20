@@ -27,6 +27,9 @@
     </style>
 </head>
 <body class="bg-md-surface dark:bg-slate-950 text-md-on-surface transition-colors duration-300 min-h-screen flex flex-col font-sans">
+    <!-- Global Preloader -->
+    @include('public.partials.preloader')
+
     <div class="fixed top-6 left-6 z-50">
         <button class="p-2.5 rounded-xl border border-md-outline-variant/30 bg-md-surface-container-lowest/50 dark:bg-slate-900/50 backdrop-blur-md hover:bg-md-surface-container-high dark:hover:bg-slate-800 transition-colors shadow-sm" onclick="document.documentElement.classList.toggle('dark')">
             <span class="icon-[material-symbols--dark-mode-outline] text-2xl dark:hidden"></span>

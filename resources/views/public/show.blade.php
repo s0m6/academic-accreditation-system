@@ -13,6 +13,9 @@
     </style>
 </head>
 <body class="bg-[#f0f4f8] font-sans antialiased min-h-screen">
+    <!-- Global Preloader -->
+    @include('public.partials.preloader')
+
 
     {{-- Top status bar --}}
     <div class="w-full py-3 px-6 flex items-center justify-between text-sm font-bold

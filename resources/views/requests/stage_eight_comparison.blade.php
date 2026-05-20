@@ -39,6 +39,9 @@
     </style>
 </head>
 <body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 italic-arabic min-h-full">
+    <!-- Global Preloader -->
+    @include('public.partials.preloader')
+
     <div class="max-w-7xl mx-auto px-4 py-12">
         {{-- Header --}}
         <div class="mb-10 text-center">

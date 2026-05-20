@@ -49,6 +49,9 @@
 
 <body class="min-h-screen transition-colors duration-300"
       style="background-color: var(--bg-main); color: var(--text-primary); font-family: 'Cairo', sans-serif;">
+    <!-- Global Preloader -->
+    @include('public.partials.preloader')
+
 
     {{-- ═══ HEADER ═══ --}}
     <header class="sticky top-0 z-50 border-b" style="background-color:var(--surface-card); border-color:var(--border-primary);">

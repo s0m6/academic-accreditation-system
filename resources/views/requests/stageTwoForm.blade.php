@@ -19,6 +19,9 @@
 </head>
 
 <body class="bg-(--bg-main) text-(--text-primary) min-h-screen font-sans">
+    <!-- Global Preloader -->
+    @include('public.partials.preloader')
+
 
 {{-- Dark mode toggle (floating) --}}
 <button onclick="document.documentElement.classList.toggle('dark')" type="button" data-keep

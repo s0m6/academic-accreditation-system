@@ -66,6 +66,9 @@
 </head>
 
 <body class="bg-dark-900 text-gray-200 min-h-screen font-tajawal" x-data="evaluatorForm()">
+    <!-- Global Preloader -->
+    @include('public.partials.preloader')
+
 
     <!-- Header -->
     <div class="bg-dark-800 border-b border-gray-700/50">

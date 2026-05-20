@@ -242,6 +242,9 @@
 </head>
 
 <body>
+    <!-- Global Preloader -->
+    @include('public.partials.preloader')
+
 
   <div class="page-container">
 

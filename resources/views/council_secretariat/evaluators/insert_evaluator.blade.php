@@ -88,6 +88,9 @@
 </head>
 
 <body class="bg-dark-900 text-gray-200 min-h-screen font-tajawal" x-data="evaluatorForm()">
+    <!-- Global Preloader -->
+    @include('public.partials.preloader')
+
 
     {{-- Validation errors banner --}}
     @if($errors->any())

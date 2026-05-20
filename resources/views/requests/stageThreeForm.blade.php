@@ -178,6 +178,9 @@ function ratingColor($rating) {
 </head>
 
 <body class="h-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 italic-arabic">
+    <!-- Global Preloader -->
+    @include('public.partials.preloader')
+
   <div id="app" class="flex h-full">
     {{--! Sidebar --}}
     <aside id="sidebar"

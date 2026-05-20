@@ -43,6 +43,9 @@
 </head>
 
 <body class="p-6">
+    <!-- Global Preloader -->
+    @include('public.partials.preloader')
+
 
     @php
         /**

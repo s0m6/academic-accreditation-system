@@ -441,6 +441,9 @@
     </style>
 </head>
 <body>
+    <!-- Global Preloader -->
+    @include('public.partials.preloader')
+
 
     <!-- ======= Screen-only Action Bar ======= -->
     <div class="action-bar print:hidden">

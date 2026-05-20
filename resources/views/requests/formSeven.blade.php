@@ -406,6 +406,9 @@
 </head>
 
 <body>
+    <!-- Global Preloader -->
+    @include('public.partials.preloader')
+
 
     <!-- ── Interactive Sticky Navigation Bar ── -->
     <div class="no-print no-print-bar">

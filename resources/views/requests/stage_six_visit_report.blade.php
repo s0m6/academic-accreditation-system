@@ -127,6 +127,9 @@
 </head>
 
 <body class="min-h-screen p-4 md:p-8 transition-colors duration-300 {{ (!isset($isEditMode) || !$isEditMode) ? 'view-mode' : '' }}">
+    <!-- Global Preloader -->
+    @include('public.partials.preloader')
+
 
   <!-- Alert Container -->
   <div id="alert-container"></div>

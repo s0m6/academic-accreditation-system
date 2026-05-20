@@ -24,6 +24,9 @@
 </head>
 
 <body class="bg-(--bg-main) text-(--text-primary) overflow-x-hidden min-h-screen">
+    <!-- Global Preloader -->
+    @include('public.partials.preloader')
+
 
     {{-- REQUEST NAVBAR --}}
     @include('partials.request_navbar', [

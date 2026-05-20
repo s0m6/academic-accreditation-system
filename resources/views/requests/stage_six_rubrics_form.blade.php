@@ -69,6 +69,9 @@
 </head>
 
 <body class="h-full bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 italic-arabic {{ !$isEditMode ? 'view-mode' : '' }}">
+    <!-- Global Preloader -->
+    @include('public.partials.preloader')
+
   <div id="app" class="flex h-full">
     <main class="flex-1 h-full overflow-y-auto custom-scrollbar bg-slate-100 dark:bg-slate-900">
       
