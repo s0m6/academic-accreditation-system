@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\CouncilSecretariat\CertificateController;
 use App\Http\Controllers\CouncilSecretariat\CoordinatorController;
+use App\Http\Controllers\CouncilSecretariat\DecisionController;
 use App\Http\Controllers\CouncilSecretariat\EvaluatorController;
 use App\Http\Controllers\CouncilSecretariat\RequestController;
 use App\Http\Controllers\CouncilSecretariat\UniversityController;
@@ -43,3 +45,7 @@ Route::prefix('evaluators')->name('evaluators.')->group(function () {
     Route::put('/{evaluator}', [EvaluatorController::class, 'update'])->name('update');
     Route::get('/{evaluator}/attachments/{attachment}', [EvaluatorController::class, 'viewAttachment'])->name('attachments.view');
 });
+
+// Records (Decisions and Certificates)
+Route::get('/decisions', [DecisionController::class, 'index'])->name('decisions.index');
+Route::get('/certificates', [CertificateController::class, 'index'])->name('certificates.index');

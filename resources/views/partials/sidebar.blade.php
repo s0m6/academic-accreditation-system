@@ -148,6 +148,30 @@
                     </a>
                 </div>
             </div>
+
+            <!-- Category: Records / السجلات والوثائق -->
+            <div class="sidebar-category mt-8 mb-1 px-3">
+                <span class="sidebar-text text-[14px] font-bold uppercase"
+                    style="color: var(--text-primary);">القرارات والشهادات</span>
+            </div>
+
+            <!-- Decisions / القرارات -->
+            <a href="{{ route('council_secretariat.decisions.index') }}"
+                class="sidebar-link {{ request()->routeIs('council_secretariat.decisions.*') ? 'sidebar-link-active' : '' }} group">
+                <div class="sidebar-icon-wrapper">
+                    <i class="fa-solid fa-gavel"></i>
+                </div>
+                <span class="sidebar-text font-semibold">القرارات</span>
+            </a>
+
+            <!-- Certificates / الشهادات -->
+            <a href="{{ route('council_secretariat.certificates.index') }}"
+                class="sidebar-link {{ request()->routeIs('council_secretariat.certificates.*') ? 'sidebar-link-active' : '' }} group">
+                <div class="sidebar-icon-wrapper">
+                    <i class="fa-solid fa-certificate"></i>
+                </div>
+                <span class="sidebar-text font-semibold">الشهادات</span>
+            </a>
         @endif
         {{-- !! sidebar council-secretariat --}}
         @if (auth()->user()->role == 'accreditation_officer')
