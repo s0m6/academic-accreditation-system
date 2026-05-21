@@ -1,17 +1,49 @@
 <!-- University Partners -->
-<section class="py-20 bg-white dark:bg-slate-950 border-y border-slate-100 dark:border-slate-900">
-    <div class="max-w-7xl mx-auto px-6">
-        <h5
-            class="text-center text-slate-400 dark:text-slate-600 font-black uppercase tracking-[0.2em] text-sm mb-16">
-            شركاؤنا في الجودة التعليمية</h5>
-        <div class="flex flex-wrap justify-center items-center gap-16 md:gap-24">
-            @for ($i = 0; $i < 4; $i++)
-            <div
-                class="grayscale hover:grayscale-0 opacity-40 hover:opacity-100 transition-all duration-500 transform hover:scale-110">
-                <img class="h-20 w-auto" alt="University Logo"
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuDT9_yJnqFPmx85CfhLpu70rbYgDH3du5IkCcX2Qz7GZchjTRNHLj7xkD_9vx-ZQ9hTDt9r9w0yHBvyehUrbdTBH3Te9VNDIFNqKD9j3HMzdubTiZglbuiQ8-dEwDhOqFBlbz2Bi3dFrq6TNKP05VtkxKgGf9q0gX48n9extLvh--8dpt5Kuvs_CAVn7mPZQc5TF7Hqo2A6UeRE5iRV3viPZzZXzAnLeUc7Q7ekWOXuwjTnFYs7smfBeu9iwJbIQG66-W7ohYnbSVW5" />
-            </div>
-            @endfor
+<section class="py-20 bg-white dark:bg-slate-950 border-y border-slate-100 dark:border-slate-900 overflow-hidden">
+    <div class="max-w-7xl mx-auto px-6 mb-16 flex flex-col items-center">
+        <h2 class="text-center text-primary dark:text-accent font-black text-3xl md:text-4xl tracking-tight mb-4">
+            شركاؤنا في الجودة التعليمية
+        </h2>
+        <div class="w-20 h-1 bg-accent rounded-full shadow-[0_2px_10px_rgba(233,193,118,0.3)]"></div>
+    </div>
+
+    <!-- Ticker Container -->
+    <div class="relative w-full overflow-hidden mask-gradient py-4 flex">
+        <!-- Set 1 -->
+        <div class="flex shrink-0 min-w-full justify-around items-center animate-marquee-ltr">
+            @include('public.partials.partner-logos')
+        </div>
+        <!-- Set 2 (Duplicate for seamless loop) -->
+        <div class="flex shrink-0 min-w-full justify-around items-center animate-marquee-ltr" aria-hidden="true">
+            @include('public.partials.partner-logos')
         </div>
     </div>
 </section>
+
+<style>
+    /* Continuous Left-to-Right Scrolling animation */
+    @keyframes marquee-ltr {
+        0% {
+            transform: translateX(-100%);
+        }
+        100% {
+            transform: translateX(0%);
+        }
+    }
+
+    .animate-marquee-ltr {
+        animation: marquee-ltr 25s linear infinite;
+    }
+
+    /* Pause animation on hover */
+    /* Hovering over either container pauses the animation for both since they share the same state */
+    .mask-gradient:hover .animate-marquee-ltr {
+        animation-play-state: paused;
+    }
+
+    /* Gradients for smooth fade out at edges */
+    .mask-gradient {
+        mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
+        -webkit-mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
+    }
+</style>

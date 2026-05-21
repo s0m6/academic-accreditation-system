@@ -1,0 +1,15 @@
+<svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="tealGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#115E59" />
+      <stop offset="100%" stop-color="#0D9488" />
+    </linearGradient>
+    <linearGradient id="gold2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FBBF24" />
+      <stop offset="100%" stop-color="#F59E0B" />
+    </linearGradient>
+  </defs>
+  <polygon points="100,30 160,65 160,135 100,170 40,135 40,65" fill="url(#tealGrad)" stroke="url(#gold2)" stroke-width="4"/>
+  <polygon points="100,45 145,72 145,128 100,155 55,128 55,72" stroke="#FFFFFF" stroke-width="2" fill="none"/>
+  <polygon points="100,70 107,90 128,90 111,103 117,124 100,111 83,124 89,103 72,90 93,90" fill="url(#gold2)" />
+</svg>
