@@ -36,7 +36,13 @@ class RequestDashboardController extends Controller
     {
         $this->authorizeAccess($accreditationRequest);
 
-        $accreditationRequest->load('program.department.college.university');
+        $accreditationRequest->load([
+            'program.department.college.university',
+            'programCoordinator',
+            'councilCoordinator',
+            'committee.chairEvaluator.user',
+            'committee.activeMembers.evaluator.user',
+        ]);
 
         return view('requests.show', $this->viewData($accreditationRequest, $accreditationRequest->current_stage));
     }
@@ -52,7 +58,13 @@ class RequestDashboardController extends Controller
             abort(404);
         }
 
-        $accreditationRequest->load('program.department.college.university');
+        $accreditationRequest->load([
+            'program.department.college.university',
+            'programCoordinator',
+            'councilCoordinator',
+            'committee.chairEvaluator.user',
+            'committee.activeMembers.evaluator.user',
+        ]);
 
         return view('requests.show', $this->viewData($accreditationRequest, $stage));
     }
