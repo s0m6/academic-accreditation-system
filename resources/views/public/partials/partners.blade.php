@@ -8,37 +8,31 @@
     </div>
 
     <!-- Ticker Container -->
-    <div class="relative w-full overflow-hidden mask-gradient py-4 flex">
+    <div class="relative w-full overflow-hidden mask-gradient py-4 flex flex-row" style="direction: ltr;">
         <!-- Set 1 -->
-        <div class="flex shrink-0 min-w-full justify-around items-center animate-marquee-ltr">
+        <div class="flex shrink-0 min-w-full justify-around items-center animate-marquee">
             @include('public.partials.partner-logos')
         </div>
         <!-- Set 2 (Duplicate for seamless loop) -->
-        <div class="flex shrink-0 min-w-full justify-around items-center animate-marquee-ltr" aria-hidden="true">
+        <div class="flex shrink-0 min-w-full justify-around items-center animate-marquee" aria-hidden="true">
             @include('public.partials.partner-logos')
         </div>
     </div>
 </section>
 
 <style>
-    /* Continuous Left-to-Right Scrolling animation */
-    @keyframes marquee-ltr {
+    /* Continuous Scrolling animation */
+    @keyframes marquee {
         0% {
-            transform: translateX(-100%);
-        }
-        100% {
             transform: translateX(0%);
         }
+        100% {
+            transform: translateX(-100%);
+        }
     }
 
-    .animate-marquee-ltr {
-        animation: marquee-ltr 25s linear infinite;
-    }
-
-    /* Pause animation on hover */
-    /* Hovering over either container pauses the animation for both since they share the same state */
-    .mask-gradient:hover .animate-marquee-ltr {
-        animation-play-state: paused;
+    .animate-marquee {
+        animation: marquee 35s linear infinite;
     }
 
     /* Gradients for smooth fade out at edges */

@@ -1,4 +1,34 @@
 <!-- Accreditation Certificates -->
+<style>
+    .cert-track {
+        display: flex;
+        gap: 2rem;
+        --slide-width: calc(100% + 2rem);
+    }
+    .cert-card {
+        flex-shrink: 0;
+        width: 100%;
+    }
+    
+    @media (min-width: 640px) {
+        .cert-track {
+            --slide-width: calc((100% + 2rem) / 2);
+        }
+        .cert-card {
+            width: calc((100% - 2rem) / 2);
+        }
+    }
+    
+    @media (min-width: 1024px) {
+        .cert-track {
+            --slide-width: calc((100% + 2rem) / 3);
+        }
+        .cert-card {
+            width: calc((100% - 4rem) / 3);
+        }
+    }
+</style>
+
 <section class="py-24 bg-slate-50 dark:bg-slate-950 relative overflow-hidden" id="accredited-programs">
     <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-accent/5 blur-[150px] rounded-full"></div>
     <div class="max-w-7xl mx-auto px-6 relative z-10">
@@ -22,10 +52,11 @@
                 <p class="text-slate-500 font-bold">لا توجد شهادات صادرة حالياً</p>
             </div>
         @else
-                <div class="relative px-12" x-data="{ 
+                <div class="relative px-0 sm:px-12" x-data="{ 
                     active: 0, 
                     count: {{ $latestCertificates->count() }},
                     autoplay: null,
+                    touchStart: null,
                     next() { 
                         this.active = (this.active + 1 >= this.count) ? 0 : this.active + 1 
                     },
@@ -41,38 +72,40 @@
                 }" x-init="start()" @mouseenter="stop()" @mouseleave="start()">
                     
                     <!-- Navigation Arrows - Side Positioned -->
-                    <div class="absolute inset-y-0 -left-6 flex items-center z-20 pointer-events-none">
+                    <div class="hidden sm:flex absolute inset-y-0 -left-6 items-center z-20 pointer-events-none">
                         <button @click="prev()" 
-                                class="pointer-events-auto w-14 h-14 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-primary dark:text-accent hover:bg-accent hover:text-primary dark:hover:bg-accent dark:hover:text-primary transition-all shadow-[0_10px_30px_rgba(0,0,0,0.1)] active:scale-90 group">
+                                class="pointer-events-auto w-14 h-14 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-primary dark:text-accent hover:bg-accent hover:text-primary dark:hover:bg-accent dark:hover:text-primary transition-all shadow-[0_10px_30px_rgba(0,0,0,0.1)] active:scale-90 group cursor-pointer">
                             <i class="fa-solid fa-chevron-left group-hover:scale-110 transition-transform"></i>
                         </button>
                     </div>
 
-                    <div class="absolute inset-y-0 -right-6 flex items-center z-20 pointer-events-none">
+                    <div class="hidden sm:flex absolute inset-y-0 -right-6 items-center z-20 pointer-events-none">
                         <button @click="next()" 
-                                class="pointer-events-auto w-14 h-14 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-primary dark:text-accent hover:bg-accent hover:text-primary dark:hover:bg-accent dark:hover:text-primary transition-all shadow-[0_10px_30px_rgba(0,0,0,0.1)] active:scale-90 group">
+                                class="pointer-events-auto w-14 h-14 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-primary dark:text-accent hover:bg-accent hover:text-primary dark:hover:bg-accent dark:hover:text-primary transition-all shadow-[0_10px_30px_rgba(0,0,0,0.1)] active:scale-90 group cursor-pointer">
                             <i class="fa-solid fa-chevron-right group-hover:scale-110 transition-transform"></i>
                         </button>
                     </div>
 
                     <!-- Slider Container -->
-                    <div class="overflow-hidden py-10">
-                        <div class="flex transition-transform duration-500 ease-in-out gap-8" 
-                             :style="`transform: translateX(${active * (350 + 32)}px)`">
+                    <div class="overflow-hidden py-10"
+                         @touchstart="touchStart = $event.touches[0].clientX"
+                         @touchend="if (touchStart - $event.changedTouches[0].clientX > 50) next(); if ($event.changedTouches[0].clientX - touchStart > 50) prev();">
+                        <div class="cert-track transition-transform duration-500 ease-in-out" 
+                             :style="`transform: translateX(calc(${active} * var(--slide-width)))`">
                         @foreach($latestCertificates as $cert)
-                        <div class="shrink-0 w-[350px] group/card bg-white dark:bg-slate-900 p-8 rounded-3xl shadow-lg border border-slate-100 dark:border-slate-800 hover:border-accent hover:shadow-2xl transition-all duration-500">
-                            <div class="flex justify-between items-start mb-8">
-                                <div class="w-16 h-16 bg-accent/10 rounded-2xl flex items-center justify-center text-accent group-hover/card:bg-accent group-hover/card:text-primary transition-colors">
-                                    <i class="fa-solid fa-award text-4xl"></i>
+                        <div class="cert-card group/card bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-3xl shadow-lg border border-slate-100 dark:border-slate-800 hover:border-accent hover:shadow-2xl transition-all duration-500">
+                            <div class="flex justify-between items-start mb-6 sm:mb-8">
+                                <div class="w-14 h-14 sm:w-16 sm:h-16 bg-accent/10 rounded-2xl flex items-center justify-center text-accent group-hover/card:bg-accent group-hover/card:text-primary transition-colors">
+                                    <i class="fa-solid fa-award text-3xl sm:text-4xl"></i>
                                 </div>
                                 <span class="text-[11px] font-black uppercase tracking-widest text-emerald-600 bg-emerald-50 dark:bg-emerald-500/10 dark:text-emerald-400 px-3 py-1.5 rounded-xl border border-emerald-100 dark:border-emerald-500/20">برنامج معتمد</span>
                             </div>
                             
-                            <h4 class="font-black text-2xl mb-4 dark:text-white group-hover/card:text-primary dark:group-hover/card:text-accent transition-colors leading-tight min-h-[4rem]">
+                            <h4 class="font-black text-xl sm:text-2xl mb-4 dark:text-white group-hover/card:text-primary dark:group-hover/card:text-accent transition-colors leading-tight min-h-[3rem] sm:min-h-[4rem]">
                                 {{ $cert['program'] }}
                             </h4>
                             
-                            <div class="flex items-start gap-3 mb-8">
+                            <div class="flex items-start gap-3 mb-6 sm:mb-8">
                                 <i class="fa-solid fa-building-columns text-slate-300 mt-1"></i>
                                 <p class="text-slate-500 dark:text-slate-400 font-bold text-sm leading-relaxed">
                                     {{ $cert['university'] }}
@@ -96,9 +129,9 @@
 
                 <!-- Progress Dots -->
                 <div class="flex justify-center gap-3 mt-8">
-                    <template x-for="(i, index) in count" :key="index">
+                    <template x-for="(i, index) in Array.from({ length: count })" :key="index">
                         <button @click="active = index" 
-                                class="h-1.5 rounded-full transition-all duration-500"
+                                class="h-1.5 rounded-full transition-all duration-500 cursor-pointer"
                                 :class="active === index ? 'w-10 bg-accent' : 'w-4 bg-slate-200 dark:bg-slate-800'"></button>
                     </template>
                 </div>

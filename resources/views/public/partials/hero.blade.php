@@ -18,14 +18,14 @@
                 نعمل في مجلس الاعتماد الأكاديمي وضمان الجودة على تمكين المؤسسات التعليمية من تحقيق التميز العالمي من
                 خلال معايير اعتماد صارمة وعمليات تقييم شفافة.
             </p>
-            <div class="flex flex-wrap gap-5">
+            <div class="flex flex-wrap gap-4">
                 <a href="{{ route('certificates.explorer') }}"
-                    class="bg-accent text-primary px-10 py-4 rounded-xl font-black text-lg hover:scale-105 transition-all shadow-xl shadow-accent/20 flex items-center gap-3">
+                    class="bg-accent text-primary px-6 sm:px-10 py-3.5 sm:py-4 rounded-xl font-black text-base sm:text-lg hover:scale-105 transition-all shadow-xl shadow-accent/20 flex items-center gap-3">
                     <i class="fa-solid fa-circle-check"></i>
                     دليل البرامج المعتمدة
                 </a>
                 <button
-                    class="bg-white/5 hover:bg-white/10 text-white px-10 py-4 rounded-xl font-bold text-lg backdrop-blur-md border border-white/20 transition-all">
+                    class="bg-white/5 hover:bg-white/10 text-white px-6 sm:px-10 py-3.5 sm:py-4 rounded-xl font-bold text-base sm:text-lg backdrop-blur-md border border-white/20 transition-all">
                     عن المجلس
                 </button>
             </div>

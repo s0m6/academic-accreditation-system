@@ -72,9 +72,9 @@
                 </a>
                 @else
                 <a href="{{ route('login') }}"
-                    class="hidden sm:flex items-center gap-2 px-5 py-2.5 text-primary dark:text-slate-100 font-bold text-sm hover:bg-slate-100 dark:hover:bg-white/10 rounded-xl transition-all">
+                    class="flex items-center gap-2 px-3 sm:px-5 py-2.5 text-primary dark:text-slate-100 font-bold text-sm hover:bg-slate-100 dark:hover:bg-white/10 rounded-xl transition-all">
                     <i class="fa-solid fa-right-to-bracket text-lg"></i>
-                    تسجيل الدخول
+                    <span class="hidden sm:inline">تسجيل الدخول</span>
                 </a>
                 @endauth
                 <div class="h-8 w-[1px] bg-slate-200 dark:bg-white/10 mx-2"></div>
@@ -96,8 +96,8 @@
             <!-- Brand & Info -->
             <div class="col-span-1">
                 <div class="flex items-center gap-3 mb-8">
-                    <div class="w-10 h-10 bg-accent rounded flex items-center justify-center text-primary">
-                        <i class="fa-solid fa-building-columns text-2xl"></i>
+                    <div class="w-10 h-10 bg-white dark:bg-slate-900 rounded-lg flex items-center justify-center p-1.5 shadow-sm">
+                        <img src="{{ asset('images/logo.png') }}" alt="شعار المجلس" class="h-full w-full object-contain">
                     </div>
                     <span class="text-xl font-black uppercase tracking-tighter">CAAQAHE YEMEN</span>
                 </div>
@@ -130,7 +130,7 @@
                 <ul class="space-y-6 text-sm text-blue-100/70 font-medium">
                     <li class="flex items-start gap-4">
                         <i class="fa-solid fa-location-dot text-accent mt-1"></i>
-                        <span class="leading-relaxed">عدن، مديرية خور مكسر، مبنى وزارة التعليم العالي والبحث العلمي</span>
+                        <span class="leading-relaxed">عدن، مديرية البريقه - مدينة الشعب - خلف كلية العلوم الإدارية </span>
                     </li>
                     <li class="flex items-start gap-4">
                         <i class="fa-solid fa-phone text-accent mt-1"></i>

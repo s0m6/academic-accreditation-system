@@ -18,7 +18,7 @@
     <div class="max-w-7xl mx-auto px-6">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <div
-                class="service-card group p-10 bg-white dark:bg-slate-900 rounded-2xl shadow-xl hover:shadow-2xl border border-slate-100 dark:border-slate-800">
+                class="service-card group p-6 sm:p-8 md:p-10 bg-white dark:bg-slate-900 rounded-2xl shadow-xl hover:shadow-2xl border border-slate-100 dark:border-slate-800">
                 <div
                     class="icon-wrapper w-20 h-20 bg-blue-50 dark:bg-primary/50 rounded-full flex items-center justify-center mb-6 text-primary dark:text-accent group-hover:bg-primary group-hover:text-accent">
                     <i class="fa-solid fa-building-columns fa-2xl"></i>
@@ -28,7 +28,7 @@
                     الجامعات والكليات وفق أرقى المعايير الدولية.</p>
             </div>
             <div
-                class="service-card group p-10 bg-white dark:bg-slate-900 rounded-2xl shadow-xl hover:shadow-2xl border border-slate-100 dark:border-slate-800">
+                class="service-card group p-6 sm:p-8 md:p-10 bg-white dark:bg-slate-900 rounded-2xl shadow-xl hover:shadow-2xl border border-slate-100 dark:border-slate-800">
                 <div
                     class="icon-wrapper w-20 h-20 bg-blue-50 dark:bg-primary/50 rounded-full flex items-center justify-center mb-6 text-primary dark:text-accent group-hover:bg-primary group-hover:text-accent">
                     <i class="fa-solid fa-graduation-cap fa-2xl"></i>
@@ -38,7 +38,7 @@
                     الأكاديمية ومواءمتها مع متطلبات سوق العمل.</p>
             </div>
             <div
-                class="service-card group p-10 bg-white dark:bg-slate-900 rounded-2xl shadow-xl hover:shadow-2xl border border-slate-100 dark:border-slate-800">
+                class="service-card group p-6 sm:p-8 md:p-10 bg-white dark:bg-slate-900 rounded-2xl shadow-xl hover:shadow-2xl border border-slate-100 dark:border-slate-800">
                 <div
                     class="icon-wrapper w-20 h-20 bg-blue-50 dark:bg-primary/50 rounded-full flex items-center justify-center mb-6 text-primary dark:text-accent group-hover:bg-primary group-hover:text-accent">
                     <i class="fa-solid fa-laptop fa-2xl"></i>
@@ -48,7 +48,7 @@
                     متكاملة لإدارة عمليات الاعتماد والتقييم الذاتي.</p>
             </div>
             <div
-                class="service-card group p-10 bg-white dark:bg-slate-900 rounded-2xl shadow-xl hover:shadow-2xl border border-slate-100 dark:border-slate-800">
+                class="service-card group p-6 sm:p-8 md:p-10 bg-white dark:bg-slate-900 rounded-2xl shadow-xl hover:shadow-2xl border border-slate-100 dark:border-slate-800">
                 <div
                     class="icon-wrapper w-20 h-20 bg-blue-50 dark:bg-primary/50 rounded-full flex items-center justify-center mb-6 text-primary dark:text-accent group-hover:bg-primary group-hover:text-accent">
                     <i class="fa-solid fa-file-contract fa-2xl"></i>

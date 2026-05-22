@@ -94,11 +94,12 @@ $clonedItems = array_merge($newsItems, array_slice($newsItems, 0, 3));
             </button>
         </div>
 
-        <div class="relative px-12" x-data="{ 
+        <div class="relative px-0 sm:px-12" x-data="{ 
             active: 0, 
             count: {{ count($newsItems) }},
             transitionEnabled: true,
             autoplay: null,
+            touchStart: null,
             next() { 
                 if (!this.transitionEnabled) return;
                 this.active++;
@@ -136,14 +137,14 @@ $clonedItems = array_merge($newsItems, array_slice($newsItems, 0, 3));
         }" x-init="start()" @mouseenter="stop()" @mouseleave="start()">
             
             <!-- Navigation Arrows - Side Positioned -->
-            <div class="absolute inset-y-0 -left-6 flex items-center z-20 pointer-events-none">
+            <div class="hidden sm:flex absolute inset-y-0 -left-6 items-center z-20 pointer-events-none">
                 <button @click="prev()" 
                         class="pointer-events-auto w-14 h-14 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-primary dark:text-accent hover:bg-accent hover:text-primary dark:hover:bg-accent dark:hover:text-primary transition-all shadow-[0_10px_30px_rgba(0,0,0,0.1)] active:scale-90 group cursor-pointer">
                     <i class="fa-solid fa-chevron-left group-hover:scale-110 transition-transform"></i>
                 </button>
             </div>
 
-            <div class="absolute inset-y-0 -right-6 flex items-center z-20 pointer-events-none">
+            <div class="hidden sm:flex absolute inset-y-0 -right-6 items-center z-20 pointer-events-none">
                 <button @click="next()" 
                         class="pointer-events-auto w-14 h-14 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-primary dark:text-accent hover:bg-accent hover:text-primary dark:hover:bg-accent dark:hover:text-primary transition-all shadow-[0_10px_30px_rgba(0,0,0,0.1)] active:scale-90 group cursor-pointer">
                     <i class="fa-solid fa-chevron-right group-hover:scale-110 transition-transform"></i>
@@ -151,14 +152,16 @@ $clonedItems = array_merge($newsItems, array_slice($newsItems, 0, 3));
             </div>
 
             <!-- Slider Container -->
-            <div class="overflow-hidden py-10">
+            <div class="overflow-hidden py-10"
+                 @touchstart="touchStart = $event.touches[0].clientX"
+                 @touchend="if (touchStart - $event.changedTouches[0].clientX > 50) next(); if ($event.changedTouches[0].clientX - touchStart > 50) prev();">
                 <div class="news-track" 
                      :class="transitionEnabled ? 'transition-transform duration-500 ease-in-out' : ''"
                      :style="`transform: translateX(calc(${active} * var(--slide-width)))`">
                     @foreach($clonedItems as $news)
                     <article
                         class="news-card bg-white dark:bg-slate-800 rounded-3xl overflow-hidden group hover:shadow-2xl transition-all duration-500 border border-slate-100 dark:border-slate-700 hover:border-accent dark:hover:border-accent">
-                        <div class="h-64 overflow-hidden relative">
+                        <div class="h-48 sm:h-64 overflow-hidden relative">
                             <img class="w-full h-full object-cover group-hover:scale-110 transition-all duration-700"
                                  alt="news"
                                  src="{{ $news['image'] }}" />
@@ -166,15 +169,15 @@ $clonedItems = array_merge($newsItems, array_slice($newsItems, 0, 3));
                                 {{ $news['tag'] }}
                             </div>
                         </div>
-                        <div class="p-8">
+                        <div class="p-5 sm:p-8">
                             <div class="flex items-center gap-2 text-slate-400 text-sm mb-4 font-bold">
                                 <i class="fa-regular fa-calendar text-lg"></i>
                                 {{ $news['date'] }}
                             </div>
-                            <h3 class="font-black text-xl mb-4 leading-snug group-hover:text-primary dark:group-hover:text-accent transition-colors dark:text-white line-clamp-2 min-h-[3.5rem]">
+                            <h3 class="font-black text-lg sm:text-xl mb-4 leading-snug group-hover:text-primary dark:group-hover:text-accent transition-colors dark:text-white line-clamp-2 min-h-[3rem] sm:min-h-[3.5rem]">
                                 {{ $news['title'] }}
                             </h3>
-                            <p class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-6 line-clamp-3 min-h-[4.5rem]">
+                            <p class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-6 line-clamp-3 min-h-[4rem] sm:min-h-[4.5rem]">
                                 {{ $news['summary'] }}
                             </p>
                         </div>
