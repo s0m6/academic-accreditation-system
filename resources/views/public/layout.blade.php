@@ -50,7 +50,7 @@
                     <span class="text-base md:text-lg font-black tracking-tight text-slate-900 dark:text-white leading-tight transition-colors duration-300">
                         مجلس الاعتماد الأكاديمي
                     </span>
-                    <span class="text-[9px] md:text-[11px] font-bold text-slate-600 dark:text-slate-300 leading-tight mt-0.5 transition-colors duration-300">
+                    <span class="text-[12px] md:text-[13px] font-bold text-slate-600 dark:text-slate-300 leading-tight mt-0.5 transition-colors duration-300">
                         وضمان جودة التعليم العالي
                     </span>
                 </div>
