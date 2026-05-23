@@ -1,14 +1,13 @@
 <?php
 
 use App\Http\Controllers\AccreditationOfficer\CollegeController;
+use App\Http\Controllers\AccreditationOfficer\DashboardController;
 use App\Http\Controllers\AccreditationOfficer\DepartmentController;
 use App\Http\Controllers\AccreditationOfficer\ProgramController;
 use Illuminate\Support\Facades\Route;
 
 // Dashboard route for the accreditation officer
-Route::get('/dashboard', function () {
-    return view('accreditation_officer.dashboard');
-})->name('dashboard');
+Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
 // Colleges
 // College management routes
@@ -24,6 +23,8 @@ Route::post('/departments', [DepartmentController::class, 'store'])->name('depar
 Route::put('/departments/{department}', [DepartmentController::class, 'update'])->name('departments.update');
 Route::delete('/departments/{department}', [DepartmentController::class, 'destroy'])->name('departments.destroy');
 
+use App\Http\Controllers\AccreditationOfficer\AccreditationRequestController;
+
 // Programs
 // Program management routes
 Route::get('/programs', [ProgramController::class, 'index'])->name('programs');
@@ -33,3 +34,6 @@ Route::delete('/programs/{program}', [ProgramController::class, 'destroy'])->nam
 Route::get('/programs/departments/{college}', [ProgramController::class, 'getDepartments'])->name('programs.departments');
 // Create a draft accreditation request for a program
 Route::post('/programs/{program}/requests', [ProgramController::class, 'storeRequest'])->name('programs.requests.store');
+
+// Accreditation Requests
+Route::get('/requests', [AccreditationRequestController::class, 'index'])->name('requests.index');

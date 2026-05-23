@@ -172,6 +172,15 @@
                 </div>
                 <span class="sidebar-text font-semibold">الشهادات</span>
             </a>
+
+            <!-- Reports / التقارير -->
+            <a href="{{ route('council_secretariat.reports.index') }}"
+                class="sidebar-link {{ request()->routeIs('council_secretariat.reports.*') ? 'sidebar-link-active' : '' }} group">
+                <div class="sidebar-icon-wrapper">
+                    <i class="fa-solid fa-chart-pie"></i>
+                </div>
+                <span class="sidebar-text font-semibold">التقارير والإحصائيات</span>
+            </a>
         @endif
         {{-- !! sidebar council-secretariat --}}
         @if (auth()->user()->role == 'accreditation_officer')
@@ -221,6 +230,21 @@
                     <i class="fa-solid fa-book-open"></i>
                 </div>
                 <span class="sidebar-text font-semibold">البرامج</span>
+            </a>
+
+            <!-- Category: Accreditation -->
+            <div class="sidebar-category mt-8 mb-1 px-3">
+                <span class="sidebar-text text-[14px] font-bold uppercase"
+                    style="color: var(--text-primary);">الاعتماد الأكاديمي</span>
+            </div>
+
+            <!-- Accreditation Requests / طلبات الاعتماد -->
+            <a href="{{ route('accreditation_officer.requests.index') }}"
+                class="sidebar-link {{ request()->routeIs('accreditation_officer.requests.*') ? 'sidebar-link-active' : '' }} group">
+                <div class="sidebar-icon-wrapper">
+                    <i class="fa-solid fa-file-signature"></i>
+                </div>
+                <span class="sidebar-text font-semibold">طلبات الاعتماد</span>
             </a>
         @endif
 

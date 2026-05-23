@@ -49,3 +49,11 @@ Route::prefix('evaluators')->name('evaluators.')->group(function () {
 // Records (Decisions and Certificates)
 Route::get('/decisions', [DecisionController::class, 'index'])->name('decisions.index');
 Route::get('/certificates', [CertificateController::class, 'index'])->name('certificates.index');
+
+// Reports Management
+use App\Http\Controllers\CouncilSecretariat\ReportController;
+
+Route::prefix('reports')->name('reports.')->group(function () {
+    Route::get('/', [ReportController::class, 'index'])->name('index');
+    Route::post('/generate', [ReportController::class, 'generate'])->name('generate');
+});
