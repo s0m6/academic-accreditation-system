@@ -531,14 +531,18 @@
       
       // Fill closing comments (strengths, improvements, priorities) for all standards
       Object.keys(window.SUBSTANDARDS_BY_STD).forEach(stdId => {
+        const substandards = window.SUBSTANDARDS_BY_STD[stdId] || [];
+        const firstSubId = substandards.length > 0 ? substandards[0].id : '';
+        const secondSubId = substandards.length > 1 ? substandards[1].id : firstSubId;
+
         standardComments[parseInt(stdId)] = {
           strengths: [
-            { text: 'توفر بنية تحتية تقنية متميزة ومختبرات مجهزة بالكامل تدعم التدريب العملي.', subId: '' },
-            { text: 'كفاءة عالية ومؤهلات متميزة لأعضاء هيئة التدريس وخبراتهم المتنوعة.', subId: '' }
+            { text: 'توفر بنية تحتية تقنية متميزة ومختبرات مجهزة بالكامل تدعم التدريب العملي.', subId: firstSubId },
+            { text: 'كفاءة عالية ومؤهلات متميزة لأعضاء هيئة التدريس وخبراتهم المتنوعة.', subId: secondSubId }
           ],
           improvements: [
-            { text: 'الحاجة إلى تكثيف الأنشطة البحثية المشتركة بين الطلاب وأعضاء هيئة التدريس.', subId: '' },
-            { text: 'ضرورة تحديث مراجع التخصص القديمة ببعض المقررات الاختيارية.', subId: '' }
+            { text: 'الحاجة إلى تكثيف الأنشطة البحثية المشتركة بين الطلاب وأعضاء هيئة التدريس.', subId: firstSubId },
+            { text: 'ضرورة تحديث مراجع التخصص القديمة ببعض المقررات الاختيارية.', subId: secondSubId }
           ],
           priorities: [
             { text: 'تطوير آليات التمويل الذاتي لدعم المشاريع الطلابية الابتكارية.', subId: '' }
@@ -550,7 +554,7 @@
       });
       
       markDirty();
-      if (typeof showAlert === 'function') showAlert('تم تعبئة جميع مقاييس التقييم والتعليقات تلقائياً!', 'success');
+      if (typeof showAlert === 'function') showAlert('تم تعبئة جميع مقاييس التقييم والتعليقات تلقائياً مع تحديد المعايير الفرعية!', 'success');
       else alert('تم التعبئة التلقائية بنجاح!');
     }
 
