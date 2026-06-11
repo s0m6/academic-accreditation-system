@@ -244,11 +244,12 @@ function ratingColor($rating) {
       {{-- Sidebar Footer --}}
       <div class="p-4 border-t border-slate-100 dark:border-slate-800 mt-auto flex flex-col gap-3">
         @if(!isset($readonly) || !$readonly)
-        {{-- TEST BUTTON - REMOVE ANYTIME --}}
-        <button type="button" onclick="fillRandomRatings()" 
-          class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold shadow-lg shadow-amber-500/30 transition-all cursor-pointer">
-          <i class="fa-solid fa-dice"></i>
-          <span>ملئ الدرجات (تجريبي)</span>
+
+
+        <button type="button" onclick="autoFillStageThree()" 
+          class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold shadow-lg transition-all cursor-pointer">
+          <i class="fa-solid fa-magic"></i>
+          <span>تعبئة تلقائية كاملة</span>
         </button>
 
         <button id="save-draft-btn" onclick="saveDraft()"
@@ -2191,45 +2192,242 @@ function ratingColor($rating) {
       hasChanges = true;
     }
 
-    // ✦ Random Rating Filler (Experimental - Remove Anytime)
-    function fillRandomRatings() {
-      if (!confirm('هل أنت متأكد من ملء جميع الدرجات بشكل عشوائي؟ سيتم تغيير كافة التقييمات الحالية.')) return;
+
+
+    // ✦ Full Self-Study Autofill
+    function autoFillStageThree() {
+      if (!confirm('هل أنت متأكد من رغبتك في تعبئة كامل نموذج الدراسة الذاتية تلقائياً؟')) return;
       
+      // 1. Fill simple inputs in Part 1 - General Tab
+      document.getElementById('review_team_head').value = 'أ.د. أحمد محمود العتيبي';
+      document.getElementById('review_date').value = '2025-05-15';
+      setField('general', 'review_team_head', 'أ.د. أحمد محمود العتيبي');
+      setField('general', 'review_date', '2025-05-15');
+
+      // 1. Fill simple inputs in Part 1 - Program Tab
+      const execSummary = 'الملخص التنفيذي لنتائج الدراسة الذاتية يظهر توافقاً كبيراً مع معايير الاعتماد البرامجي الوطنية وتحديداً في جودة التعليم والتعلم والتفاعل الإيجابي لأعضاء هيئة التدريس مع الطلاب.';
+      document.getElementById('executive_summary').value = execSummary;
+      setField('program', 'executive_summary', execSummary);
+
+      document.getElementById('coordinator_name').value = 'د. خالد بن عبدالله العتيبي';
+      document.getElementById('coordinator_title').value = 'منسق الجودة والاعتماد الأكاديمي';
+      document.getElementById('coordinator_email').value = 'k.otabi@university.edu.sa';
+      document.getElementById('coordinator_phone').value = '0501234567';
+      document.getElementById('report_date').value = '2025-05-10';
+      setField('program', 'coordinator_name', 'د. خالد بن عبدالله العتيبي');
+      setField('program', 'coordinator_title', 'منسق الجودة والاعتماد الأكاديمي');
+      setField('program', 'coordinator_email', 'k.otabi@university.edu.sa');
+      setField('program', 'coordinator_phone', '0501234567');
+      setField('program', 'report_date', '2025-05-10');
+
+      // 1. Fill simple inputs in Part 1 - Profile Tab
+      const missionText = 'إعداد كوادر مؤهلة علمياً ومهنياً في مجال التخصص قادرة على المنافسة وتلبية متطلبات التنمية وسوق العمل من خلال تقديم تعليم متميز وبحوث علمية مبتكرة وشراكة مجتمعية فاعلة.';
+      document.getElementById('program_mission').value = missionText;
+      setField('profile', 'program_mission', missionText);
+
+      document.getElementById('program_system').value = 'semester';
+      document.getElementById('credit_hours').value = '132';
+      document.getElementById('courses_total').value = '45';
+      document.getElementById('male_students_count').value = '250';
+      document.getElementById('female_students_count').value = '300';
+      document.getElementById('dept_council_date').value = '2025-01-10';
+      document.getElementById('college_council_date').value = '2025-01-20';
+      document.getElementById('academic_council_date').value = '2025-02-01';
+      document.getElementById('university_council_date').value = '2025-02-15';
+      document.getElementById('program_history').value = 'تأسس البرنامج في عام 1420هـ وبدأت الدراسة الفعلية فيه في العام الذي يليه لتلبية الاحتياجات المتزايدة في الكوادر الفنية.';
+      document.getElementById('env_changes').value = 'تم تحديث معامل الحاسب الآلي وإدخال تقنيات التعليم الرقمي واستقطاب كفاءات أكاديمية جديدة ومتميزة.';
+      document.getElementById('self_study_arrangements').value = 'تم تشكيل اللجان الفرعية لكل معيار وعقد ورش عمل دورية لمراجعة الأدلة والشواهد وتدقيق التقارير الذاتية.';
+      document.getElementById('comparison_methodology').value = 'تم إجراء مقارنة مرجعية مع برامج مماثلة في جامعات محلية إقليمية لقياس الفجوة وتحديد سبل التطوير.';
+      
+      setField('profile', 'program_system', 'semester');
+      setField('profile', 'credit_hours', '132');
+      setField('profile', 'courses_total', '45');
+      setField('profile', 'male_students_count', '250');
+      setField('profile', 'female_students_count', '300');
+      setField('profile', 'dept_council_date', '2025-01-10');
+      setField('profile', 'college_council_date', '2025-01-20');
+      setField('profile', 'academic_council_date', '2025-02-01');
+      setField('profile', 'university_council_date', '2025-02-15');
+      setField('profile', 'program_history', 'تأسس البرنامج في عام 1420هـ وبدأت الدراسة الفعلية فيه في العام الذي يليه لتلبية الاحتياجات المتزايدة في الكوادر الفنية.');
+      setField('profile', 'env_changes', 'تم تحديث معامل الحاسب الآلي وإدخال تقنيات التعليم الرقمي واستقطاب كفاءات أكاديمية جديدة ومتميزة.');
+      setField('profile', 'self_study_arrangements', 'تم تشكيل اللجان الفرعية لكل معيار وعقد ورش عمل دورية لمراجعة الأدلة والشواهد وتدقيق التقارير الذاتية.');
+      setField('profile', 'comparison_methodology', 'تم إجراء مقارنة مرجعية مع برامج مماثلة في جامعات محلية إقليمية لقياس الفجوة وتحديد سبل التطوير.');
+
+      // 1. Objectives (Part 1 - Profile Tab)
+      tableData.objectives = [
+        'توفير تعليم متميز ذو جودة عالية للطلبة.',
+        'تطوير البحث العلمي والشراكات المجتمعية بالقسم.',
+        'تأهيل الخريجين لسوق العمل بمهارات ريادية ومهنية.'
+      ];
+      saveObjectives();
+      _renderObjectives();
+
+      // 2. Part 1 - Tables and Data (Graduates, Research, Facilities, Proposals)
+      // Graduates Table
+      const gradYears = ['last_year', 'prev_year', 'two_years_ago'];
+      const gradGrades = ['excellent', 'very_good', 'good', 'pass', 'fail'];
+      const yearLabels = { last_year: '2024/2023', prev_year: '2023/2022', two_years_ago: '2022/2021' };
+      gradYears.forEach(rowKey => {
+        const yearInput = document.querySelector(`[data-row-group="${rowKey}"] input[type="text"]`);
+        if (yearInput) yearInput.value = yearLabels[rowKey];
+        saveField('tables', `ft_graduates_${rowKey}_year_display`, yearLabels[rowKey]);
+        
+        const rowEl = document.querySelector(`[data-row-group="${rowKey}"]`);
+        if (rowEl) {
+          const inputs = rowEl.querySelectorAll('input[type="number"]');
+          gradGrades.forEach((grade, gi) => {
+            const fakeVal = 10 + gi * 5 + Math.floor(Math.random() * 5);
+            if (inputs[gi]) inputs[gi].value = fakeVal;
+            updateFixedTable('graduates', rowKey, grade, fakeVal);
+          });
+        }
+      });
+
+      // Research Table
+      const researchKeys = ['intl_journals_indexed','arabic_journals_reviewed','local_journals_reviewed',
+        'faculty_publications','faculty_textbooks','faculty_translated_books',
+        'master_theses_discussed','phd_dissertations_discussed','conferences_workshops_organized'];
+      researchKeys.forEach((key, i) => {
+        const input = document.querySelector(`#research-table tr:nth-child(${i + 1}) input`);
+        const fakeVal = 3 + i * 2 + Math.floor(Math.random() * 3);
+        if (input) input.value = fakeVal;
+        saveField('tables', `res_${key}_count`, fakeVal);
+        tableData.research[`${key}_count`] = fakeVal;
+      });
+
+      // Facilities Table
+      const facilityKeys = ['classrooms','spec_labs','comp_labs','library','admin_offices','student_lounges','sports','others'];
+      const facilityFields = ['count','area','students','hours'];
+      facilityKeys.forEach((fKey, ri) => {
+        facilityFields.forEach((field, fi) => {
+          const input = document.querySelector(`#facilities-table tr:nth-child(${ri + 1}) td:nth-child(${fi + 2}) input`);
+          const fakeVal = field === 'area' ? 100 + ri * 20 : (field === 'students' ? 30 + ri * 5 : 5 + ri);
+          if (input) input.value = fakeVal;
+          saveField('tables', `fac_${fKey}_${field}`, fakeVal);
+          if (!tableData.facilities[fKey]) tableData.facilities[fKey] = {};
+          tableData.facilities[fKey][field] = fakeVal;
+        });
+      });
+
+      // Executive Proposals Table
+      tableData.proposals = [
+        { id: 1, recommendation: 'تطوير وتحديث تجهيزات المختبرات التعليمية بالقسم وتوفير تراخيص برامج حديثة.', responsible: 'مجلس القسم وعمادة الكلية', timeline: '2025-09-01', resources: 'ميزانية الكلية السنوية ودعم وكالة الجامعة' },
+        { id: 2, recommendation: 'زيادة برامج التدريب التعاوني وعقد اتفاقيات شراكة مع 3 جهات صناعية رائدة.', responsible: 'لجنة التدريب ولجنة الخريجين', timeline: '2025-10-15', resources: 'مكتب الخريجين وشركات القطاع الخاص' }
+      ];
+      const proposalsTbody = document.getElementById('proposals-table');
+      if (proposalsTbody) {
+        proposalsTbody.innerHTML = '';
+        tableData.proposals.forEach(proposal => {
+          const row = document.createElement('tr');
+          row.className = 'border-b border-slate-200 dark:border-slate-700';
+          row.id = `proposal-row-${proposal.id}`;
+          row.innerHTML = `
+            <td class="py-3 px-4"><textarea placeholder="التوصية" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm resize-none overflow-hidden" rows="1">${proposal.recommendation}</textarea></td>
+            <td class="py-3 px-4"><textarea placeholder="المسؤول" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm resize-none overflow-hidden" rows="1">${proposal.responsible}</textarea></td>
+            <td class="py-3 px-4"><input type="date" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm" value="${proposal.timeline}"></td>
+            <td class="py-3 px-4"><textarea placeholder="الموارد" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm resize-none overflow-hidden" rows="1">${proposal.resources}</textarea></td>
+            <td class="py-3 px-4 text-center">
+              <button onclick="removeTableRow('proposals', ${proposal.id})" class="text-red-600 dark:text-red-400 hover:text-red-300">
+                <i class="fas fa-trash-alt"></i>
+              </button>
+            </td>
+          `;
+          proposalsTbody.appendChild(row);
+        });
+      }
+
+      // 3. Part 2: Indicator Evaluations & Comments
+      // Indicator Ratings
       const indicatorRows = document.querySelectorAll('.indicator-row[data-indicator-id]');
       indicatorRows.forEach(row => {
         const indicatorId = parseInt(row.dataset.indicatorId);
         const standardContent = row.closest('.std-content');
         if (!standardContent) return;
-        
-        // Extract standard ID from standard-XX-tab-content
         const standardId = parseInt(standardContent.id.split('-')[1]);
         
-        // Random rating 0-5 (0 = Non-compliant)
-        // We'll give '0' a 35% chance to appear to make it more noticeable
-        let randomRating;
+        // Random rating 3-5 (high realistic scores)
+        let rating = 4;
         const rand = Math.random();
-        if (rand < 0.35) {
-          randomRating = 0;
-        } else {
-          randomRating = Math.floor(Math.random() * 5) + 1; // 1 to 5
-        }
-        
-        // Directly set score and call update if already has same rating to avoid "toggle off"
-        if (scores[indicatorId] === randomRating) {
-          // Already set to this rating, but we re-trigger to be safe
-          scores[indicatorId] = randomRating; 
-        } else {
-          setRatingById(indicatorId, standardId, randomRating);
-        }
+        if (rand < 0.1) rating = 3;
+        else if (rand < 0.5) rating = 4;
+        else rating = 5;
+
+        scores[indicatorId] = rating;
+
+        // Visual update
+        row.querySelectorAll('.rating-btn').forEach(btn => {
+          const btnRating = parseInt(btn.dataset.rating);
+          if (btnRating === rating) {
+            btn.style.backgroundColor = getRatingColor(rating);
+            btn.style.borderColor = getRatingColor(rating);
+            btn.style.color = '#fff';
+            btn.style.transform = 'scale(1.05)';
+          } else {
+            btn.style.backgroundColor = '';
+            btn.style.borderColor = '';
+            btn.style.color = '';
+            btn.style.transform = '';
+          }
+        });
       });
-      
-      // Force recalculation for all standards to ensure totals are correct
+
+      // Recalculate scores for all standards
       document.querySelectorAll('.std-content').forEach(std => {
           const stdId = parseInt(std.id.split('-')[1]);
           if (!isNaN(stdId)) updateStandardScoreById(stdId);
       });
-      
-      showToast('تم ملء جميع الدرجات بشكل عشوائي بنجاح (مع زيادة فرصة غير متطابق)', 'success');
+
+      // Comments for Main Standards
+      document.querySelectorAll('[id^="std-"][id$="-strengths-list"]').forEach(el => {
+        const parts = el.id.split('-');
+        const stdId = parseInt(parts[1]);
+        if (!isNaN(stdId)) {
+          standardComments[stdId] = {
+            strengths: ['وجود خطة استراتيجية واضحة وموثقة للبرنامج.', 'التزام أعضاء هيئة التدريس بتطبيق المعايير الأكاديمية والمهنية.'],
+            improvements: ['الحاجة لزيادة الميزانية المخصصة لدعم مشاريع التخرج للطلبة.', 'تحديث وتطوير مصادر التعلم الإلكترونية بالمكتبة.'],
+            priorities: ['شراء أجهزة معملية متقدمة تدعم التطبيقات العملية لعلوم الحاسب.']
+          };
+          ['strengths','improvements','priorities'].forEach(field => {
+            renderCommentPoints(stdId, field);
+            saveStandardComment(stdId, field, JSON.stringify(standardComments[stdId][field]));
+          });
+        }
+      });
+
+      // 4. Part 3: Evaluations and Results
+      section3Data.evaluations.evaluation_procedures = [
+        'مراجعة التقارير الدورية للمقررات الدراسية واستطلاعات آراء الطلبة عنها.',
+        'استطلاع آراء جهات التوظيف والخريجين سنوياً لمعرفة مدى مواءمة المخرجات.',
+        'إجراء مقارنة مرجعية مع برامج مماثلة في جامعات وطنية رائدة.'
+      ];
+      section3Data.evaluations.evaluator_recommendations = [
+        'تكثيف التدريب العملي الميداني للطلبة وربطه بقطاع الأعمال.',
+        'تطوير وتوسيع مصادر التعلم الإلكترونية والكتب الحديثة بالمكتبة.'
+      ];
+      section3Data.evaluations.actions_taken = [
+        'توقيع اتفاقيات تدريب تعاوني مع 5 شركات وطنية رائدة.',
+        'الاشتراك في قواعد بيانات رقمية إضافية وتوفير كتب حديثة بالتخصص.'
+      ];
+      section3Data.results.success_aspects = [
+        'تحقيق الخريجين لنسبة توظيف مرتفعة في مجالات تخصصهم.',
+        'زيادة الإنتاج البحثي العلمي لأعضاء هيئة التدريس بالقسم.'
+      ];
+      section3Data.results.priority_improvements = [
+        'تجهيز قاعات تدريب إضافية للطلبة مزودة بشاشات ذكية.',
+        'إنشاء بنية تحتية متميزة للتعلم الذاتي والمستمر بالقسم.'
+      ];
+
+      ['evaluation_procedures', 'evaluator_recommendations', 'actions_taken'].forEach(field => {
+        renderSection3Points('evaluations', field);
+        saveSection3Field('evaluations', field);
+      });
+      ['success_aspects', 'priority_improvements'].forEach(field => {
+        renderSection3Points('results', field);
+        saveSection3Field('results', field);
+      });
+
+      hasChanges = true;
+      showToast('تم تعبئة كامل نموذج الدراسة الذاتية بكافة أجزائه ببيانات افتراضية متميزة!', 'success');
     }
 
     function updateStandardScoreById(standardId) {
