@@ -13,7 +13,21 @@ class DashboardController extends Controller
      */
     public function index()
     {
-        return view('program_coordinator.dashboard');
+        $user = Auth::user();
+
+        $requests = AccreditationRequest::where('program_coord_id', $user->id)
+            ->with(['program.department.college.university'])
+            ->get();
+
+        $stats = [
+            'total_count' => $requests->count(),
+            'active_count' => $requests->whereNotIn('current_stage', ['stage_nine'])->count(),
+            'completed_count' => $requests->where('current_stage', 'stage_nine')->count(),
+        ];
+
+        $latestRequests = $requests->sortByDesc('updated_at')->take(5);
+
+        return view('program_coordinator.dashboard', compact('stats', 'requests', 'latestRequests'));
     }
 
     /**
