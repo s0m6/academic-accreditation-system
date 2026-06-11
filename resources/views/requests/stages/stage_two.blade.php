@@ -64,7 +64,8 @@
         const data = sub.form_data || {};
         const missing = [];
 
-        // 1. Decisions
+        // 1. Decisions (Bypassed per request)
+        /*
         const decisionsList = {
             1: 'قرار إنشاء البرنامج',
             2: 'قرار الطاقة الاستيعابية',
@@ -85,6 +86,7 @@
             if (!d || !d.date || d.date.toString().trim() === '') missing.push({ cat: 'القرارات', field: `تاريخ القرار (${label})` });
             if (!decisionFiles[i]) missing.push({ cat: 'القرارات', field: `المرفق PDF (${label})` });
         }
+        */
 
         // 2. Student Statistics
         const studentSections = {
@@ -110,8 +112,8 @@
                     const row = section[rKey] || {};
                     ['past', 'current', 'next'].forEach(pKey => {
                         const val = row[pKey];
-                        // In stats, if it's undefined, null, empty string, or 0 (often means not filled), we flag it
-                        if (val === undefined || val === null || val === '' || val === 0) {
+                        // In stats, if it's undefined, null, or empty string (often means not filled), we flag it (0 is acceptable)
+                        if (val === undefined || val === null || val === '') {
                              missing.push({ cat: 'إحصائيات الطلاب', field: `${sLabel} - ${rowLabels[rKey]} (${periodLabels[pKey]})` });
                         }
                     });
@@ -132,7 +134,7 @@
                 const rankData = data.faculty_stats[rKey] || {};
                 Object.entries(facultyCols).forEach(([cKey, cLabel]) => {
                     const val = rankData[cKey];
-                    if (val === undefined || val === null || val === '' || val === 0) {
+                    if (val === undefined || val === null || val === '') {
                         missing.push({ cat: 'إحصائيات الهيئة التدريسية', field: `${rLabel} - ${cLabel}` });
                     }
                 });

@@ -43,7 +43,7 @@
                 <div @click="open = !open" class="flex items-center gap-3 ps-2 cursor-pointer group select-none">
                     <img alt="User Avatar"
                         class="w-10 h-10 rounded-full border border-(--border-primary) group-hover:ring-2 group-hover:ring-brand-500 transition-all object-cover hidden md:block"
-                        src="{{ asset('images/avatar.jpg') }}" />
+                        src="{{ asset('images/avatar.svg') }}" />
                     
                     <div class="flex items-center gap-2">
                         <div class="text-start hidden md:block">

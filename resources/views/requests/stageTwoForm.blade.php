@@ -476,6 +476,10 @@
             <div class="px-6 py-5 bg-(--bg-main) border-t border-(--border-primary) flex flex-col items-center gap-4"
                 data-action-area>
                 <div class="flex items-center gap-3 flex-wrap justify-center">
+                    <button type="button" @click="autoFillForm()"
+                        class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold transition-all cursor-pointer">
+                        <i class="fa-solid fa-magic"></i> تعبئة تلقائية
+                    </button>
                     <button type="button" @click="submitFormData()"
                         class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold shadow-brand transition-all cursor-pointer">
                         <i class="fa-solid fa-floppy-disk"></i> حفظ التغييرات
@@ -699,7 +703,7 @@
                             const row = inp.dataset.row;
                             const period = inp.dataset.period;
                             if (!studentStats[section][row]) studentStats[section][row] = {};
-                            studentStats[section][row][period] = Number(inp.value) || 0;
+                            studentStats[section][row][period] = inp.value === '' ? null : Number(inp.value);
                         });
                     });
 
@@ -711,7 +715,7 @@
                         ['male', 'female', 'load', 'parttime'].forEach(col => {
                             const inp = document.querySelector(
                                 `[data-faculty="${rank}"][data-col="${col}"]`);
-                            facultyStats[rank][col] = inp ? Number(inp.value) || 0 : 0;
+                            facultyStats[rank][col] = inp ? (inp.value === '' ? null : Number(inp.value)) : null;
                         });
                     });
 
@@ -854,6 +858,76 @@
                     showNotification('تم تفريغ النموذج', 'success');
                 },
 
+                // Auto fill form with fake data matching the context
+                autoFillForm() {
+                    // 1. Decisions
+                    for (let i = 1; i <= 8; i++) {
+                        const num = document.querySelector(`[data-decision="${i}"][data-field="number"]`);
+                        const auth = document.querySelector(`[data-decision="${i}"][data-field="authority"]`);
+                        const date = document.querySelector(`[data-decision="${i}"][data-field="date"]`);
+                        if (num) num.value = i + '45/' + String.fromCharCode(65 + i);
+                        if (auth) auth.value = i % 2 === 0 ? 'مجلس الجامعة' : 'مجلس الكلية';
+                        if (date) date.value = '2025-02-' + String(i).padStart(2, '0');
+                    }
+
+                    // 2. Student stats
+                    const studentSections = ['planned', 'total', 'average', 'graduates_higher_ed', 'graduates_employed'];
+                    studentSections.forEach(section => {
+                        document.querySelectorAll(`[data-student="${section}"]`).forEach((inp, idx) => {
+                            inp.value = String(10 + (idx % 5) * 5 + Math.floor(Math.random() * 5));
+                        });
+                        this.calculateStudentTotal(section);
+                    });
+
+                    // 3. Faculty stats
+                    const ranks = ['professor', 'associate', 'assistant', 'lecturer', 'teaching_assistant'];
+                    ranks.forEach((rank, rIdx) => {
+                        ['male', 'female', 'load', 'parttime'].forEach((col, cIdx) => {
+                            const inp = document.querySelector(`[data-faculty="${rank}"][data-col="${col}"]`);
+                            if (inp) {
+                                if (col === 'load') {
+                                    inp.value = String(12 + rIdx * 2);
+                                } else if (col === 'parttime') {
+                                    inp.value = String(rIdx % 2);
+                                } else {
+                                    inp.value = String(2 + rIdx + cIdx);
+                                }
+                            }
+                        });
+                    });
+                    this.calculateFacultyTotals();
+
+                    // 4. Faculty members
+                    const tbody = document.getElementById('staffTableBody');
+                    tbody.innerHTML = '';
+                    const mockStaff = [
+                        { name: 'أ.د. محمد بن أحمد الغامدي', degree: 'prof', major: 'علوم الحاسب', minor: 'ذكاء اصطناعي', country: 'الولايات المتحدة', year: '1435' },
+                        { name: 'د. خالد بن عبدالله الحربي', degree: 'assoc', major: 'علوم الحاسب', minor: 'هندسة برمجيات', country: 'المملكة المتحدة', year: '1438' },
+                        { name: 'د. هند بنت محمد العتيبي', degree: 'assist', major: 'نظم المعلومات', minor: 'أمن سيبراني', country: 'كندا', year: '1442' }
+                    ];
+                    mockStaff.forEach((m, idx) => {
+                        const id = idx + 1;
+                        const tr = document.createElement('tr');
+                        tr.dataset.staffId = id;
+                        tr.className = 'hover:bg-(--bg-main)/50 transition-colors';
+                        tr.innerHTML = buildStaffRowHTML(id, m);
+                        tbody.appendChild(tr);
+                    });
+
+                    // 5. Notes
+                    ['decisions', 'students', 'faculty'].forEach(group => {
+                        const container = document.getElementById(group + 'NotesContainer');
+                        if (container) {
+                            container.innerHTML = '';
+                            container.appendChild(buildNoteRowElement(group, 1, 'تمت مراجعة وتدقيق كافة البيانات الواردة في هذا القسم ومطابقتها للمحاضر الرسمية.'));
+                            updateNoteNumbers(group + 'NotesContainer');
+                        }
+                    });
+
+                    this.markChanged();
+                    showNotification('تم تعبئة جميع الحقول ببيانات وهمية متطابقة مع السياق!', 'success');
+                },
+
                 // Load data from server
                 loadFromServer() {
                     const saved = {!! isset($formSubmission->form_data) && $formSubmission->form_data
@@ -884,7 +958,7 @@
                                         const inp = document.querySelector(
                                             `[data-student="${section}"][data-row="${row}"][data-period="${period}"]`
                                             );
-                                        if (inp) inp.value = value || '';
+                                        if (inp) inp.value = (value !== null && value !== undefined) ? value : '';
                                     });
                                 });
                                 this.calculateStudentTotal(section);
@@ -897,7 +971,7 @@
                                 Object.entries(cols).forEach(([col, value]) => {
                                     const inp = document.querySelector(
                                         `[data-faculty="${rank}"][data-col="${col}"]`);
-                                    if (inp) inp.value = value || '';
+                                    if (inp) inp.value = (value !== null && value !== undefined) ? value : '';
                                 });
                             });
                             this.calculateFacultyTotals();
