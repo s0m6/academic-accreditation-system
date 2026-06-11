@@ -527,7 +527,7 @@
             </div>
             <!-- Items list -->
             <div id="positives-list">
-              <div class="flex items-center gap-2 p-2 md:p-3 border-b border-(--border-subtle) dark:border-(--border-primary)">
+              <div class="results-item flex items-center gap-2 p-2 md:p-3 border-b border-(--border-subtle) dark:border-(--border-primary)">
                 <span class="w-7 h-7 shrink-0 rounded-full flex items-center justify-center text-sm font-bold bg-(--border-subtle) dark:bg-slate-800 text-(--text-secondary) positive-num">1</span>
                 <input type="text" class="tbl-input flex-1" placeholder="أدخل ملاحظة إيجابية...">
                 <button class="w-8 h-8 shrink-0 rounded-lg flex items-center justify-center text-sm bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-600 hover:text-white transition-transform hover:scale-105 btn-del" onclick="deleteResultItem(this, 'positives-list', 'positive-num')" title="حذف">
@@ -550,7 +550,7 @@
             </div>
             <!-- Items list -->
             <div id="negatives-list">
-              <div class="flex items-center gap-2 p-2 md:p-3 border-b border-(--border-subtle) dark:border-(--border-primary)">
+              <div class="results-item flex items-center gap-2 p-2 md:p-3 border-b border-(--border-subtle) dark:border-(--border-primary)">
                 <span class="w-7 h-7 shrink-0 rounded-full flex items-center justify-center text-sm font-bold bg-(--border-subtle) dark:bg-slate-800 text-(--text-secondary) negative-num">1</span>
                 <input type="text" class="tbl-input flex-1" placeholder="أدخل ملاحظة سلبية...">
                 <button class="w-8 h-8 shrink-0 rounded-lg flex items-center justify-center text-sm bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-600 hover:text-white transition-transform hover:scale-105 btn-del" onclick="deleteResultItem(this, 'negatives-list', 'negative-num')" title="حذف">
@@ -682,7 +682,7 @@
               ملاحظات إيجابية
             </div>
             <div id="docs-positives-list">
-              <div class="flex items-center gap-2 p-2 md:p-3 border-b border-(--border-subtle) dark:border-(--border-primary)">
+              <div class="results-item flex items-center gap-2 p-2 md:p-3 border-b border-(--border-subtle) dark:border-(--border-primary)">
                 <span class="w-7 h-7 shrink-0 rounded-full flex items-center justify-center text-sm font-bold bg-(--border-subtle) dark:bg-slate-800 text-(--text-secondary) docs-positive-num">1</span>
                 <input type="text" class="tbl-input flex-1" placeholder="أدخل ملاحظة إيجابية...">
                 <button class="w-8 h-8 shrink-0 rounded-lg flex items-center justify-center text-sm bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-600 hover:text-white transition-transform hover:scale-105 btn-del" onclick="deleteResultItem(this, 'docs-positives-list', 'docs-positive-num')" title="حذف">
@@ -703,7 +703,7 @@
               ملاحظات سلبية
             </div>
             <div id="docs-negatives-list">
-              <div class="flex items-center gap-2 p-2 md:p-3 border-b border-(--border-subtle) dark:border-(--border-primary)">
+              <div class="results-item flex items-center gap-2 p-2 md:p-3 border-b border-(--border-subtle) dark:border-(--border-primary)">
                 <span class="w-7 h-7 shrink-0 rounded-full flex items-center justify-center text-sm font-bold bg-(--border-subtle) dark:bg-slate-800 text-(--text-secondary) docs-negative-num">1</span>
                 <input type="text" class="tbl-input flex-1" placeholder="أدخل ملاحظة سلبية...">
                 <button class="w-8 h-8 shrink-0 rounded-lg flex items-center justify-center text-sm bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-600 hover:text-white transition-transform hover:scale-105 btn-del" onclick="deleteResultItem(this, 'docs-negatives-list', 'docs-negative-num')" title="حذف">

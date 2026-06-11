@@ -148,9 +148,9 @@
                                                 </div>
                                                 <div class="flex-1 min-w-0">
                                                     <p class="text-sm font-bold text-(--text-primary) truncate">{{ $contactProgramCoord->name }}</p>
-                                                    <a href="mailto:{{ $contactProgramCoord->email }}" class="text-xs text-brand-500 hover:text-brand-600 transition-colors truncate block">
+                                                    <p  class="text-xs text-brand-500 hover:text-brand-600 transition-colors truncate block">
                                                         {{ $contactProgramCoord->email }}
-                                                    </a>
+                                                    </p>
                                                 </div>
                                             </div>
                                         @else
@@ -173,9 +173,9 @@
                                                 </div>
                                                 <div class="flex-1 min-w-0">
                                                     <p class="text-sm font-bold text-(--text-primary) truncate">{{ $contactCouncilCoord->name }}</p>
-                                                    <a href="mailto:{{ $contactCouncilCoord->email }}" class="text-xs text-brand-500 hover:text-brand-600 transition-colors truncate block">
+                                                    <p class="text-xs text-brand-500 hover:text-brand-600 transition-colors truncate block">
                                                         {{ $contactCouncilCoord->email }}
-                                                    </a>
+                                                    </p>
                                                 </div>
                                             </div>
                                         @else
@@ -215,9 +215,9 @@
                                                                     </span>
                                                                 @endif
                                                             </div>
-                                                            <a href="mailto:{{ $evalUser->email }}" class="text-xs text-brand-500 hover:text-brand-600 transition-colors truncate block">
+                                                            <p  class="text-xs text-brand-500 hover:text-brand-600 transition-colors truncate block">
                                                                 {{ $evalUser->email }}
-                                                            </a>
+                                                            </p>
                                                         </div>
                                                     </div>
                                                 @endif
