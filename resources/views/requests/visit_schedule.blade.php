@@ -125,7 +125,7 @@
             <div class="px-5 pt-5 pb-0">
                 <div class="flex gap-2 p-1.5 rounded-xl" style="background:var(--bg-main);">
                     <template x-for="(day, i) in days" :key="i">
-                        <button type="button" @click="activeDay = i"
+                        <button type="button" @click="switchDay(i)"
                             :class="activeDay === i ? 'tab-active' : ''"
                             class="flex-1 py-2.5 px-3 rounded-lg font-bold text-sm transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
                             :style="activeDay !== i ? 'color:var(--text-secondary);' : ''">
@@ -305,6 +305,30 @@
                             } else {
                                 row.start_time = row.time || '';
                                 row.end_time = '';
+                            }
+                        });
+                    });
+                },
+                switchDay(idx) {
+                    this.activeDay = idx;
+                    this.$nextTick(() => {
+                        const day = this.days[idx];
+                        if (!day) return;
+                        // Find all textareas in the newly active tab and recalculate their heights
+                        const tabs = this.$el.querySelectorAll('[x-show]');
+                        tabs.forEach(tab => {
+                            if (tab.offsetParent !== null || tab.style.display !== 'none') {
+                                tab.querySelectorAll('textarea').forEach(ta => {
+                                    ta.style.height = 'auto';
+                                    ta.style.height = ta.scrollHeight + 'px';
+                                });
+                            }
+                        });
+                        // Broader fallback: recalc all visible textareas on page
+                        document.querySelectorAll('textarea').forEach(ta => {
+                            if (ta.offsetParent !== null) {
+                                ta.style.height = 'auto';
+                                ta.style.height = ta.scrollHeight + 'px';
                             }
                         });
                     });
