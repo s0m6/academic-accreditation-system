@@ -101,12 +101,17 @@
                                 <span class="icon-[material-symbols--shield-person] text-[22px]"></span>
                             </div>
                             <input :type="show ? 'text' : 'password'" id="password" name="password" required autocomplete="current-password" 
-                                class="block w-full pr-12 py-3.5 bg-md-surface-container-low dark:bg-slate-800/50 border-2 border-transparent rounded-xl text-md-on-surface dark:text-slate-100 placeholder:text-md-outline/60 focus:ring-0 focus:border-md-primary/20 dark:focus:border-md-tertiary/30 focus:bg-white dark:focus:bg-slate-800 transition-all font-body text-sm" 
+                                class="block w-full pr-12 pl-16 py-3.5 bg-md-surface-container-low dark:bg-slate-800/50 border-2 border-transparent rounded-xl text-md-on-surface dark:text-slate-100 placeholder:text-md-outline/60 focus:ring-0 focus:border-md-primary/20 dark:focus:border-md-tertiary/30 focus:bg-white dark:focus:bg-slate-800 transition-all font-body text-sm" 
                                 placeholder="••••••••"/>
-                            <button class="absolute inset-y-0 left-0 flex items-center pl-4 text-md-outline hover:text-md-primary dark:hover:text-md-tertiary-fixed-dim transition-colors" type="button" @click="show = !show">
-                                <span class="icon-[material-symbols--visibility-off-outline]" x-show="!show"></span>
-                                <span class="icon-[material-symbols--visibility-outline]" x-show="show"></span>
-                            </button>
+                            <div class="absolute inset-y-0 left-0 flex items-center pl-3 gap-2">
+                                <button class="w-6 h-6 rounded-full bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center transition-colors border border-amber-500/20" type="button" onclick="document.getElementById('password').value = '123456789'" title="تعبئة كلمة المرور الافتراضية">
+                                    <span class="icon-[material-symbols--key] text-xs"></span>
+                                </button>
+                                <button class="text-md-outline hover:text-md-primary dark:hover:text-md-tertiary-fixed-dim transition-colors" type="button" @click="show = !show">
+                                    <span class="icon-[material-symbols--visibility-off-outline]" x-show="!show"></span>
+                                    <span class="icon-[material-symbols--visibility-outline]" x-show="show"></span>
+                                </button>
+                            </div>
                         </div>
                         @if ($errors->get('password'))
                             <p class="text-xs text-red-600 dark:text-red-400 mt-1 mr-1">
