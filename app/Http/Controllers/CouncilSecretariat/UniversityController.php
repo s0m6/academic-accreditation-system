@@ -110,4 +110,37 @@ class UniversityController extends Controller
             return back()->with('error', 'حدث خطأ أثناء إضافة الجامعة. يرجى المحاولة مرة أخرى.');
         }
     }
+
+    public function update(Request $request, University $university)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255|unique:universities,name,'.$university->id,
+            'type' => 'required|in:government,private',
+            'president_name' => 'nullable|string|max:255',
+            'president_email' => 'nullable|email|max:255',
+            'president_mobile' => 'nullable|string|max:20',
+            'president_phone' => 'nullable|string|max:20',
+        ], [
+            'name.required' => 'اسم الجامعة مطلوب.',
+            'name.unique' => 'اسم الجامعة هذا مسجل بالفعل.',
+            'type.required' => 'نوع الجامعة مطلوب.',
+            'type.in' => 'نوع الجامعة غير صالح.',
+            'president_email.email' => 'البريد الإلكتروني لرئيس الجامعة غير صحيح.',
+        ]);
+
+        try {
+            $university->update([
+                'name' => $request->name,
+                'type' => $request->type,
+                'president_name' => $request->president_name,
+                'president_email' => $request->president_email,
+                'president_mobile' => $request->president_mobile,
+                'president_phone' => $request->president_phone,
+            ]);
+
+            return back()->with('success', 'تم تحديث بيانات الجامعة بنجاح.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'حدث خطأ أثناء تحديث بيانات الجامعة. يرجى المحاولة مرة أخرى.');
+        }
+    }
 }
