@@ -144,7 +144,7 @@
         }
     }
 }">
-
+ 
     {{-- Alerts --}}
     @if(session('success'))
         <div class="mb-6 text-green-700 bg-green-50 p-4 rounded-xl flex items-center shadow-sm border border-green-200 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/20">
