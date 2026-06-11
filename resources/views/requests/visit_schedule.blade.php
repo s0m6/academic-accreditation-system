@@ -81,6 +81,13 @@
                     <i :class="darkMode ? 'fa-solid fa-sun' : 'fa-solid fa-moon'" class="text-sm"></i>
                 </button>
 
+                {{-- Autofill --}}
+                <button type="button" @click="autoFill()"
+                    class="bg-amber-500 hover:bg-amber-600 text-white px-5 py-2 rounded-xl font-bold text-sm flex items-center gap-2 cursor-pointer transition shadow-sm">
+                    <i class="fa-solid fa-magic"></i>
+                    <span>تعبئة تلقائية</span>
+                </button>
+
                 {{-- Save --}}
                 <button type="button" @click="saveSchedule()" :disabled="isSaving"
                     class="btn-gradient text-white px-5 py-2 rounded-xl font-bold text-sm flex items-center gap-2 cursor-pointer disabled:opacity-70">
@@ -335,6 +342,47 @@
                 showToast(message, type = 'success') {
                     this.toast = { show: true, message, type };
                     setTimeout(() => this.toast.show = false, 3000);
+                },
+                autoFill() {
+                    if (this.readonly) return;
+                    if (!confirm('هل ترغب في تعبئة جدول الزيارة الميدانية ببيانات تلقائية واقعية؟')) return;
+                    
+                    // Generate dates: Day 1 = tomorrow, Day 2 = after tomorrow, Day 3 = 3 days from now
+                    const getFormattedDate = (daysFromNow) => {
+                        const date = new Date();
+                        date.setDate(date.getDate() + daysFromNow);
+                        return date.toISOString().split('T')[0];
+                    };
+                    
+                    this.days[0].date = getFormattedDate(1);
+                    this.days[1].date = getFormattedDate(2);
+                    this.days[2].date = getFormattedDate(3);
+                    
+                    // Day 1 Mock Activities (4 activities)
+                    this.days[0].rows = [
+                        { time: '08:30 - 09:30', start_time: '08:30', end_time: '09:30', task: 'اللقاء الافتتاحي مع رئيس الجامعة والعمداء للتعريف بالزيارة الميدانية وأهدافها.', notes: 'قاعة مجلس الجامعة' },
+                        { time: '09:45 - 11:30', start_time: '09:45', end_time: '11:30', task: 'لقاء مع قيادات الكلية ورئيس القسم وأعضاء لجنة الجودة والاعتماد لمراجعة استراتيجية البرنامج.', notes: 'مجلس الكلية' },
+                        { time: '11:45 - 13:00', start_time: '11:45', end_time: '13:00', task: 'جولة تفقدية لمرافق البرنامج الأكاديمي تشمل القاعات الدراسية، المختبرات التعليمية والمكتبة.', notes: 'مرافق البرنامج' },
+                        { time: '13:30 - 15:00', start_time: '13:30', end_time: '15:00', task: 'لقاء مع أعضاء هيئة التدريس والهيئة المعاونة بالبرنامج لمناقشة طرق التدريس والأنشطة البحثية.', notes: 'القاعة الكبرى' }
+                    ];
+                    
+                    // Day 2 Mock Activities (4 activities)
+                    this.days[1].rows = [
+                        { time: '08:30 - 10:00', start_time: '08:30', end_time: '10:00', task: 'مقابلات شخصية مع عينة من طلبة البرنامج الحاليين بمختلف المستويات الدراسية لاستقصاء آرائهم.', notes: 'مكتب الجودة بالكلية' },
+                        { time: '10:15 - 12:00', start_time: '10:15', end_time: '12:00', task: 'لقاء مع خريجي البرنامج وممثلي جهات التوظيف وشركاء التدريب الميداني لمناقشة مخرجات التعلم.', notes: 'قاعة الاجتماعات الرئيسية' },
+                        { time: '12:15 - 13:30', start_time: '12:15', end_time: '13:30', task: 'فحص الوثائق والسجلات الأساسية، ملفات المقررات الدراسية، ونماذج من اختبارات وأعمال الطلبة.', notes: 'غرفة لجنة الاعتماد بالقسم' },
+                        { time: '14:00 - 15:00', start_time: '14:00', end_time: '15:00', task: 'ملاحظة المحاضرات وحضور جلسات تدريسية مباشرة بالفصول والوقوف على أساليب التقويم المستمر.', notes: 'القاعات الدراسية والورش' }
+                    ];
+                    
+                    // Day 3 Mock Activities (4 activities)
+                    this.days[2].rows = [
+                        { time: '08:30 - 10:30', start_time: '08:30', end_time: '10:30', task: 'استكمال فحص الوثائق والأدلة والتحقق من المؤشرات والمقاييس المرجعية الخاصة بالبرنامج.', notes: 'غرفة لجنة الاعتماد بالقسم' },
+                        { time: '10:45 - 12:00', start_time: '10:45', end_time: '12:00', task: 'الاجتماع المغلق لأعضاء اللجنة لإعداد مسودة تقرير الزيارة الميدانية وتلخيص أهم الملاحظات.', notes: 'غرفة اجتماع المقيمين' },
+                        { time: '12:15 - 13:30', start_time: '12:15', end_time: '13:30', task: 'اللقاء الختامي لعرض التقرير الشفهي الأولي والتوصيات العامة لقيادة الكلية والجامعة.', notes: 'قاعة مجلس الكلية' },
+                        { time: '14:00 - 14:30', start_time: '14:00', end_time: '14:30', task: 'توقيع المحاضر الرسمية للزيارة الميدانية وتسليم مسودة التقرير الأولية لعميد الكلية.', notes: 'مكتب عميد الكلية' }
+                    ];
+                    
+                    this.showToast('تم تعبئة جدول الزيارة لجميع الأيام الثلاثة ببيانات نموذجية واقعية!', 'success');
                 },
             };
         }

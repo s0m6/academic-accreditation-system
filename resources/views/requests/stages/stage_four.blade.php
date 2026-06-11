@@ -316,7 +316,7 @@
                                        class="font-bold text-(--text-primary) truncate hover:text-indigo-600 dark:hover:text-indigo-400 hover:underline transition-colors block">
                                         {{ $member->evaluator->user->name }}
                                     </a>
-                                    <p class="text-xs text-(--text-secondary) truncate">{{ $member->evaluator->academic_rank }}</p>
+                                    <p class="text-xs text-(--text-secondary) truncate">{{ $member->evaluator->user->email }}</p>
                                 </div>
                             </div>
 

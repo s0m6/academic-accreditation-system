@@ -326,6 +326,10 @@
                     يمكنك الحفظ المؤقت والعودة لاحقاً لإكمال الرد. يجب الرد على جميع المعايير قبل إرسال النموذج.
                 </div>
                 <div class="flex items-center gap-3 shrink-0">
+                    <button type="button" @click="autoFillResponses()"
+                        class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold transition shadow-md shadow-amber-500/20 cursor-pointer">
+                        <i class="fa-solid fa-magic"></i> تعبئة تلقائية
+                    </button>
                     <button @click="clearAllDecisions()"
                         class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-bold transition border border-gray-200">
                         <i class="fa-solid fa-rotate-left"></i> مسح الردود
@@ -388,6 +392,32 @@
                         s.decision = null;
                         s.rejection_points = [''];
                     }));
+                },
+
+                autoFillResponses() {
+                    if (!confirm('هل ترغب في تعبئة كافة التوصيات بردود افتراضية؟')) return;
+                    
+                    const rejectReasons = [
+                        "توصية غير قابلة للتطبيق نظراً لمحدودية المساحة المتاحة بمباني الكلية حالياً وجاري التنسيق مع الإدارة الهندسية لبناء مرافق مخصصة بالخطة القادمة.",
+                        "البرنامج يقوم بالفعل بتنفيذ هذا المطلب من خلال نظام متابعة الخريجين وتحديث المقررات دورياً، وبالتالي فإن هذه التوصية مستوفاة بالفعل ولا حاجة لإجراء إضافي.",
+                        "تحتاج هذه التوصية إلى دعم مالي واعتمادات موازنة إضافية من خارج ميزانية الكلية السنوية، وسنعمل على برمجتها في خطة العام القادم فور موافقة الجامعة."
+                    ];
+                    
+                    this.criteriaData.forEach(m => {
+                        m.subs.forEach((s, idx) => {
+                            // Mostly approved, but if (idx + s.sub_id) is divisible by 3, mark as rejected with a fake reason
+                            if ((idx + s.sub_id) % 3 === 0) {
+                                s.decision = 'rejected';
+                                const reason = rejectReasons[Math.floor(Math.random() * rejectReasons.length)];
+                                s.rejection_points = [reason];
+                            } else {
+                                s.decision = 'approved';
+                                s.rejection_points = [''];
+                            }
+                        });
+                    });
+                    
+                    this.showToast('success', 'تم تعبئة الردود تلقائياً بنجاح (موافقة مع بعض حالات عدم الموافقة والأسباب)!');
                 },
 
                 /**

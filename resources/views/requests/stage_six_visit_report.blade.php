@@ -157,6 +157,10 @@
       </div>
       <div class="flex items-center gap-3">
          @if(isset($isEditMode) && $isEditMode)
+         <button type="button" onclick="autoFillVisitReport()" 
+             class="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-bold rounded-xl border border-amber-300 bg-amber-500 hover:bg-amber-600 text-white cursor-pointer transition-all hover:shadow-lg active:scale-95 shadow-amber-500/20">
+             <i class="fa-solid fa-magic"></i> تعبئة تلقائية
+          </button>
          <button type="button" onclick="document.getElementById('save-draft').click()" 
             class="hidden md:inline-flex items-center gap-2 px-5 py-2.5 text-sm font-bold rounded-xl border-none cursor-pointer transition-all hover:shadow-lg active:scale-95 bg-emerald-600 text-white hover:bg-emerald-700 shadow-emerald-500/20">
             <i class="fa-solid fa-floppy-disk"></i> حفظ التغييرات
@@ -1002,6 +1006,109 @@
           document.getElementById('report_data_input').value = JSON.stringify(data);
           document.getElementById('report-form').submit();
       });
+    }
+
+    function autoFillVisitReport() {
+      if (!confirm('هل ترغب في تعبئة كامل تقرير الزيارة الميدانية ببيانات تلقائية واقعية؟')) return;
+      
+      // 1. Tab 1 - General Notes
+      for (let i = 1; i <= 7; i++) {
+        const radio = document.querySelector(`input[name="q${i}"][value="ممتاز"]`);
+        if (radio) {
+          radio.checked = true;
+          radio.setAttribute('data-was-checked', 'true');
+        }
+      }
+      
+      // 2. Tab 2 - Interviews
+      const tbody = document.getElementById('interviews-body');
+      tbody.innerHTML = '';
+      const mockInterviews = [
+        { name: 'عميد الكلية ورئيس القسم والأشخاص المعنيين بالاعتماد', from: '09:00', to: '10:00', date: '2025-05-20', notes: 'مناقشة خطة البرنامج الاستراتيجية ومؤشرات الأداء ومدى جاهزية القسم للزيارة الميدانية.' },
+        { name: 'أعضاء هيئة التدريس بالقسم الأكاديمي', from: '10:30', to: '11:30', date: '2025-05-20', notes: 'مناقشة الأعباء التدريسية، الأنشطة البحثية، الدعم الأكاديمي للطلاب، وسبل التطوير المهني للأساتذة.' },
+        { name: 'خريجي البرنامج وممثلي جهات التوظيف وشركاء التدريب الميداني', from: '13:00', to: '14:00', date: '2025-05-21', notes: 'استقصاء الرضا عن مهارات الخريجين ومدى تلبية البرنامج لمتطلبات سوق العمل المحلي.' }
+      ];
+      mockInterviews.forEach(inv => {
+        addInterviewRow();
+        const row = tbody.lastElementChild;
+        const inputs = row.querySelectorAll('input, textarea');
+        inputs[0].value = inv.name;
+        inputs[1].value = inv.from;
+        inputs[2].value = inv.to;
+        inputs[3].value = inv.date;
+        inputs[4].value = inv.notes;
+      });
+
+      // 3. Tab 3 - General Results (Positives / Negatives)
+      document.getElementById('positives-list').innerHTML = '';
+      const mockPos = [
+        'تجاوب وتعاون تام من قيادة الكلية وأعضاء هيئة التدريس مع لجنة المقيمين وتسهيل كافة مهامها.',
+        'رضا وظيفي عالٍ للأساتذة وبيئة عمل داعمة تشجع على التطوير المستمر للبرنامج الأكاديمي.',
+        'مشاركة إيجابية متميزة للطلبة في استطلاعات الرأي وأنشطة التغذية الراجعة لتطوير المقررات.'
+      ];
+      mockPos.forEach(val => {
+        addResultItem('positives-list', 'positive-num', 'positive');
+        const list = document.getElementById('positives-list');
+        list.lastElementChild.querySelector('input').value = val;
+      });
+
+      document.getElementById('negatives-list').innerHTML = '';
+      const mockNeg = [
+        'محدودية الدعم المالي لبعض المشاريع البحثية الطلابية المتميزة بالقسم.',
+        'الحاجة إلى تعزيز وزيادة قاعات التعلم الذاتي ومرافق الأنشطة الطلابية غير المنهجية.'
+      ];
+      mockNeg.forEach(val => {
+        addResultItem('negatives-list', 'negative-num', 'negative');
+        const list = document.getElementById('negatives-list');
+        list.lastElementChild.querySelector('input').value = val;
+      });
+
+      // 4. Tab 4 - Field Tours
+      document.getElementById('tours-date').value = '2025-05-20';
+      const tourRows = document.querySelectorAll('#tab-4 tbody tr');
+      const mockTours = [
+        { count: '12 قاعة دراسية', notes: 'القاعات مجهزة بشاشات ذكية متطورة ونظام تهوية وإنترنت ومقاعد مريحة للطلاب.' },
+        { count: '24 مكتب أعضاء تدريس', notes: 'المكاتب توفر مساحة ملائمة وتجهيزات حاسب متكاملة لكل عضو لتقديم الإرشاد الأكاديمي.' },
+        { count: '6 مختبرات حديثة', notes: 'معامل الحاسب والشبكات متميزة بأجهزة حديثة، وتحتاج الورش الفنية لترقيات إضافية ببعض الأجهزة.' },
+        { count: '4 مرافق خدمية', notes: 'تشمل استراحات الطلبة والأنشطة والصالات الرياضية والمصلى وهي بحالة جيدة ونظيفة.' },
+        { count: '1 مبنى رئيسي للعمادة', notes: 'تقدم خدمات الإرشاد والتسجيل والأنشطة والخدمات الطلابية بشكل متكامل وفعال.' },
+        { count: '1 مكتبة مركزية', notes: 'المكتبة غنية بالمراجع والمصادر بالإضافة للاتصال الفعال بقواعد البيانات والمكتبة الرقمية السعودية.' }
+      ];
+      mockTours.forEach((tour, i) => {
+        if (tourRows[i]) {
+          const inputs = tourRows[i].querySelectorAll('input, textarea');
+          inputs[0].value = tour.count;
+          inputs[1].value = tour.notes;
+        }
+      });
+
+      // 5. Tab 5 - Document Reviews
+      document.getElementById('docs-date').value = '2025-05-21';
+      document.getElementById('docs-positives-list').innerHTML = '';
+      const mockDocPos = [
+        'اكتمال ملفات المقررات الدراسية وتوصيفاتها لآخر فصلين دراسيين ومطابقتها للمتطلبات.',
+        'توفر آليات وأدلة واضحة لسياسات القبول والتقويم الأكاديمي والإرشاد للطلاب.',
+        'محاضر اجتماعات لجان الجودة ومجلس القسم موثقة ومحفوظة بنظام أرشفة ممتاز.'
+      ];
+      mockDocPos.forEach(val => {
+        addResultItem('docs-positives-list', 'docs-positive-num', 'positive');
+        const list = document.getElementById('docs-positives-list');
+        list.lastElementChild.querySelector('input').value = val;
+      });
+
+      document.getElementById('docs-negatives-list').innerHTML = '';
+      const mockDocNeg = [
+        'الحاجة إلى تحديث خطة البحث العلمي السنوية الخاصة بالبرنامج لتشمل مستجدات التخصص.',
+        'تأخر توثيق تقارير التغذية الراجعة لبعض المقررات الاختيارية الجديدة التي طرحت مؤخراً.'
+      ];
+      mockDocNeg.forEach(val => {
+        addResultItem('docs-negatives-list', 'docs-negative-num', 'negative');
+        const list = document.getElementById('docs-negatives-list');
+        list.lastElementChild.querySelector('input').value = val;
+      });
+
+      isDirty = true;
+      showAlert('تم تعبئة كامل حقول تقرير الزيارة الميدانية ببيانات افتراضية متميزة!', 'success');
     }
 
     /* ======================================================

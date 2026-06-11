@@ -93,6 +93,10 @@
           </div>
 
           @if($isEditMode)
+            <button onclick="autoFillRubrics()" class="flex items-center gap-2 px-6 py-3 bg-amber-500 hover:bg-amber-600 text-white rounded-2xl font-bold transition-all shadow-lg shadow-amber-500/20 active:scale-95">
+              <i class="fa-solid fa-wand-magic-sparkles"></i>
+              <span>تعبئة تلقائية للتقييمات</span>
+            </button>
             <button onclick="saveData()" id="saveBtn" class="flex items-center gap-2 px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-bold transition-all shadow-lg shadow-emerald-500/20 active:scale-95">
               <i class="fa-solid fa-floppy-disk"></i>
               <span>حفظ التغييرات</span>
@@ -488,6 +492,66 @@
         btn.classList.add('bg-blue-600');
         btn.innerHTML = '<i class="fa-solid fa-circle-dot"></i> <span>حفظ التغييرات *</span>';
       }
+    }
+
+    function autoFillRubrics() {
+      if (!confirm('هل أنت متأكد من رغبتك في تعبئة كافة المؤشرات ببيانات تلقائية؟')) return;
+      
+      document.querySelectorAll('.indicator-row').forEach(row => {
+        const indId = parseInt(row.dataset.indicatorId);
+        const stdContent = row.closest('.std-content');
+        if (!stdContent) return;
+        const stdId = parseInt(stdContent.id.split('-')[1]);
+        
+        // Random rating 3, 4, or 5 (realistic high score) or occasionally 0/1/2
+        const rand = Math.random();
+        let rating = 4; // default
+        if (rand < 0.1) rating = 0; // non-compliant
+        else if (rand < 0.2) rating = 3;
+        else if (rand < 0.6) rating = 4;
+        else rating = 5;
+        
+        scores[indId] = rating;
+        
+        // Update classes visually for this indicator's buttons
+        row.querySelectorAll('.rating-btn').forEach(btn => {
+          const btnRating = parseInt(btn.dataset.rating);
+          btn.classList.remove('rating-1', 'rating-2', 'rating-3', 'rating-4', 'rating-5', 'rating-nc');
+          if (btnRating === rating) {
+            if (btnRating === 0) btn.classList.add('rating-nc');
+            else btn.classList.add(`rating-${btnRating}`);
+          }
+        });
+      });
+      
+      // Update standard summaries and score averages in UI for all standards
+      Object.keys(window.SUBSTANDARDS_BY_STD).forEach(stdId => {
+        updateScore(parseInt(stdId));
+      });
+      
+      // Fill closing comments (strengths, improvements, priorities) for all standards
+      Object.keys(window.SUBSTANDARDS_BY_STD).forEach(stdId => {
+        standardComments[parseInt(stdId)] = {
+          strengths: [
+            { text: 'توفر بنية تحتية تقنية متميزة ومختبرات مجهزة بالكامل تدعم التدريب العملي.', subId: '' },
+            { text: 'كفاءة عالية ومؤهلات متميزة لأعضاء هيئة التدريس وخبراتهم المتنوعة.', subId: '' }
+          ],
+          improvements: [
+            { text: 'الحاجة إلى تكثيف الأنشطة البحثية المشتركة بين الطلاب وأعضاء هيئة التدريس.', subId: '' },
+            { text: 'ضرورة تحديث مراجع التخصص القديمة ببعض المقررات الاختيارية.', subId: '' }
+          ],
+          priorities: [
+            { text: 'تطوير آليات التمويل الذاتي لدعم المشاريع الطلابية الابتكارية.', subId: '' }
+          ]
+        };
+        renderCommentPoints(parseInt(stdId), 'strengths');
+        renderCommentPoints(parseInt(stdId), 'improvements');
+        renderCommentPoints(parseInt(stdId), 'priorities');
+      });
+      
+      markDirty();
+      if (typeof showAlert === 'function') showAlert('تم تعبئة جميع مقاييس التقييم والتعليقات تلقائياً!', 'success');
+      else alert('تم التعبئة التلقائية بنجاح!');
     }
 
     async function saveData() {
