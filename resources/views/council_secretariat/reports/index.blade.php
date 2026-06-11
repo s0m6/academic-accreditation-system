@@ -75,6 +75,82 @@
         </div>
     </div>
 
+    {{-- ═══════════════ VISUAL CHARTS PANEL ═══════════════ --}}
+    <div class="mb-10">
+        <h3 class="text-lg font-bold text-(--text-primary) mb-5 flex items-center gap-2">
+            <i class="fa-solid fa-chart-pie text-brand-600 dark:text-brand-400"></i>
+            لوحة الرسوم الإحصائية ومؤشرات الأداء التفاعلية
+        </h3>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+            <!-- 1. Request Stages Distribution Chart -->
+            <div class="bg-(--surface-card) border border-(--border-primary) p-6 rounded-2xl shadow-xs lg:col-span-2">
+                <div class="flex items-center gap-2.5 mb-4 border-b border-(--border-primary) pb-3">
+                    <span class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                        <i class="fa-solid fa-chart-bar"></i>
+                    </span>
+                    <div>
+                        <h4 class="font-bold text-(--text-primary) text-sm">توزيع طلبات الاعتماد على مراحل التقييم التسعة</h4>
+                        <p class="text-xs text-(--text-secondary)">عدد الطلبات الحالية في كل مرحلة من مراحل الاعتماد الأكاديمي</p>
+                    </div>
+                </div>
+                <div class="relative w-full" style="height: 300px;">
+                    <canvas id="stagesChart"></canvas>
+                </div>
+            </div>
+
+            <!-- 2. University Types Chart -->
+            <div class="bg-(--surface-card) border border-(--border-primary) p-6 rounded-2xl shadow-xs">
+                <div class="flex items-center gap-2.5 mb-4 border-b border-(--border-primary) pb-3">
+                    <span class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                        <i class="fa-solid fa-chart-pie"></i>
+                    </span>
+                    <div>
+                        <h4 class="font-bold text-(--text-primary) text-sm">توزيع الجامعات حسب النوع</h4>
+                        <p class="text-xs text-(--text-secondary)">نسبة الجامعات الحكومية مقابل الجامعات الأهلية / الخاصة</p>
+                    </div>
+                </div>
+                <div class="relative w-full flex items-center justify-center" style="height: 300px;">
+                    <canvas id="typesChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- 3. Standards Scores Chart -->
+            <div class="bg-(--surface-card) border border-(--border-primary) p-6 rounded-2xl shadow-xs lg:col-span-2">
+                <div class="flex items-center gap-2.5 mb-4 border-b border-(--border-primary) pb-3">
+                    <span class="w-8 h-8 rounded-lg bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center">
+                        <i class="fa-solid fa-ranking-star"></i>
+                    </span>
+                    <div>
+                        <h4 class="font-bold text-(--text-primary) text-sm">تحليل متوسط درجات المعايير الرئيسية</h4>
+                        <p class="text-xs text-(--text-secondary)">متوسط تقييم الخبراء لكل معيار أكاديمي رئيسي (الحد الأقصى: 5 درجات)</p>
+                    </div>
+                </div>
+                <div class="relative w-full" style="height: 320px;">
+                    <canvas id="standardsChart"></canvas>
+                </div>
+            </div>
+
+            <!-- 4. Request Statuses Chart -->
+            <div class="bg-(--surface-card) border border-(--border-primary) p-6 rounded-2xl shadow-xs">
+                <div class="flex items-center gap-2.5 mb-4 border-b border-(--border-primary) pb-3">
+                    <span class="w-8 h-8 rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+                        <i class="fa-solid fa-circle-check"></i>
+                    </span>
+                    <div>
+                        <h4 class="font-bold text-(--text-primary) text-sm">حالات طلبات الاعتماد</h4>
+                        <p class="text-xs text-(--text-secondary)">توزيع الطلبات حسب حالتها الجارية (نشط، مسودة، مكتمل، ملغي)</p>
+                    </div>
+                </div>
+                <div class="relative w-full flex items-center justify-center" style="height: 320px;">
+                    <canvas id="statusesChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
     {{-- ═══════════════ REPORTS SELECTION SECTION ═══════════════ --}}
     <h3 class="text-lg font-bold text-(--text-primary) mb-5 flex items-center gap-2">
         <i class="fa-solid fa-gears text-brand-600 dark:text-brand-400"></i>
@@ -203,6 +279,60 @@
                         </button>
                     </form>
                 </div>
+            </div>
+        </div>
+
+        {{-- Card 6: University Academic Performance Comparison --}}
+        <div class="bg-(--surface-card) border border-(--border-primary) rounded-2xl shadow-xs p-6 flex flex-col justify-between hover:scale-[1.01] hover:shadow-md transition-all">
+            <div>
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-12 h-12 rounded-xl bg-indigo-100 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400 flex items-center justify-center border border-indigo-200 dark:border-indigo-500/20">
+                        <i class="fa-solid fa-graduation-cap text-lg"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-(--text-primary) text-[15px]">تقرير مقارنة الأداء الأكاديمي للجامعات</h4>
+                        <p class="text-xs text-(--text-secondary) mt-0.5">تصنيف وترتيب الجامعات بناءً على تقييمات الجودة</p>
+                    </div>
+                </div>
+                <p class="text-sm text-(--text-secondary) leading-relaxed">
+                    تقرير مقارن لمستويات جودة التعليم والأداء الأكاديمي بين الجامعات المستهدفة ومقارنة متوسط درجاتها في معايير الجودة بشكل مفصل.
+                </p>
+            </div>
+            <div class="mt-6 flex justify-end">
+                <form action="{{ route('council_secretariat.reports.generate') }}" method="POST" @submit="triggerDownload()">
+                    @csrf
+                    <input type="hidden" name="report_type" value="uni_comparison">
+                    <button type="submit" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-sm hover:shadow transition-all cursor-pointer">
+                        <i class="fa-solid fa-file-pdf text-xs"></i> تحميل التقرير المقارن مباشرة
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        {{-- Card 7: Evaluation Committees & Evaluators Activity --}}
+        <div class="bg-(--surface-card) border border-(--border-primary) rounded-2xl shadow-xs p-6 flex flex-col justify-between hover:scale-[1.01] hover:shadow-md transition-all">
+            <div>
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-12 h-12 rounded-xl bg-teal-100 text-teal-700 dark:bg-teal-500/10 dark:text-teal-400 flex items-center justify-center border border-teal-200 dark:border-teal-500/20">
+                        <i class="fa-solid fa-user-shield text-lg"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-(--text-primary) text-[15px]">تقرير نشاط لجان التقييم ومتابعة المقيمين</h4>
+                        <p class="text-xs text-(--text-secondary) mt-0.5">سجل نشاط اللجان الحالية والخبراء والمقيمين</p>
+                    </div>
+                </div>
+                <p class="text-sm text-(--text-secondary) leading-relaxed">
+                    متابعة اللجان النشطة حالياً، البرامج الأكاديمية قيد التقييم، وتوزيع الخبراء والمقيمين ومشاركتهم في اللجان المختلفة.
+                </p>
+            </div>
+            <div class="mt-6 flex justify-end">
+                <form action="{{ route('council_secretariat.reports.generate') }}" method="POST" @submit="triggerDownload()">
+                    @csrf
+                    <input type="hidden" name="report_type" value="committee_activity">
+                    <button type="submit" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs shadow-sm hover:shadow transition-all cursor-pointer">
+                        <i class="fa-solid fa-file-pdf text-xs"></i> تحميل تقرير اللجان مباشرة
+                    </button>
+                </form>
             </div>
         </div>
 
@@ -360,7 +490,155 @@
 </div>
 
 @push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // 1. Stages Chart
+        const stagesCtx = document.getElementById('stagesChart').getContext('2d');
+        const stagesData = @json($stagesDistribution);
+        new Chart(stagesCtx, {
+            type: 'bar',
+            data: {
+                labels: Object.keys(stagesData),
+                datasets: [{
+                    label: 'عدد طلبات الاعتماد',
+                    data: Object.values(stagesData),
+                    backgroundColor: 'rgba(59, 130, 246, 0.75)',
+                    borderColor: 'rgba(59, 130, 246, 1)',
+                    borderWidth: 1.5,
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { rtl: true }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { stepSize: 1 },
+                        grid: { color: 'rgba(156, 163, 175, 0.15)' }
+                    },
+                    x: {
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+
+        // 2. University Types Chart
+        const typesCtx = document.getElementById('typesChart').getContext('2d');
+        const typesData = @json($universityTypes);
+        new Chart(typesCtx, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(typesData),
+                datasets: [{
+                    data: Object.values(typesData),
+                    backgroundColor: ['rgba(16, 185, 129, 0.75)', 'rgba(99, 102, 241, 0.75)'],
+                    borderColor: ['rgba(16, 185, 129, 1)', 'rgba(99, 102, 241, 1)'],
+                    borderWidth: 1.5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { boxWidth: 12 } },
+                    tooltip: { rtl: true }
+                },
+                cutout: '65%'
+            }
+        });
+
+        // 3. Standards Scores Chart
+        const standardsCtx = document.getElementById('standardsChart').getContext('2d');
+        const standardsData = @json($standardScores);
+        const standardLabels = standardsData.map(s => 'معيار ' + s.number);
+        const standardFullNames = standardsData.map(s => s.name);
+        const standardAverages = standardsData.map(s => s.avg_score);
+
+        new Chart(standardsCtx, {
+            type: 'bar',
+            data: {
+                labels: standardLabels,
+                datasets: [{
+                    label: 'متوسط درجة التقييم',
+                    data: standardAverages,
+                    backgroundColor: 'rgba(244, 63, 94, 0.75)',
+                    borderColor: 'rgba(244, 63, 94, 1)',
+                    borderWidth: 1.5,
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        rtl: true,
+                        callbacks: {
+                            title: function(context) {
+                                const index = context[0].dataIndex;
+                                return standardLabels[index] + ': ' + standardFullNames[index];
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        max: 5,
+                        ticks: { stepSize: 1 },
+                        grid: { color: 'rgba(156, 163, 175, 0.15)' }
+                    },
+                    y: {
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+
+        // 4. Request Statuses Chart
+        const statusesCtx = document.getElementById('statusesChart').getContext('2d');
+        const statusesData = @json($requestStatuses);
+        new Chart(statusesCtx, {
+            type: 'pie',
+            data: {
+                labels: Object.keys(statusesData),
+                datasets: [{
+                    data: Object.values(statusesData),
+                    backgroundColor: [
+                        'rgba(245, 158, 11, 0.75)', // draft
+                        'rgba(59, 130, 246, 0.75)',  // active
+                        'rgba(16, 185, 129, 0.75)', // completed
+                        'rgba(239, 68, 68, 0.75)'   // canceled
+                    ],
+                    borderColor: [
+                        'rgba(245, 158, 11, 1)',
+                        'rgba(59, 130, 246, 1)',
+                        'rgba(16, 185, 129, 1)',
+                        'rgba(239, 68, 68, 1)'
+                    ],
+                    borderWidth: 1.5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { boxWidth: 12 } },
+                    tooltip: { rtl: true }
+                }
+            }
+        });
+    });
+
     function reportsManager() {
         return {
             showModal: false,

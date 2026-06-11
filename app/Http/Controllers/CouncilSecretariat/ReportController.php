@@ -40,13 +40,73 @@ class ReportController extends Controller
             ->orderBy('general_specialty')
             ->pluck('general_specialty');
 
+        // Charts Data:
+        // 1. Request Stages Distribution
+        $rawStages = DB::table('accreditation_requests')
+            ->select('current_stage', DB::raw('count(*) as count'))
+            ->groupBy('current_stage')
+            ->pluck('count', 'current_stage')
+            ->toArray();
+
+        $stagesDistribution = [
+            'الطلب الأولي' => $rawStages['stage_one'] ?? 0,
+            'البيانات الأساسية' => $rawStages['stage_two'] ?? 0,
+            'الدراسة الذاتية' => $rawStages['stage_three'] ?? 0,
+            'اختيار اللجنة' => $rawStages['stage_four'] ?? 0,
+            'جدول الزيارة' => $rawStages['stage_five'] ?? 0,
+            'التقييم الأولي' => $rawStages['stage_six'] ?? 0,
+            'التوصيات والردود' => $rawStages['stage_seven'] ?? 0,
+            'التقييم الختامي' => $rawStages['stage_eight'] ?? 0,
+            'القرار والشهادة' => $rawStages['stage_nine'] ?? 0,
+        ];
+
+        // 2. Average Score per Standard
+        $standardScores = DB::table('standards')
+            ->select('standards.number', 'standards.name', DB::raw('COALESCE(ROUND(AVG(indicator_evaluations.score), 2), 0) as avg_score'))
+            ->leftJoin('sub_standards', 'standards.id', '=', 'sub_standards.standard_id')
+            ->leftJoin('indicators', 'sub_standards.id', '=', 'indicators.sub_standard_id')
+            ->leftJoin('indicator_evaluations', 'indicators.id', '=', 'indicator_evaluations.indicator_id')
+            ->groupBy('standards.id', 'standards.number', 'standards.name')
+            ->orderBy('standards.number')
+            ->get();
+
+        // 3. University Types Distribution
+        $rawTypes = DB::table('universities')
+            ->select('type', DB::raw('count(*) as count'))
+            ->groupBy('type')
+            ->pluck('count', 'type')
+            ->toArray();
+
+        $universityTypes = [
+            'حكومية' => $rawTypes['government'] ?? 0,
+            'أهلية / خاصة' => $rawTypes['private'] ?? 0,
+        ];
+
+        // 4. Request Statuses
+        $rawStatuses = DB::table('accreditation_requests')
+            ->select('request_status', DB::raw('count(*) as count'))
+            ->groupBy('request_status')
+            ->pluck('count', 'request_status')
+            ->toArray();
+
+        $requestStatuses = [
+            'مسودة' => $rawStatuses['draft'] ?? 0,
+            'نشط' => $rawStatuses['Active'] ?? 0,
+            'مكتمل' => $rawStatuses['completed'] ?? 0,
+            'ملغي' => $rawStatuses['canceled'] ?? 0,
+        ];
+
         return view('council_secretariat.reports.index', compact(
             'totalUniversities',
             'totalEvaluators',
             'totalRequests',
             'totalCertificates',
             'universities',
-            'specialties'
+            'specialties',
+            'stagesDistribution',
+            'standardScores',
+            'universityTypes',
+            'requestStatuses'
         ));
     }
 
@@ -56,7 +116,7 @@ class ReportController extends Controller
     public function generate(Request $request)
     {
         $request->validate([
-            'report_type' => ['required', 'string', 'in:university_status,evaluator_stats,issued_decisions,general_summary,criteria_analysis'],
+            'report_type' => ['required', 'string', 'in:university_status,evaluator_stats,issued_decisions,general_summary,criteria_analysis,uni_comparison,committee_activity'],
             'university_id' => ['nullable', 'integer', 'exists:universities,id'],
             'current_stage' => ['nullable', 'string'],
             'request_status' => ['nullable', 'string'],
@@ -81,6 +141,10 @@ class ReportController extends Controller
                     return $this->generateGeneralSummaryReport();
                 case 'criteria_analysis':
                     return $this->generateCriteriaAnalysisReport();
+                case 'uni_comparison':
+                    return $this->generateUniversityComparisonReport();
+                case 'committee_activity':
+                    return $this->generateCommitteeActivityReport();
             }
         } catch (\Exception $e) {
             return back()->with('error', 'حدث خطأ أثناء توليد ملف التقرير: '.$e->getMessage());
@@ -346,6 +410,74 @@ class ReportController extends Controller
                 $browsershot->waitUntilNetworkIdle();
             })
             ->name('تقرير_تحليل_المعايير_'.Carbon::now()->format('YmdHis').'.pdf');
+
+        return $pdf->download();
+    }
+
+    /**
+     * Generate University Academic Performance Comparison PDF report.
+     */
+    private function generateUniversityComparisonReport()
+    {
+        $universityScores = University::select(
+            'universities.id',
+            'universities.name',
+            'universities.type',
+            DB::raw('COALESCE(ROUND(AVG(indicator_evaluations.score), 2), 0) as avg_score'),
+            DB::raw('COUNT(DISTINCT accreditation_requests.id) as requests_count'),
+            DB::raw('COUNT(DISTINCT indicator_evaluations.id) as evaluated_indicators_count')
+        )
+            ->leftJoin('colleges', 'universities.id', '=', 'colleges.university_id')
+            ->leftJoin('departments', 'colleges.id', '=', 'departments.college_id')
+            ->leftJoin('programs', 'departments.id', '=', 'programs.department_id')
+            ->leftJoin('accreditation_requests', 'programs.id', '=', 'accreditation_requests.program_id')
+            ->leftJoin('form_submissions', 'accreditation_requests.id', '=', 'form_submissions.accreditation_request_id')
+            ->leftJoin('indicator_evaluations', 'form_submissions.id', '=', 'indicator_evaluations.form_submission_id')
+            ->groupBy('universities.id', 'universities.name', 'universities.type')
+            ->orderBy('avg_score', 'desc')
+            ->get();
+
+        $pdf = Pdf::view('print_templates.reports.uni_comparison', compact('universityScores'))
+            ->format('a4')
+            ->withBrowsershot(function ($browsershot) {
+                $browsershot->waitUntilNetworkIdle();
+            })
+            ->name('تقرير_مقارنة_أداء_الجامعات_'.Carbon::now()->format('YmdHis').'.pdf');
+
+        return $pdf->download();
+    }
+
+    /**
+     * Generate Evaluation Committees & Evaluators Activity PDF report.
+     */
+    private function generateCommitteeActivityReport()
+    {
+        $committees = DB::table('committees')
+            ->select(
+                'committees.id',
+                'committees.status',
+                'committees.created_at',
+                'users.name as chair_name',
+                'programs.program_name',
+                'universities.name as university_name',
+                DB::raw('(SELECT COUNT(*) FROM committee_members WHERE committee_members.committee_id = committees.id) as members_count')
+            )
+            ->leftJoin('evaluators', 'committees.chair_evaluator_id', '=', 'evaluators.id')
+            ->leftJoin('users', 'evaluators.user_id', '=', 'users.id')
+            ->leftJoin('accreditation_requests', 'committees.accreditation_request_id', '=', 'accreditation_requests.id')
+            ->leftJoin('programs', 'accreditation_requests.program_id', '=', 'programs.id')
+            ->leftJoin('departments', 'programs.department_id', '=', 'departments.id')
+            ->leftJoin('colleges', 'departments.college_id', '=', 'colleges.id')
+            ->leftJoin('universities', 'colleges.university_id', '=', 'universities.id')
+            ->orderBy('committees.created_at', 'desc')
+            ->get();
+
+        $pdf = Pdf::view('print_templates.reports.committee_activity', compact('committees'))
+            ->format('a4')
+            ->withBrowsershot(function ($browsershot) {
+                $browsershot->waitUntilNetworkIdle();
+            })
+            ->name('تقرير_نشاط_لجان_التقييم_'.Carbon::now()->format('YmdHis').'.pdf');
 
         return $pdf->download();
     }
