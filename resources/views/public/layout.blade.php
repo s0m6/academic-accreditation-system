@@ -17,6 +17,7 @@
             --surface-card: #ffffff;
             --bg-main: #f8fafc;
         }
+
         .dark {
             --text-primary: #f1f5f9;
             --text-secondary: #94a3b8;
@@ -28,6 +29,7 @@
         html:not(.dark) .dark-only {
             display: none !important;
         }
+
         html.dark .light-only {
             display: none !important;
         }
@@ -38,44 +40,52 @@
 <body class="bg-[var(--bg-main)] text-[var(--text-primary)] transition-colors duration-300">
     <!-- Global Preloader -->
     @include('public.partials.preloader')
-    
+
     <!-- Top Navigation -->
     <header
         class="bg-white/90 dark:bg-[#020617]/90 backdrop-blur-xl sticky top-0 z-50 border-b border-slate-200 dark:border-slate-800 shadow-sm transition-colors duration-300">
         <nav class="flex justify-between items-center max-w-7xl mx-auto px-6 h-20">
             <!-- Brand Logo -->
             <a href="{{ route('welcome') }}" class="flex items-center gap-3 md:gap-4 select-none">
-                <img src="{{ asset('images/logo.png') }}" alt="شعار مجلس الاعتماد الأكاديمي" class="h-12 w-auto md:h-14 object-contain transition-all duration-300">
+                <img src="{{ asset('images/logo.png') }}" alt="شعار مجلس الاعتماد الأكاديمي"
+                    class="h-12 w-auto md:h-14 object-contain transition-all duration-300">
                 <div class="flex flex-col text-right">
-                    <span class="text-base md:text-lg font-black tracking-tight text-slate-900 dark:text-white leading-tight transition-colors duration-300">
+                    <span
+                        class="text-base md:text-lg font-black tracking-tight text-slate-900 dark:text-white leading-tight transition-colors duration-300">
                         مجلس الاعتماد الأكاديمي
                     </span>
-                    <span class="text-[12px] md:text-[13px] font-bold text-slate-600 dark:text-slate-300 leading-tight mt-0.5 transition-colors duration-300">
+                    <span
+                        class="text-[12px] md:text-[13px] font-bold text-slate-600 dark:text-slate-300 leading-tight mt-0.5 transition-colors duration-300">
                         وضمان جودة التعليم العالي
                     </span>
                 </div>
             </a>
             <!-- Nav Links -->
             <ul class="hidden lg:flex items-center gap-8 text-sm font-bold">
-                <li><a class="{{ request()->routeIs('welcome') ? 'text-primary dark:text-accent border-b-2 border-primary dark:border-accent pb-1' : 'text-slate-600 dark:text-slate-200 hover:text-primary dark:hover:text-accent transition-colors' }}" href="{{ route('welcome') }}">الرئيسية</a></li>
-                <li><a class="{{ request()->routeIs('certificates.explorer') ? 'text-primary dark:text-accent border-b-2 border-primary dark:border-accent pb-1' : 'text-slate-600 dark:text-slate-200 hover:text-primary dark:hover:text-accent transition-colors' }}" href="{{ route('certificates.explorer') }}">الشهادات المعتمدة</a></li>
-                <li><a class="text-slate-600 dark:text-slate-200 hover:text-primary dark:hover:text-accent transition-colors" href="#">عن المجلس</a></li>
-                <li><a class="text-slate-600 dark:text-slate-200 hover:text-primary dark:hover:text-accent transition-colors" href="#">المعايير</a></li>
-                <li><a class="text-slate-600 dark:text-slate-200 hover:text-primary dark:hover:text-accent transition-colors" href="#">اتصل بنا</a></li>
+                <li><a class="{{ request()->routeIs('welcome') ? 'text-primary dark:text-accent border-b-2 border-primary dark:border-accent pb-1' : 'text-slate-600 dark:text-slate-200 hover:text-primary dark:hover:text-accent transition-colors' }}"
+                        href="{{ route('welcome') }}">الرئيسية</a></li>
+                <li><a class="{{ request()->routeIs('certificates.explorer') ? 'text-primary dark:text-accent border-b-2 border-primary dark:border-accent pb-1' : 'text-slate-600 dark:text-slate-200 hover:text-primary dark:hover:text-accent transition-colors' }}"
+                        href="{{ route('certificates.explorer') }}">الشهادات المعتمدة</a></li>
+                <li><a class="text-slate-600 dark:text-slate-200 hover:text-primary dark:hover:text-accent transition-colors"
+                        href="#about">عن المجلس</a></li>
+                <li><a class="text-slate-600 dark:text-slate-200 hover:text-primary dark:hover:text-accent transition-colors"
+                        href="#">المعايير</a></li>
+                <li><a class="text-slate-600 dark:text-slate-200 hover:text-primary dark:hover:text-accent transition-colors"
+                        href="#">اتصل بنا</a></li>
             </ul>
             <!-- Actions -->
             <div class="flex items-center gap-3">
                 @auth
-                <a href="{{ route('dashboard') }}"
-                    class="bg-primary dark:bg-white/10 text-accent dark:text-white px-6 py-2.5 rounded-xl font-extrabold text-sm hover:bg-primary-dark dark:hover:bg-white/20 hover:scale-105 transition-all shadow-md">
-                    لوحة التحكم
-                </a>
+                    <a href="{{ route('dashboard') }}"
+                        class="bg-primary dark:bg-white/10 text-accent dark:text-white px-6 py-2.5 rounded-xl font-extrabold text-sm hover:bg-primary-dark dark:hover:bg-white/20 hover:scale-105 transition-all shadow-md">
+                        لوحة التحكم
+                    </a>
                 @else
-                <a href="{{ route('login') }}"
-                    class="flex items-center gap-2 px-3 sm:px-5 py-2.5 text-primary dark:text-slate-100 font-bold text-sm hover:bg-slate-100 dark:hover:bg-white/10 rounded-xl transition-all">
-                    <i class="fa-solid fa-right-to-bracket text-lg"></i>
-                    <span class="hidden sm:inline">تسجيل الدخول</span>
-                </a>
+                    <a href="{{ route('login') }}"
+                        class="flex items-center gap-2 px-3 sm:px-5 py-2.5 text-primary dark:text-slate-100 font-bold text-sm hover:bg-slate-100 dark:hover:bg-white/10 rounded-xl transition-all">
+                        <i class="fa-solid fa-right-to-bracket text-lg"></i>
+                        <span class="hidden sm:inline">تسجيل الدخول</span>
+                    </a>
                 @endauth
                 <div class="h-8 w-[1px] bg-slate-200 dark:bg-white/10 mx-2"></div>
                 <button
@@ -96,8 +106,10 @@
             <!-- Brand & Info -->
             <div class="col-span-1">
                 <div class="flex items-center gap-3 mb-8">
-                    <div class="w-10 h-10 bg-white dark:bg-slate-900 rounded-lg flex items-center justify-center p-1.5 shadow-sm">
-                        <img src="{{ asset('images/logo.png') }}" alt="شعار المجلس" class="h-full w-full object-contain">
+                    <div
+                        class="w-10 h-10 bg-white dark:bg-slate-900 rounded-lg flex items-center justify-center p-1.5 shadow-sm">
+                        <img src="{{ asset('images/logo.png') }}" alt="شعار المجلس"
+                            class="h-full w-full object-contain">
                     </div>
                     <span class="text-xl font-black uppercase tracking-tighter">CAAQAHE YEMEN</span>
                 </div>
@@ -119,9 +131,11 @@
             <div>
                 <h4 class="font-black text-lg mb-8 text-accent">البوابة الإلكترونية</h4>
                 <ul class="space-y-5 text-sm font-bold text-blue-100/70">
-                    <li><a class="hover:text-accent transition-colors" href="{{ route('login') }}">دخول المؤسسات</a></li>
+                    <li><a class="hover:text-accent transition-colors" href="{{ route('login') }}">دخول المؤسسات</a>
+                    </li>
                     <li><a class="hover:text-accent transition-colors" href="#">تقديم طلب اعتماد</a></li>
-                    <li><a class="hover:text-accent transition-colors" href="{{ route('certificates.explorer') }}">الشهادات المعتمدة</a></li>
+                    <li><a class="hover:text-accent transition-colors"
+                            href="{{ route('certificates.explorer') }}">الشهادات المعتمدة</a></li>
                 </ul>
             </div>
             <!-- Contact -->
@@ -130,7 +144,8 @@
                 <ul class="space-y-6 text-sm text-blue-100/70 font-medium">
                     <li class="flex items-start gap-4">
                         <i class="fa-solid fa-location-dot text-accent mt-1"></i>
-                        <span class="leading-relaxed">عدن، مديرية البريقه - مدينة الشعب - خلف كلية العلوم الإدارية </span>
+                        <span class="leading-relaxed">عدن، مديرية البريقه - مدينة الشعب - خلف كلية العلوم الإدارية
+                        </span>
                     </li>
                     <li class="flex items-start gap-4">
                         <i class="fa-solid fa-phone text-accent mt-1"></i>
@@ -152,4 +167,5 @@
     </footer>
     @stack('scripts')
 </body>
+
 </html>

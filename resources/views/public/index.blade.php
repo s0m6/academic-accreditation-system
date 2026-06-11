@@ -20,6 +20,7 @@
 
 @section('content')
     @include('public.partials.hero')
+    @include('public.partials.about')
     @include('public.partials.services')
     @include('public.partials.certificates')
     @include('public.partials.partners')

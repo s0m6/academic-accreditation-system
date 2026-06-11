@@ -39,7 +39,7 @@
                 <div class="absolute inset-0 rounded-3xl overflow-hidden shadow-2xl border border-white/20">
                     <img class="w-full h-full object-cover grayscale-[10%] brightness-90 hover:grayscale-0 transition-all duration-700"
                         alt="grand library interior"
-                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuBRRQOiJYS_iPtDZ7MYljCdT20mpAUe1chIIl20ZgfxWIm4cAsijurHMgjsJ46BrcmEjJ2R8oH4HPowjiA_H0-cQQWbr7OFjj17JaRALaLkqw3ArrpKxNCbBWMHnDsJmU9Cg9zwwG38LhDnIBCyM2owYoYr3Mw4Cq6H_qEW-_YvG9xtfOtw2Anqrvr-usWj8y8TtvzbE8et3YGNxMpT7fdbTwCHbFXLiXTOQ542WgIrw92Sgstn0LNCs1Iagb57lVEAToB8EeqX3QEH" />
+                        src="{{ asset('images/news/news3.jpg') }}" />
                     <div class="absolute inset-0 bg-primary/20 mix-blend-multiply"></div>
                 </div>
             </div>
