@@ -13,8 +13,8 @@ class CitySeeder extends Seeder
     public function run(): void
     {
         $cities = [
-            'صنعاء',
             'عدن',
+            'صنعاء',
             'تعز',
             'حضرموت',
             'إب',

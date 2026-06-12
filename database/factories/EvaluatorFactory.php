@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Hash;
  */
 class EvaluatorFactory extends Factory
 {
+    private static int $emailCounter = 1;
+
     /**
      * Define the model's default state.
      *
@@ -35,10 +37,12 @@ class EvaluatorFactory extends Factory
         ];
 
         $generalSpecialty = fake()->randomElement(array_keys($specialties));
+        $currentEmailIndex = self::$emailCounter++;
 
         return [
             'user_id' => User::factory()->state([
                 'name' => fake('ar_SA')->name(),
+                'email' => "e{$currentEmailIndex}@e.com",
                 'role' => 'evaluator',
                 'password' => Hash::make('123456789'),
                 'email_verified_at' => now(),

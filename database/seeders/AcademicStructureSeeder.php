@@ -25,29 +25,17 @@ class AcademicStructureSeeder extends Seeder
         }
 
         $structure = [
-            [
-                'college_name' => 'كلية علوم الحاسب والمعلومات',
-                'departments' => [
-                    [
-                        'name' => 'قسم علوم الحاسب',
-                        'programs' => ['برنامج بكالوريوس علوم الحاسب', 'برنامج ماجستير علوم الحاسب'],
-                    ],
-                    [
-                        'name' => 'قسم هندسة البرمجيات',
-                        'programs' => ['برنامج بكالوريوس هندسة البرمجيات', 'برنامج ماجستير هندسة البرمجيات'],
-                    ],
-                ],
-            ],
+
             [
                 'college_name' => 'كلية الهندسة',
                 'departments' => [
                     [
-                        'name' => 'قسم الهندسة المدنية',
-                        'programs' => ['برنامج بكالوريوس الهندسة المدنية', 'برنامج ماجستير الهندسة المدنية'],
+                        'name' => 'قسم الحاسبات',
+                        'programs' => ['برنامج بكالوريوس  تقنية معلومات'],
                     ],
                     [
-                        'name' => 'قسم الهندسة الكهربائية',
-                        'programs' => ['برنامج بكالوريوس الهندسة الكهربائية', 'برنامج ماجستير الهندسة الكهربائية'],
+                        'name' => 'قسم الهندسة ',
+                        'programs' => ['برنامج بكالوريوس الهندسة المدنية', 'برنامج بكالوريوس ميكاترونكس '],
                     ],
                 ],
             ],
@@ -56,11 +44,11 @@ class AcademicStructureSeeder extends Seeder
                 'departments' => [
                     [
                         'name' => 'قسم المحاسبة',
-                        'programs' => ['برنامج بكالوريوس المحاسبة', 'برنامج ماجستير المحاسبة'],
+                        'programs' => ['برنامج بكالوريوس المحاسبة'],
                     ],
                     [
                         'name' => 'قسم إدارة الأعمال',
-                        'programs' => ['برنامج بكالوريوس إدارة الأعمال', 'برنامج ماجستير إدارة الأعمال'],
+                        'programs' => ['برنامج بكالوريوس إدارة الأعمال'],
                     ],
                 ],
             ],
@@ -69,7 +57,7 @@ class AcademicStructureSeeder extends Seeder
         $programDetails = [
             'language' => 'arabic',
             'website_url' => 'http://localhost/academic-accreditation-system/public/accreditation-officer/programs',
-            'credit_hours' => 5,
+            'credit_hours' => 132,
             'study_duration' => '4 سنوات',
             'establishment_date' => '2026-04-21',
         ];
@@ -78,7 +66,7 @@ class AcademicStructureSeeder extends Seeder
             $college = College::factory()->create([
                 'name' => $collegeData['college_name'],
                 'university_id' => $university->id,
-                'city_id' => $university->city_id ?? City::inRandomOrder()->first()->id,
+                'city_id' => $university->city_id ?? City::first()->id,
             ]);
 
             foreach ($collegeData['departments'] as $deptData) {

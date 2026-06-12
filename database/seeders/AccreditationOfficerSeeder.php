@@ -19,9 +19,9 @@ class AccreditationOfficerSeeder extends Seeder
         // إنشاء حساب مسؤول الاعتماد
         // Creates the Accreditation Officer account
         $user = User::updateOrCreate(
-            ['email' => 'o@o.com'],
+            ['email' => 'm@m.com'],
             [
-                'name' => 'مسؤول الاعتماد',
+                'name' => 'محمود الرميمة',
                 'email_verified_at' => now(),
                 'password' => Hash::make('123456789'),
                 'role' => 'accreditation_officer',
