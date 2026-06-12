@@ -23,6 +23,7 @@ jobs:
             cd /home/u870944235/domains/samcoder.com/public_html/grad
             
             # سحب الكود الجديد من جيت هب للسيرفر
+            git reset --hard origin/main
             git pull origin main
             
             # تثبيت الملحقات (بدون إضافات التطوير لزيادة السرعة)
