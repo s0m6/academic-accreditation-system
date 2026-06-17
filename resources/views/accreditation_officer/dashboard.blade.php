@@ -95,7 +95,7 @@
                             <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors">
                                 <td class="py-4 px-6">
                                     <div class="font-medium text-gray-800 dark:text-gray-200">
-                                        <a href="{{ route('accreditation_officer.requests.show', $request->id) }}" class="text-brand-600 dark:text-brand-400 hover:underline">
+                                        <a href="{{ route('requests.show', $request->id) }}" class="text-brand-600 dark:text-brand-400 hover:underline">
                                             {{ $request->program->program_name ?? 'غير محدد' }}
                                         </a>
                                     </div>
