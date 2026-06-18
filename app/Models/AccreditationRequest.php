@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use App\Mail\StageTransitioned;
 use Database\Factories\AccreditationRequestFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Mail;
 
 class AccreditationRequest extends Model
 {
@@ -12,6 +14,55 @@ class AccreditationRequest extends Model
     use HasFactory;
 
     protected $guarded = ['id'];
+
+    // Boot the model and register updated event listener
+    protected static function booted(): void
+    {
+        static::updated(function (AccreditationRequest $accreditationRequest) {
+            // Send email if current_stage transitions to stage_two or higher
+            if ($accreditationRequest->isDirty('current_stage')) {
+                $oldStage = $accreditationRequest->getOriginal('current_stage');
+                $newStage = $accreditationRequest->current_stage;
+
+                $stages = ['stage_two', 'stage_three', 'stage_four', 'stage_five', 'stage_six', 'stage_seven', 'stage_eight', 'stage_nine'];
+                if (in_array($newStage, $stages)) {
+                    static::sendTransitionEmailNotification($accreditationRequest, $oldStage, $newStage, false);
+                }
+            }
+
+            // Send email if the request is completed (final decision issued)
+            if ($accreditationRequest->isDirty('request_status') && $accreditationRequest->request_status === 'completed') {
+                static::sendTransitionEmailNotification($accreditationRequest, null, null, true);
+            }
+        });
+    }
+
+    // Helper method to resolve recipients and send stage transition email
+    protected static function sendTransitionEmailNotification(AccreditationRequest $accreditationRequest, ?string $oldStage, ?string $newStage, bool $isFinalDecision): void
+    {
+        // Load relationships fresh to avoid any cached stale states
+        $accreditationRequest->load([
+            'program.department.college.university.officer',
+            'programCoordinator',
+        ]);
+
+        $coordinator = $accreditationRequest->programCoordinator;
+        $officer = $accreditationRequest->program?->department?->college?->university?->officer;
+
+        $recipients = [];
+        if ($coordinator && $coordinator->email) {
+            $recipients[] = $coordinator->email;
+        }
+        if ($officer && $officer->email) {
+            $recipients[] = $officer->email;
+        }
+
+        if (! empty($recipients)) {
+            Mail::to($recipients)->send(
+                new StageTransitioned($accreditationRequest, $oldStage, $newStage, $isFinalDecision)
+            );
+        }
+    }
 
     /**
      * Get the program that owns the accreditation request.
