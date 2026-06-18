@@ -2,48 +2,68 @@
 @php
     $committee = $committee ?? null;
     $userRole = $user->role;
-    $isChairEvaluator = $userRole === 'evaluator' && $committee?->chair_evaluator_id === ($user->evaluator?->id ?? null);
-    $isCouncilCoordinator = $userRole === 'council_coordinator' && $accreditationRequest->council_coord_id === $user->id;
+    $isChairEvaluator =
+        $userRole === 'evaluator' && $committee?->chair_evaluator_id === ($user->evaluator?->id ?? null);
+    $isCouncilCoordinator =
+        $userRole === 'council_coordinator' && $accreditationRequest->council_coord_id === $user->id;
     $report = $accreditationRequest->committeeReport;
-    
+
     $statusMap = [
-        'draft'                => ['label' => 'مسودة', 'color' => 'gray'],
-        'under_review'         => ['label' => 'قيد المراجعة', 'color' => 'amber'],
-        'returned_for_edit'    => ['label' => 'معاد للتعديل', 'color' => 'red'],
+        'draft' => ['label' => 'مسودة', 'color' => 'gray'],
+        'under_review' => ['label' => 'قيد المراجعة', 'color' => 'amber'],
+        'returned_for_edit' => ['label' => 'معاد للتعديل', 'color' => 'red'],
         'submitted_to_council' => ['label' => 'مرفوع للمجلس', 'color' => 'blue'],
-        'council_responded'    => ['label' => 'تم رد المجلس', 'color' => 'purple'],
-        'uni_responded'        => ['label' => 'تم رد الجامعة', 'color' => 'indigo'],
-        'final_under_review'   => ['label' => 'قيد المراجعة النهائية', 'color' => 'orange'],
-        'completed'            => ['label' => 'مكتمل', 'color' => 'green'],
+        'council_responded' => ['label' => 'تم رد المجلس', 'color' => 'purple'],
+        'uni_responded' => ['label' => 'تم رد الجامعة', 'color' => 'indigo'],
+        'final_under_review' => ['label' => 'قيد المراجعة النهائية', 'color' => 'orange'],
+        'completed' => ['label' => 'مكتمل', 'color' => 'green'],
     ];
 
     $currentStatus = $report ? $report->status : 'draft';
     $st = $statusMap[$currentStatus] ?? ['label' => 'لم يبدأ', 'color' => 'gray'];
-    
-    $isCommitteeMember = $userRole === 'evaluator' && 
-                        $committee && 
-                        $committee->chair_evaluator_id !== ($user->evaluator?->id ?? null) && 
-                        $committee->acceptedMembers->pluck('evaluator_id')->contains($user->evaluator?->id ?? null);
+
+    $isCommitteeMember =
+        $userRole === 'evaluator' &&
+        $committee &&
+        $committee->chair_evaluator_id !== ($user->evaluator?->id ?? null) &&
+        $committee->acceptedMembers->pluck('evaluator_id')->contains($user->evaluator?->id ?? null);
 
     $committeeApprovals = $committeeApprovals ?? collect();
-    $allMembersApproved = $report && $committeeApprovals->count() > 0 && 
-                        $committeeApprovals->where('status', 'approved')->count() === $committeeApprovals->count();
-                        
-    $memberApproval = $isCommitteeMember ? $committeeApprovals->where('member_id', $user->evaluator?->id ?? null)->first() : null;
+    $allMembersApproved =
+        $report &&
+        $committeeApprovals->count() > 0 &&
+        $committeeApprovals->where('status', 'approved')->count() === $committeeApprovals->count();
 
-    $stageOrder = ['stage_one', 'stage_two', 'stage_three', 'stage_four', 'stage_five', 'stage_six', 'stage_seven', 'stage_eight', 'stage_nine'];
+    $memberApproval = $isCommitteeMember
+        ? $committeeApprovals->where('member_id', $user->evaluator?->id ?? null)->first()
+        : null;
+
+    $stageOrder = [
+        'stage_one',
+        'stage_two',
+        'stage_three',
+        'stage_four',
+        'stage_five',
+        'stage_six',
+        'stage_seven',
+        'stage_eight',
+        'stage_nine',
+    ];
     $currentStageIndex = array_search($accreditationRequest->current_stage, $stageOrder);
     $thisStageIndex = array_search('stage_six', $stageOrder);
     $isLocked = $currentStageIndex < $thisStageIndex;
 @endphp
 
-@if($isLocked)
-    <div class="flex flex-col items-center justify-center py-20 text-center gap-6 animate-in fade-in zoom-in duration-500">
+@if ($isLocked)
+    <div
+        class="flex flex-col items-center justify-center py-20 text-center gap-6 animate-in fade-in zoom-in duration-500">
         <div class="relative">
-            <div class="w-24 h-24 rounded-3xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700 shadow-inner">
+            <div
+                class="w-24 h-24 rounded-3xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700 shadow-inner">
                 <i class="fa-solid fa-lock text-4xl"></i>
             </div>
-            <div class="absolute -bottom-2 -right-2 w-10 h-10 rounded-2xl bg-amber-500 text-white flex items-center justify-center shadow-lg ring-4 ring-white dark:ring-slate-900">
+            <div
+                class="absolute -bottom-2 -right-2 w-10 h-10 rounded-2xl bg-amber-500 text-white flex items-center justify-center shadow-lg ring-4 ring-white dark:ring-slate-900">
                 <i class="fa-solid fa-hourglass-half text-sm"></i>
             </div>
         </div>
@@ -52,899 +72,1098 @@
             <p class="text-(--text-secondary) leading-relaxed">
                 لا يمكنك الوصول إلى محتوى "تقارير نتائج التقييم" حتى يتم الانتهاء من المراحل السابقة. الطلب حالياً في:
                 <br>
-                <span class="inline-block mt-3 px-4 py-1.5 rounded-xl bg-orange-100 text-orange-700 dark:bg-orange-500/10 dark:text-orange-400 font-bold border border-orange-200 dark:border-orange-500/20">
+                <span
+                    class="inline-block mt-3 px-4 py-1.5 rounded-xl bg-orange-100 text-orange-700 dark:bg-orange-500/10 dark:text-orange-400 font-bold border border-orange-200 dark:border-orange-500/20">
                     {{ $stages[$accreditationRequest->current_stage] ?? $accreditationRequest->current_stage }}
                 </span>
             </p>
         </div>
     </div>
 @else
-
-<div class="w-full text-start space-y-6" x-data="{
-    nullScoredIndicators: [],
-    form5Issues: [],
-    form5Info: [],
-    showNullModal: false,
-    isValidating: false,
-    showRequestModal: false,
-    showWithdrawModal: false,
-    showCouncilModal: false,
+    <div class="w-full text-start space-y-6" x-data="{
+        nullScoredIndicators: [],
+        form5Issues: [],
+        form5Info: [],
+        showNullModal: false,
+        isValidating: false,
+        showRequestModal: false,
+        showWithdrawModal: false,
+        showCouncilModal: false,
     
-    showRejectModal: false,
-    rejectReasons: [''],
-    addReason() { this.rejectReasons.push(''); },
-    removeReason(i) { if (this.rejectReasons.length > 1) this.rejectReasons.splice(i, 1); },
-
-    showSignModal: false,
-    signStep: 1, // 1: form5, 2: form6, 3: confirm
-    signature5: null,
-    signature6: null,
-    pad5: null,
-    pad6: null,
-    submitType: 'member', // 'member' or 'chair'
-    isPortrait: false,
-    checkOrientation() {
-        this.isPortrait = window.matchMedia('(orientation: portrait)').matches && window.innerWidth < 1024;
-    },
+        showRejectModal: false,
+        rejectReasons: [''],
+        addReason() { this.rejectReasons.push(''); },
+        removeReason(i) { if (this.rejectReasons.length > 1) this.rejectReasons.splice(i, 1); },
     
-    async tryRequestApproval() {
-        if (this.isValidating) return;
-        
-        this.isValidating = true;
-        try {
-            const response = await axios.post('{{ route('requests.stage_six.validate', $accreditationRequest) }}');
-            this.nullScoredIndicators = response.data.nullScoredIndicators;
-            this.form5Issues = response.data.form5Issues || [];
-            this.form5Info = response.data.form5Info || [];
-            
-            if (this.nullScoredIndicators.length > 0 || this.form5Issues.length > 0) {
-                this.showNullModal = true;
-            } else {
-                this.showRequestModal = true;
-            }
-        } catch (error) {
-            console.error('Validation error:', error);
-            alert('حدث خطأ أثناء التحقق من البيانات. يرجى المحاولة مرة أخرى.');
-        } finally {
-            this.isValidating = false;
-        }
-    },
-    init() {
-        this.checkOrientation();
-        window.addEventListener('resize', () => {
-            this.checkOrientation();
-            if (this.showSignModal) {
-                if (this.signStep === 1) this.initPad('canvas5');
-                if (this.signStep === 2) this.initPad('canvas6');
-            }
-        });
-
-        // Observe theme changes to update signature pad color in real-time
-        const observer = new MutationObserver(() => {
-            const color = 'rgb(0, 0, 0)';
-            if (this.pad5) this.pad5.penColor = color;
-            if (this.pad6) this.pad6.penColor = color;
-        });
-        observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-    },
+        showSignModal: false,
+        signStep: 1, // 1: form5, 2: form6, 3: confirm
+        signature5: null,
+        signature6: null,
+        pad5: null,
+        pad6: null,
+        submitType: 'member', // 'member' or 'chair'
+        isPortrait: false,
+        checkOrientation() {
+            this.isPortrait = window.matchMedia('(orientation: portrait)').matches && window.innerWidth < 1024;
+        },
     
-    initPad(refName) {
-        this.$nextTick(() => {
-            const canvas = this.$refs[refName];
-            if (!canvas) return;
-
-            // Wait for animation frame to ensure layout is ready
-            requestAnimationFrame(() => {
-                const padKey = 'pad' + refName.replace('canvas', '');
-                const color = 'rgb(0, 0, 0)';
-
-                // Create pad if doesn't exist
-                if (!this[padKey]) {
-                    this[padKey] = new window.SignaturePad(canvas, {
-                        backgroundColor: 'rgba(255, 255, 255, 0)',
-                        penColor: color,
-                        minWidth: 1.2,
-                        maxWidth: 4,
-                        velocityFilterWeight: 0.6,
-                    });
+        async tryRequestApproval() {
+            if (this.isValidating) return;
+    
+            this.isValidating = true;
+            try {
+                const response = await axios.post('{{ route('requests.stage_six.validate', $accreditationRequest) }}');
+                this.nullScoredIndicators = response.data.nullScoredIndicators;
+                this.form5Issues = response.data.form5Issues || [];
+                this.form5Info = response.data.form5Info || [];
+    
+                if (this.nullScoredIndicators.length > 0 || this.form5Issues.length > 0) {
+                    this.showNullModal = true;
                 } else {
-                    this[padKey].penColor = color;
+                    this.showRequestModal = true;
                 }
-
-                // Resize logic based on parent container
-                const rect = canvas.parentElement.getBoundingClientRect();
-                if (rect.width === 0 || rect.height === 0) {
-                    // Try again if elements are not yet sized
-                    setTimeout(() => this.initPad(refName), 100);
-                    return;
+            } catch (error) {
+                console.error('Validation error:', error);
+                alert('حدث خطأ أثناء التحقق من البيانات. يرجى المحاولة مرة أخرى.');
+            } finally {
+                this.isValidating = false;
+            }
+        },
+        init() {
+            this.checkOrientation();
+            window.addEventListener('resize', () => {
+                this.checkOrientation();
+                if (this.showSignModal) {
+                    if (this.signStep === 1) this.initPad('canvas5');
+                    if (this.signStep === 2) this.initPad('canvas6');
                 }
-
-                const ratio = Math.max(window.devicePixelRatio || 1, 1);
-                canvas.width = rect.width * ratio;
-                canvas.height = rect.height * ratio;
-                canvas.getContext('2d').scale(ratio, ratio);
-                this[padKey].clear();
             });
-        });
-    },
-    clearPad(num) {
-        if (this['pad' + num]) this['pad' + num].clear();
-    },
-    nextStep() {
-        if (this.signStep === 1) {
-            if (this.pad5 && this.pad5.isEmpty()) return alert('الرجاء توقيع النموذج الأول');
-            this.signature5 = this.pad5.toDataURL('image/svg+xml');
-            this.signStep = 2;
-        } else if (this.signStep === 2) {
-            if (this.pad6 && this.pad6.isEmpty()) return alert('الرجاء توقيع النموذج الثاني');
-            this.signature6 = this.pad6.toDataURL('image/svg+xml');
-            this.signStep = 3;
+    
+            // Observe theme changes to update signature pad color in real-time
+            const observer = new MutationObserver(() => {
+                const color = 'rgb(0, 0, 0)';
+                if (this.pad5) this.pad5.penColor = color;
+                if (this.pad6) this.pad6.penColor = color;
+            });
+            observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+        },
+    
+        initPad(refName) {
+            this.$nextTick(() => {
+                const canvas = this.$refs[refName];
+                if (!canvas) return;
+    
+                // Wait for animation frame to ensure layout is ready
+                requestAnimationFrame(() => {
+                    const padKey = 'pad' + refName.replace('canvas', '');
+                    const color = 'rgb(0, 0, 0)';
+    
+                    // Create pad if doesn't exist
+                    if (!this[padKey]) {
+                        this[padKey] = new window.SignaturePad(canvas, {
+                            backgroundColor: 'rgba(255, 255, 255, 0)',
+                            penColor: color,
+                            minWidth: 1.2,
+                            maxWidth: 4,
+                            velocityFilterWeight: 0.6,
+                        });
+                    } else {
+                        this[padKey].penColor = color;
+                    }
+    
+                    // Resize logic based on parent container
+                    const rect = canvas.parentElement.getBoundingClientRect();
+                    if (rect.width === 0 || rect.height === 0) {
+                        // Try again if elements are not yet sized
+                        setTimeout(() => this.initPad(refName), 100);
+                        return;
+                    }
+    
+                    const ratio = Math.max(window.devicePixelRatio || 1, 1);
+                    canvas.width = rect.width * ratio;
+                    canvas.height = rect.height * ratio;
+                    canvas.getContext('2d').scale(ratio, ratio);
+                    this[padKey].clear();
+                });
+            });
+        },
+        clearPad(num) {
+            if (this['pad' + num]) this['pad' + num].clear();
+        },
+        nextStep() {
+            if (this.signStep === 1) {
+                if (this.pad5 && this.pad5.isEmpty()) return alert('الرجاء توقيع النموذج الأول');
+                this.signature5 = this.pad5.toDataURL('image/svg+xml');
+                this.signStep = 2;
+            } else if (this.signStep === 2) {
+                if (this.pad6 && this.pad6.isEmpty()) return alert('الرجاء توقيع النموذج الثاني');
+                this.signature6 = this.pad6.toDataURL('image/svg+xml');
+                this.signStep = 3;
+            }
+        },
+        prevStep() {
+            if (this.signStep > 1) this.signStep--;
+        },
+        resetSignatures() {
+            this.signStep = 1;
+            this.signature5 = null;
+            this.signature6 = null;
+            if (this.pad5) this.pad5.clear();
+            if (this.pad6) this.pad6.clear();
         }
-    },
-    prevStep() {
-        if (this.signStep > 1) this.signStep--;
-    },
-    resetSignatures() {
-        this.signStep = 1;
-        this.signature5 = null;
-        this.signature6 = null;
-        if(this.pad5) this.pad5.clear();
-        if(this.pad6) this.pad6.clear();
-    }
-}" x-init="$watch('showSignModal', value => { if(value) { checkOrientation(); if(signStep === 1) initPad('canvas5'); } }); $watch('signStep', value => { if(value === 1) initPad('canvas5'); if(value === 2) initPad('canvas6'); })">
+    }" x-init="$watch('showSignModal', value => { if (value) { checkOrientation(); if (signStep === 1) initPad('canvas5'); } });
+    $watch('signStep', value => { if (value === 1) initPad('canvas5'); if (value === 2) initPad('canvas6'); })">
 
-    {{-- Flash alerts --}}
-    @if(session('success'))
-        <div class="flex items-center gap-3 p-4 rounded-xl bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-500/20 text-green-700 dark:text-green-400 font-bold shadow-sm">
-            <i class="fa-solid fa-circle-check text-xl shrink-0"></i>
-            <span>{{ session('success') }}</span>
-        </div>
-    @endif
-
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {{-- Status Card --}}
-        <div class="rounded-2xl border border-(--border-primary) bg-(--surface-card) shadow-sm p-5 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div class="w-12 h-12 rounded-xl flex items-center justify-center text-lg shadow-inner
-                    {{ $st['color'] === 'green' ? 'bg-green-50 text-green-600 border border-green-100 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/20'
-                    : ($st['color'] === 'amber' ? 'bg-amber-50 text-amber-600 border border-amber-100 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20'
-                    : ($st['color'] === 'blue' ? 'bg-blue-50 text-blue-600 border border-blue-100 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20'
-                    : ($st['color'] === 'red' ? 'bg-red-50 text-red-600 border border-red-100 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20'
-                    : 'bg-slate-50 text-slate-600 border border-slate-100 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700'))) }}">
-                    <i class="fa-solid fa-chart-pie"></i>
-                </div>
-                <div>
-                    <h3 class="text-xs font-bold text-(--text-secondary) mb-1">حالة المرحلة</h3>
-                    <p class="font-black text-(--text-primary)">{{ $st['label'] }}</p>
-                </div>
+        {{-- Flash alerts --}}
+        @if (session('success'))
+            <div
+                class="flex items-center gap-3 p-4 rounded-xl bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-500/20 text-green-700 dark:text-green-400 font-bold shadow-sm">
+                <i class="fa-solid fa-circle-check text-xl shrink-0"></i>
+                <span>{{ session('success') }}</span>
             </div>
-        </div>
+        @endif
 
-        {{-- Date Card --}}
-        <div class="rounded-2xl border border-(--border-primary) bg-(--surface-card) shadow-sm p-5 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <div class="w-12 h-12 rounded-xl flex items-center justify-center text-lg shadow-inner bg-indigo-50 text-indigo-600 border border-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-400 dark:border-indigo-500/20">
-                    <i class="fa-solid fa-calendar-check"></i>
-                </div>
-                <div>
-                    <h3 class="text-xs font-bold text-(--text-secondary) mb-1">تاريخ رفع التقرير</h3>
-                    <p class="font-black text-(--text-primary) tracking-wide">
-                        {{ $report && $report->stage6_submitted_at ? $report->stage6_submitted_at->format('Y/m/d H:i') : 'لم يتم الرفع بعد' }}
-                    </p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="rounded-2xl border border-(--border-primary) bg-(--surface-card) shadow-sm overflow-hidden">
-        {{-- Header --}}
-        <div class="px-6 py-4 border-b border-(--border-primary) bg-(--bg-main) flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center border border-blue-100 dark:border-blue-500/20 shadow-inner shrink-0">
-                <i class="fa-solid fa-file-lines text-lg"></i>
-            </div>
-            <div>
-                <h3 class="font-bold text-(--text-primary)">النماذج والتقارير</h3>
-                <p class="text-xs text-(--text-secondary)">النماذج المطلوبة في هذه المرحلة</p>
-            </div>
-        </div>
-
-        {{-- Content Table --}}
-        <div class="p-0 overflow-x-auto">
-            <table class="w-full text-sm text-start whitespace-nowrap">
-                <thead class="bg-(--bg-main) border-b border-(--border-primary) text-(--text-secondary) font-bold text-xs">
-                    <tr>
-                        <th class="px-5 py-4 w-12 text-center">#</th>
-                        <th class="px-5 py-4">اسم النموذج</th>
-                        <th class="px-5 py-4 text-center">العمليات</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-(--border-primary)">
-                    <tr class="hover:bg-(--bg-main) transition-colors">
-                        <td class="px-5 py-4 text-center">
-                            <span class="w-7 h-7 rounded-lg bg-(--surface-card) border border-(--border-primary) inline-flex items-center justify-center font-black text-(--text-primary)">
-                                1
-                            </span>
-                        </td>
-                        <td class="px-5 py-4 font-bold text-(--text-primary)">
-                            نموذج تقرير الزيارة الميدانية
-                        </td>
-                        <td class="px-5 py-4">
-                            <div class="flex items-center justify-center gap-2">
-                                @if($isChairEvaluator && in_array($currentStatus, ['draft', 'returned_for_edit']) && $accreditationRequest->current_stage === 'stage_six')
-                                    <a href="{{ route('requests.stage_six.visit_report.edit', $accreditationRequest) }}"
-                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200 dark:bg-blue-500/10 dark:hover:bg-blue-500/20 dark:text-blue-400 dark:border-blue-500/20 text-xs font-bold transition cursor-pointer">
-                                        <i class="fa-solid fa-pen"></i> تعديل
-                                    </a>
-                                @endif
-                                <a href="{{ route('requests.stage_six.visit_report.show', $accreditationRequest) }}"
-                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-(--surface-card) border border-(--border-primary) hover:bg-(--bg-main) text-(--text-primary) text-xs font-bold transition cursor-pointer">
-                                    <i class="fa-solid fa-eye text-(--text-secondary)"></i> عرض
-                                </a>
-                                <a href="{{ route('requests.stage_six.visit_report.print', $accreditationRequest) }}"
-                                    x-data="{ loading: false, finished: false }"
-                                    x-on:click="loading = true; finished = false; setTimeout(() => { loading = false; finished = true; setTimeout(() => finished = false, 5000) }, 5000)"
-                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-bold transition-all hover:-translate-y-0.5 cursor-pointer no-underline"
-                                    :class="finished ? 'bg-green-50 text-green-700 border-green-200 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/20 dark:hover:bg-green-500/30' : 'bg-(--surface-card) border border-(--border-primary) hover:bg-(--bg-main) text-(--text-primary)'"
-                                    :class="{ 'opacity-60 pointer-events-none': loading }">
-                                    <i x-show="!loading && !finished" class="fa-solid fa-download text-(--text-secondary)"></i>
-                                    <i x-show="loading" class="fa-solid fa-circle-notch animate-spin text-blue-600 dark:text-blue-400"></i>
-                                    <i x-show="finished" class="fa-solid fa-check text-green-600 dark:text-green-400"></i>
-                                    <span x-text="loading ? 'جاري التحميل...' : (finished ? 'تم التحميل' : 'تحميل')"></span>
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
-
-                    {{-- Row 2: Program Assessment Metrics (Rubrics Form 6) --}}
-                    <tr class="hover:bg-(--bg-main) transition-colors">
-                        <td class="px-5 py-4 text-center">
-                            <span class="w-7 h-7 rounded-lg bg-(--surface-card) border border-(--border-primary) inline-flex items-center justify-center font-black text-(--text-primary)">
-                                2
-                            </span>
-                        </td>
-                        <td class="px-5 py-4 font-bold text-(--text-primary)">
-                            نموذج مقاييس تقييم البرنامج
-                        </td>
-                        <td class="px-5 py-4">
-                            <div class="flex items-center justify-center gap-2">
-                                @if($isChairEvaluator && in_array($currentStatus, ['draft', 'returned_for_edit']) && $accreditationRequest->current_stage === 'stage_six')
-                                    <a href="{{ route('requests.stage_six.rubrics_edit', $accreditationRequest) }}"
-                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200 dark:bg-blue-500/10 dark:hover:bg-blue-500/20 dark:text-blue-400 dark:border-blue-500/20 text-xs font-bold transition cursor-pointer">
-                                        <i class="fa-solid fa-pen"></i> تعديل
-                                    </a>
-                                @endif
-                                <a href="{{ route('requests.stage_six.rubrics_show', $accreditationRequest) }}"
-                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-(--surface-card) border border-(--border-primary) hover:bg-(--bg-main) text-(--text-primary) text-xs font-bold transition cursor-pointer">
-                                    <i class="fa-solid fa-eye text-(--text-secondary)"></i> عرض
-                                </a>
-                                <a href="{{ route('requests.stage_six.rubrics_print', $accreditationRequest) }}"
-                                    x-data="{ loading: false, finished: false }"
-                                    x-on:click="loading = true; finished = false; setTimeout(() => { loading = false; finished = true; setTimeout(() => finished = false, 5000) }, 5000)"
-                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-bold transition-all hover:-translate-y-0.5 cursor-pointer no-underline"
-                                    :class="finished ? 'bg-green-50 text-green-700 border-green-200 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/20 dark:hover:bg-green-500/30' : 'bg-(--surface-card) border border-(--border-primary) hover:bg-(--bg-main) text-(--text-primary)'"
-                                    :class="{ 'opacity-60 pointer-events-none': loading }">
-                                    <i x-show="!loading && !finished" class="fa-solid fa-download text-(--text-secondary)"></i>
-                                    <i x-show="loading" class="fa-solid fa-circle-notch animate-spin text-blue-600 dark:text-blue-400"></i>
-                                    <i x-show="finished" class="fa-solid fa-check text-green-600 dark:text-green-400"></i>
-                                    <span x-text="loading ? 'جاري التحميل...' : (finished ? 'تم التحميل' : 'تحميل')"></span>
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
-
-                    
-                    {{-- Row 4: Final Report of Reviewers (Form 7) --}}
-                    <tr class="hover:bg-(--bg-main) transition-colors">
-                        <td class="px-5 py-4 text-center">
-                            <span class="w-7 h-7 rounded-lg bg-(--surface-card) border border-(--border-primary) inline-flex items-center justify-center font-black text-(--text-primary)">
-                                3
-                            </span>
-                        </td>
-                        <td class="px-5 py-4 font-bold text-(--text-primary)">
-                            التقرير النهائي للجنة المقيمين  
-                        </td>
-                        <td class="px-5 py-4">
-                            <div class="flex items-center justify-center gap-2">
-                                <a href="{{ route('requests.stage_six.final_report', $accreditationRequest) }}"
-                                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-(--surface-card) border border-(--border-primary) hover:bg-(--bg-main) text-(--text-primary) text-xs font-bold transition cursor-pointer">
-                                    <i class="fa-solid fa-eye text-(--text-secondary)"></i> عرض
-                                </a>
-                                <a href="{{ route('requests.stage_six.final_report.print', $accreditationRequest) }}"
-                                    x-data="{ loading: false, finished: false }"
-                                    x-on:click="loading = true; finished = false; setTimeout(() => { loading = false; finished = true; setTimeout(() => finished = false, 5000) }, 5000)"
-                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-bold transition-all hover:-translate-y-0.5 cursor-pointer no-underline"
-                                    :class="finished ? 'bg-green-50 text-green-700 border-green-200 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/20 dark:hover:bg-green-500/30' : 'bg-(--surface-card) border border-(--border-primary) hover:bg-(--bg-main) text-(--text-primary)'"
-                                    :class="{ 'opacity-60 pointer-events-none': loading }">
-                                    <i x-show="!loading && !finished" class="fa-solid fa-download text-(--text-secondary)"></i>
-                                    <i x-show="loading" class="fa-solid fa-circle-notch animate-spin text-blue-600 dark:text-blue-400"></i>
-                                    <i x-show="finished" class="fa-solid fa-check text-green-600 dark:text-green-400"></i>
-                                    <span x-text="loading ? 'جاري التحميل...' : (finished ? 'تم التحميل' : 'تحميل')"></span>
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
-                    {{-- Row 4: Recommendations Letter (Form 8) - Visible only if submitted_to_council or higher --}}
-                    <tr class="hover:bg-(--bg-main) transition-colors animate-in fade-in slide-in-from-top-2 duration-500">
-                        <td class="px-5 py-4 text-center">
-                            <span class="w-7 h-7 rounded-lg bg-(--surface-card) border border-(--border-primary) inline-flex items-center justify-center font-black text-(--text-primary)">
-                                4
-                            </span>
-                        </td>
-                        <td class="px-5 py-4 font-bold text-(--text-primary)">
-                            خطاب توصيات لجنة المقيمين للمؤسسة التعليمية
-                        </td>
-                        <td class="px-5 py-4">
-                            <div class="flex items-center justify-center gap-2">
-                                <a href="{{ route('requests.stage_six.recommendations_letter', $accreditationRequest) }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-(--surface-card) border border-(--border-primary) hover:bg-(--bg-main) text-(--text-primary) text-xs font-bold transition">
-                                    <i class="fa-solid fa-eye text-(--text-secondary)"></i> عرض
-                                </a>
-                                <a href="{{ route('requests.stage_six.recommendations_letter.print', $accreditationRequest) }}"
-                                    x-data="{ loading: false, finished: false }"
-                                    x-on:click="loading = true; finished = false; setTimeout(() => { loading = false; finished = true; setTimeout(() => finished = false, 5000) }, 5000)"
-                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-bold transition-all hover:-translate-y-0.5 cursor-pointer no-underline"
-                                    :class="finished ? 'bg-green-50 text-green-700 border-green-200 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/20 dark:hover:bg-green-500/30' : 'bg-(--surface-card) border border-(--border-primary) hover:bg-(--bg-main) text-(--text-primary)'"
-                                    :class="{ 'opacity-60 pointer-events-none': loading }">
-                                    <i x-show="!loading && !finished" class="fa-solid fa-download text-(--text-secondary)"></i>
-                                    <i x-show="loading" class="fa-solid fa-circle-notch animate-spin text-blue-600 dark:text-blue-400"></i>
-                                    <i x-show="finished" class="fa-solid fa-check text-green-600 dark:text-green-400"></i>
-                                    <span x-text="loading ? 'جاري التحميل...' : (finished ? 'تم التحميل' : 'تحميل')"></span>
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    {{-- Committee Approvals Table --}}
-    @if($committee)
-        @php
-            $membersList = $committee->activeMembers->where('member_status', 'accepted')->filter(fn($m) => $m->evaluator_id !== $committee->chair_evaluator_id);
-        @endphp
-        <div class="rounded-2xl border border-(--border-primary) bg-(--surface-card) shadow-sm overflow-hidden mt-6">
-            <div class="px-6 py-4 border-b border-(--border-primary) bg-(--bg-main) flex items-center justify-between gap-3">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {{-- Status Card --}}
+            <div
+                class="rounded-2xl border border-(--border-primary) bg-(--surface-card) shadow-sm p-5 flex items-center justify-between">
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center border border-purple-100 dark:border-purple-500/20 shadow-inner shrink-0">
-                        <i class="fa-solid fa-users text-lg"></i>
+                    <div
+                        class="w-12 h-12 rounded-xl flex items-center justify-center text-lg shadow-inner
+                    {{ $st['color'] === 'green'
+                        ? 'bg-green-50 text-green-600 border border-green-100 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/20'
+                        : ($st['color'] === 'amber'
+                            ? 'bg-amber-50 text-amber-600 border border-amber-100 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20'
+                            : ($st['color'] === 'blue'
+                                ? 'bg-blue-50 text-blue-600 border border-blue-100 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20'
+                                : ($st['color'] === 'red'
+                                    ? 'bg-red-50 text-red-600 border border-red-100 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20'
+                                    : 'bg-slate-50 text-slate-600 border border-slate-100 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700'))) }}">
+                        <i class="fa-solid fa-chart-pie"></i>
                     </div>
                     <div>
-                        <h3 class="font-bold text-(--text-primary)">موافقات أعضاء اللجنة</h3>
-                        <p class="text-xs text-(--text-secondary)">متابعة توقيعات وموافقات الأعضاء @if($report && $report->current_iteration > 0) (الدورة رقم {{ $report->current_iteration }}) @endif</p>
+                        <h3 class="text-xs font-bold text-(--text-secondary) mb-1">حالة المرحلة</h3>
+                        <p class="font-black text-(--text-primary)">{{ $st['label'] }}</p>
                     </div>
                 </div>
             </div>
-            
+
+            {{-- Date Card --}}
+            <div
+                class="rounded-2xl border border-(--border-primary) bg-(--surface-card) shadow-sm p-5 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div
+                        class="w-12 h-12 rounded-xl flex items-center justify-center text-lg shadow-inner bg-indigo-50 text-indigo-600 border border-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-400 dark:border-indigo-500/20">
+                        <i class="fa-solid fa-calendar-check"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xs font-bold text-(--text-secondary) mb-1">تاريخ رفع التقرير</h3>
+                        <p class="font-black text-(--text-primary) tracking-wide">
+                            {{ $report && $report->stage6_submitted_at ? $report->stage6_submitted_at->format('Y/m/d H:i') : 'لم يتم الرفع بعد' }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="rounded-2xl border border-(--border-primary) bg-(--surface-card) shadow-sm overflow-hidden">
+            {{-- Header --}}
+            <div class="px-6 py-4 border-b border-(--border-primary) bg-(--bg-main) flex items-center gap-3">
+                <div
+                    class="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center border border-blue-100 dark:border-blue-500/20 shadow-inner shrink-0">
+                    <i class="fa-solid fa-file-lines text-lg"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-(--text-primary)">النماذج والتقارير</h3>
+                    <p class="text-xs text-(--text-secondary)">النماذج المطلوبة في هذه المرحلة</p>
+                </div>
+            </div>
+
+            {{-- Content Table --}}
             <div class="p-0 overflow-x-auto">
                 <table class="w-full text-sm text-start whitespace-nowrap">
-                    <thead class="bg-(--bg-main) border-b border-(--border-primary) text-(--text-secondary) font-bold text-xs">
+                    <thead
+                        class="bg-(--bg-main) border-b border-(--border-primary) text-(--text-secondary) font-bold text-xs">
                         <tr>
                             <th class="px-5 py-4 w-12 text-center">#</th>
-                            <th class="px-5 py-4">الاسم</th>
-                            <th class="px-5 py-4">الحالة</th>
-                            <th class="px-5 py-4">تاريخ الرد</th>
-                            @if($isChairEvaluator)
-                            <th class="px-5 py-4">ملاحظات</th>
-                            @endif
+                            <th class="px-5 py-4">اسم النموذج</th>
+                            <th class="px-5 py-4 text-center">العمليات</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-(--border-primary)">
-                        @forelse($membersList as $index => $member)
-                            @php
-                                // If the request has moved past stage_six, always show the stage_6 approvals.
-                                // Otherwise, show them only if the report is not in draft/returned_for_edit.
-                                $isPastStageSix = $currentStageIndex > $thisStageIndex;
-                                $showApprovals = $isPastStageSix || !in_array($currentStatus, ['draft', 'returned_for_edit']);
-                                $approval = $showApprovals ? $committeeApprovals->where('member_id', $member->evaluator_id)->first() : null;
-                            @endphp
-                            <tr class="hover:bg-(--bg-main) transition-colors">
-                                <td class="px-5 py-4 text-center text-(--text-secondary)">{{ $loop->iteration }}</td>
-                                <td class="px-5 py-4 font-bold text-(--text-primary)">
-                                    {{ $member->evaluator->user->name ?? 'عضو لجنة' }}
-                                </td>
-                                <td class="px-5 py-4">
-                                    @if($approval)
-                                        @if($approval->status === 'approved')
-                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-green-50 text-green-700 border border-green-200 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/20">
-                                                <i class="fa-solid fa-check"></i> تمت الموافقة
-                                            </span>
-                                        @elseif($approval->status === 'rejected')
-                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-red-50 text-red-700 border border-red-200 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20">
-                                                <i class="fa-solid fa-xmark"></i> يوجد ملاحظات
-                                            </span>
-                                        @elseif($approval->status === 'canceled')
-                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-gray-100 text-gray-700 border border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700">
-                                                <i class="fa-solid fa-ban"></i> ملغي
-                                            </span>
-                                        @else
-                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20">
-                                                <i class="fa-solid fa-hourglass-half"></i> بانتظار الموافقة
-                                            </span>
-                                        @endif
-                                    @else
-                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-gray-50 text-gray-600 border border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700">
-                                            <i class="fa-solid fa-clock"></i> لم يُطلب بعد
-                                        </span>
+                        <tr class="hover:bg-(--bg-main) transition-colors">
+                            <td class="px-5 py-4 text-center">
+                                <span
+                                    class="w-7 h-7 rounded-lg bg-(--surface-card) border border-(--border-primary) inline-flex items-center justify-center font-black text-(--text-primary)">
+                                    1
+                                </span>
+                            </td>
+                            <td class="px-5 py-4 font-bold text-(--text-primary)">
+                                نموذج تقرير الزيارة الميدانية
+                            </td>
+                            <td class="px-5 py-4">
+                                <div class="flex items-center justify-center gap-2">
+                                    @if (
+                                        $isChairEvaluator &&
+                                            in_array($currentStatus, ['draft', 'returned_for_edit']) &&
+                                            $accreditationRequest->current_stage === 'stage_six')
+                                        <a href="{{ route('requests.stage_six.visit_report.edit', $accreditationRequest) }}"
+                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200 dark:bg-blue-500/10 dark:hover:bg-blue-500/20 dark:text-blue-400 dark:border-blue-500/20 text-xs font-bold transition cursor-pointer">
+                                            <i class="fa-solid fa-pen"></i> تعديل
+                                        </a>
                                     @endif
-                                </td>
-                                <td class="px-5 py-4 text-(--text-secondary)">
-                                    {{ $approval && $approval->responded_at ? $approval->responded_at->format('Y/m/d H:i') : '—' }}
-                                </td>
-                                @if($isChairEvaluator)
-                                <td class="px-5 py-4">
-                                    @if($approval && $approval->status === 'rejected' && $approval->reject_reason)
-                                        @php $reasons = json_decode($approval->reject_reason, true) ?? []; @endphp
-                                        <div x-data="{ showReason: false }" class="relative">
-                                            <button @click="showReason = true" class="text-xs font-bold text-blue-600 hover:text-blue-700 hover:underline">
-                                                عرض الملاحظات ({{ count($reasons) }})
-                                            </button>
-                                            
-                                            <template x-teleport="body">
-                                                <div x-show="showReason" style="display:none" class="relative z-[200]">
-                                                    <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" @click="showReason = false"></div>
-                                                    <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
-                                                        <div @click.away="showReason = false" class="relative w-full max-w-md rounded-2xl bg-(--surface-card) shadow-2xl text-start">
-                                                            <div class="px-6 py-5 border-b border-(--border-primary) flex justify-between items-center bg-(--bg-main)">
-                                                                <h3 class="font-bold text-(--text-primary)">ملاحظات العضو</h3>
-                                                                <button @click="showReason = false"><i class="fa-solid fa-xmark"></i></button>
-                                                            </div>
-                                                            <div class="p-6 space-y-3">
-                                                                @foreach($reasons as $r)
-                                                                    <div class="p-4 rounded-xl bg-(--bg-main) border border-(--border-primary) text-sm text-(--text-secondary)">{{ $r }}</div>
-                                                                @endforeach
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </template>
-                                        </div>
-                                    @else
-                                        <span class="text-(--text-secondary)">—</span>
+                                    <a href="{{ route('requests.stage_six.visit_report.show', $accreditationRequest) }}"
+                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-(--surface-card) border border-(--border-primary) hover:bg-(--bg-main) text-(--text-primary) text-xs font-bold transition cursor-pointer">
+                                        <i class="fa-solid fa-eye text-(--text-secondary)"></i> عرض
+                                    </a>
+                                    <a href="{{ route('requests.stage_six.visit_report.print', $accreditationRequest) }}"
+                                        x-data="{ loading: false, finished: false }"
+                                        x-on:click="loading = true; finished = false; setTimeout(() => { loading = false; finished = true; setTimeout(() => finished = false, 5000) }, 5000)"
+                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-bold transition-all hover:-translate-y-0.5 cursor-pointer no-underline"
+                                        :class="finished ?
+                                            'bg-green-50 text-green-700 border-green-200 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/20 dark:hover:bg-green-500/30' :
+                                            'bg-(--surface-card) border border-(--border-primary) hover:bg-(--bg-main) text-(--text-primary)'"
+                                        :class="{ 'opacity-60 pointer-events-none': loading }">
+                                        <i x-show="!loading && !finished"
+                                            class="fa-solid fa-download text-(--text-secondary)"></i>
+                                        <i x-show="loading"
+                                            class="fa-solid fa-circle-notch animate-spin text-blue-600 dark:text-blue-400"></i>
+                                        <i x-show="finished"
+                                            class="fa-solid fa-check text-green-600 dark:text-green-400"></i>
+                                        <span
+                                            x-text="loading ? 'جاري التحميل...' : (finished ? 'تم التحميل' : 'تحميل')"></span>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+
+                        {{-- Row 2: Program Assessment Metrics (Rubrics Form 6) --}}
+                        <tr class="hover:bg-(--bg-main) transition-colors">
+                            <td class="px-5 py-4 text-center">
+                                <span
+                                    class="w-7 h-7 rounded-lg bg-(--surface-card) border border-(--border-primary) inline-flex items-center justify-center font-black text-(--text-primary)">
+                                    2
+                                </span>
+                            </td>
+                            <td class="px-5 py-4 font-bold text-(--text-primary)">
+                                نموذج مقاييس تقييم البرنامج
+                            </td>
+                            <td class="px-5 py-4">
+                                <div class="flex items-center justify-center gap-2">
+                                    @if (
+                                        $isChairEvaluator &&
+                                            in_array($currentStatus, ['draft', 'returned_for_edit']) &&
+                                            $accreditationRequest->current_stage === 'stage_six')
+                                        <a href="{{ route('requests.stage_six.rubrics_edit', $accreditationRequest) }}"
+                                            class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 border border-blue-200 dark:bg-blue-500/10 dark:hover:bg-blue-500/20 dark:text-blue-400 dark:border-blue-500/20 text-xs font-bold transition cursor-pointer">
+                                            <i class="fa-solid fa-pen"></i> تعديل
+                                        </a>
                                     @endif
-                                </td>
-                                @endif
-                            </tr>
-                        @empty
-                            <tr><td colspan="5" class="px-5 py-8 text-center text-(--text-secondary)">لا يوجد أعضاء في اللجنة</td></tr>
-                        @endforelse
+                                    <a href="{{ route('requests.stage_six.rubrics_show', $accreditationRequest) }}"
+                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-(--surface-card) border border-(--border-primary) hover:bg-(--bg-main) text-(--text-primary) text-xs font-bold transition cursor-pointer">
+                                        <i class="fa-solid fa-eye text-(--text-secondary)"></i> عرض
+                                    </a>
+                                    <a href="{{ route('requests.stage_six.rubrics_print', $accreditationRequest) }}"
+                                        x-data="{ loading: false, finished: false }"
+                                        x-on:click="loading = true; finished = false; setTimeout(() => { loading = false; finished = true; setTimeout(() => finished = false, 5000) }, 5000)"
+                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-bold transition-all hover:-translate-y-0.5 cursor-pointer no-underline"
+                                        :class="finished ?
+                                            'bg-green-50 text-green-700 border-green-200 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/20 dark:hover:bg-green-500/30' :
+                                            'bg-(--surface-card) border border-(--border-primary) hover:bg-(--bg-main) text-(--text-primary)'"
+                                        :class="{ 'opacity-60 pointer-events-none': loading }">
+                                        <i x-show="!loading && !finished"
+                                            class="fa-solid fa-download text-(--text-secondary)"></i>
+                                        <i x-show="loading"
+                                            class="fa-solid fa-circle-notch animate-spin text-blue-600 dark:text-blue-400"></i>
+                                        <i x-show="finished"
+                                            class="fa-solid fa-check text-green-600 dark:text-green-400"></i>
+                                        <span
+                                            x-text="loading ? 'جاري التحميل...' : (finished ? 'تم التحميل' : 'تحميل')"></span>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+
+
+                        {{-- Row 4: Final Report of Reviewers (Form 7) --}}
+                        <tr class="hover:bg-(--bg-main) transition-colors">
+                            <td class="px-5 py-4 text-center">
+                                <span
+                                    class="w-7 h-7 rounded-lg bg-(--surface-card) border border-(--border-primary) inline-flex items-center justify-center font-black text-(--text-primary)">
+                                    3
+                                </span>
+                            </td>
+                            <td class="px-5 py-4 font-bold text-(--text-primary)">
+                                التقرير النهائي للجنة المقيمين
+                            </td>
+                            <td class="px-5 py-4">
+                                <div class="flex items-center justify-center gap-2">
+                                    <a href="{{ route('requests.stage_six.final_report', $accreditationRequest) }}"
+                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-(--surface-card) border border-(--border-primary) hover:bg-(--bg-main) text-(--text-primary) text-xs font-bold transition cursor-pointer">
+                                        <i class="fa-solid fa-eye text-(--text-secondary)"></i> عرض
+                                    </a>
+                                    <a href="{{ route('requests.stage_six.final_report.print', $accreditationRequest) }}"
+                                        x-data="{ loading: false, finished: false }"
+                                        x-on:click="loading = true; finished = false; setTimeout(() => { loading = false; finished = true; setTimeout(() => finished = false, 5000) }, 5000)"
+                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-bold transition-all hover:-translate-y-0.5 cursor-pointer no-underline"
+                                        :class="finished ?
+                                            'bg-green-50 text-green-700 border-green-200 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/20 dark:hover:bg-green-500/30' :
+                                            'bg-(--surface-card) border border-(--border-primary) hover:bg-(--bg-main) text-(--text-primary)'"
+                                        :class="{ 'opacity-60 pointer-events-none': loading }">
+                                        <i x-show="!loading && !finished"
+                                            class="fa-solid fa-download text-(--text-secondary)"></i>
+                                        <i x-show="loading"
+                                            class="fa-solid fa-circle-notch animate-spin text-blue-600 dark:text-blue-400"></i>
+                                        <i x-show="finished"
+                                            class="fa-solid fa-check text-green-600 dark:text-green-400"></i>
+                                        <span
+                                            x-text="loading ? 'جاري التحميل...' : (finished ? 'تم التحميل' : 'تحميل')"></span>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {{-- Row 4: Recommendations Letter (Form 8) - Visible only if submitted_to_council or higher --}}
+                        <tr
+                            class="hover:bg-(--bg-main) transition-colors animate-in fade-in slide-in-from-top-2 duration-500">
+                            <td class="px-5 py-4 text-center">
+                                <span
+                                    class="w-7 h-7 rounded-lg bg-(--surface-card) border border-(--border-primary) inline-flex items-center justify-center font-black text-(--text-primary)">
+                                    4
+                                </span>
+                            </td>
+                            <td class="px-5 py-4 font-bold text-(--text-primary)">
+                                خطاب توصيات لجنة المقيمين للمؤسسة التعليمية
+                            </td>
+                            <td class="px-5 py-4">
+                                <div class="flex items-center justify-center gap-2">
+                                    <a href="{{ route('requests.stage_six.recommendations_letter', $accreditationRequest) }}"
+                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-(--surface-card) border border-(--border-primary) hover:bg-(--bg-main) text-(--text-primary) text-xs font-bold transition">
+                                        <i class="fa-solid fa-eye text-(--text-secondary)"></i> عرض
+                                    </a>
+                                    <a href="{{ route('requests.stage_six.recommendations_letter.print', $accreditationRequest) }}"
+                                        x-data="{ loading: false, finished: false }"
+                                        x-on:click="loading = true; finished = false; setTimeout(() => { loading = false; finished = true; setTimeout(() => finished = false, 5000) }, 5000)"
+                                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-bold transition-all hover:-translate-y-0.5 cursor-pointer no-underline"
+                                        :class="finished ?
+                                            'bg-green-50 text-green-700 border-green-200 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/20 dark:hover:bg-green-500/30' :
+                                            'bg-(--surface-card) border border-(--border-primary) hover:bg-(--bg-main) text-(--text-primary)'"
+                                        :class="{ 'opacity-60 pointer-events-none': loading }">
+                                        <i x-show="!loading && !finished"
+                                            class="fa-solid fa-download text-(--text-secondary)"></i>
+                                        <i x-show="loading"
+                                            class="fa-solid fa-circle-notch animate-spin text-blue-600 dark:text-blue-400"></i>
+                                        <i x-show="finished"
+                                            class="fa-solid fa-check text-green-600 dark:text-green-400"></i>
+                                        <span
+                                            x-text="loading ? 'جاري التحميل...' : (finished ? 'تم التحميل' : 'تحميل')"></span>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
         </div>
-    @endif
 
-    {{-- Call to Actions --}}
-    @if(!$isLocked && $accreditationRequest->current_stage === 'stage_six')
-        <div class="flex flex-wrap items-center gap-3 mt-6 border-t border-(--border-primary) pt-6">
-            @if($isChairEvaluator)
-                @if(in_array($currentStatus, ['draft', 'returned_for_edit']))
-                    <button @click="tryRequestApproval()" 
-                            :disabled="isValidating"
+        {{-- Committee Approvals Table --}}
+        @if ($committee)
+            @php
+                $membersList = $committee->activeMembers
+                    ->where('member_status', 'accepted')
+                    ->filter(fn($m) => $m->evaluator_id !== $committee->chair_evaluator_id);
+            @endphp
+            <div
+                class="rounded-2xl border border-(--border-primary) bg-(--surface-card) shadow-sm overflow-hidden mt-6">
+                <div
+                    class="px-6 py-4 border-b border-(--border-primary) bg-(--bg-main) flex items-center justify-between gap-3">
+                    <div class="flex items-center gap-3">
+                        <div
+                            class="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center border border-purple-100 dark:border-purple-500/20 shadow-inner shrink-0">
+                            <i class="fa-solid fa-users text-lg"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-(--text-primary)">موافقات أعضاء اللجنة</h3>
+                            <p class="text-xs text-(--text-secondary)">متابعة توقيعات وموافقات الأعضاء @if ($report && $report->current_iteration > 0)
+                                    (الدورة رقم {{ $report->current_iteration }})
+                                @endif
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-0 overflow-x-auto">
+                    <table class="w-full text-sm text-start whitespace-nowrap">
+                        <thead
+                            class="bg-(--bg-main) border-b border-(--border-primary) text-(--text-secondary) font-bold text-xs">
+                            <tr>
+                                <th class="px-5 py-4 w-12 text-center">#</th>
+                                <th class="px-5 py-4">الاسم</th>
+                                <th class="px-5 py-4">الحالة</th>
+                                <th class="px-5 py-4">تاريخ الرد</th>
+                                @if ($isChairEvaluator)
+                                    <th class="px-5 py-4">ملاحظات</th>
+                                @endif
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-(--border-primary)">
+                            @forelse($membersList as $index => $member)
+                                @php
+                                    // If the request has moved past stage_six, always show the stage_6 approvals.
+                                    // Otherwise, show them only if the report is not in draft/returned_for_edit.
+                                    $isPastStageSix = $currentStageIndex > $thisStageIndex;
+                                    $showApprovals =
+                                        $isPastStageSix || !in_array($currentStatus, ['draft', 'returned_for_edit']);
+                                    $approval = $showApprovals
+                                        ? $committeeApprovals->where('member_id', $member->evaluator_id)->first()
+                                        : null;
+                                @endphp
+                                <tr class="hover:bg-(--bg-main) transition-colors">
+                                    <td class="px-5 py-4 text-center text-(--text-secondary)">{{ $loop->iteration }}
+                                    </td>
+                                    <td class="px-5 py-4 font-bold text-(--text-primary)">
+                                        {{ $member->evaluator->user->name ?? 'عضو لجنة' }}
+                                    </td>
+                                    <td class="px-5 py-4">
+                                        @if ($approval)
+                                            @if ($approval->status === 'approved')
+                                                <span
+                                                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-green-50 text-green-700 border border-green-200 dark:bg-green-500/10 dark:text-green-400 dark:border-green-500/20">
+                                                    <i class="fa-solid fa-check"></i> تمت الموافقة
+                                                </span>
+                                            @elseif($approval->status === 'rejected')
+                                                <span
+                                                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-red-50 text-red-700 border border-red-200 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20">
+                                                    <i class="fa-solid fa-xmark"></i> يوجد ملاحظات
+                                                </span>
+                                            @elseif($approval->status === 'canceled')
+                                                <span
+                                                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-gray-100 text-gray-700 border border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700">
+                                                    <i class="fa-solid fa-ban"></i> ملغي
+                                                </span>
+                                            @else
+                                                <span
+                                                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20">
+                                                    <i class="fa-solid fa-hourglass-half"></i> بانتظار الموافقة
+                                                </span>
+                                            @endif
+                                        @else
+                                            <span
+                                                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-gray-50 text-gray-600 border border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700">
+                                                <i class="fa-solid fa-clock"></i> لم يُطلب بعد
+                                            </span>
+                                        @endif
+                                    </td>
+                                    <td class="px-5 py-4 text-(--text-secondary)">
+                                        {{ $approval && $approval->responded_at ? $approval->responded_at->format('Y/m/d H:i') : '—' }}
+                                    </td>
+                                    @if ($isChairEvaluator)
+                                        <td class="px-5 py-4">
+                                            @if ($approval && $approval->status === 'rejected' && $approval->reject_reason)
+                                                @php $reasons = json_decode($approval->reject_reason, true) ?? []; @endphp
+                                                <div x-data="{ showReason: false }" class="relative">
+                                                    <button @click="showReason = true"
+                                                        class="text-xs font-bold text-blue-600 hover:text-blue-700 hover:underline">
+                                                        عرض الملاحظات ({{ count($reasons) }})
+                                                    </button>
+
+                                                    <template x-teleport="body">
+                                                        <div x-show="showReason" style="display:none"
+                                                            class="relative z-[200]">
+                                                            <div class="fixed inset-0 bg-black/60 backdrop-blur-sm"
+                                                                @click="showReason = false"></div>
+                                                            <div
+                                                                class="fixed inset-0 z-10 flex items-center justify-center p-4">
+                                                                <div @click.away="showReason = false"
+                                                                    class="relative w-full max-w-md rounded-2xl bg-(--surface-card) shadow-2xl text-start">
+                                                                    <div
+                                                                        class="px-6 py-5 border-b border-(--border-primary) flex justify-between items-center bg-(--bg-main)">
+                                                                        <h3 class="font-bold text-(--text-primary)">
+                                                                            ملاحظات العضو</h3>
+                                                                        <button @click="showReason = false"><i
+                                                                                class="fa-solid fa-xmark"></i></button>
+                                                                    </div>
+                                                                    <div class="p-6 space-y-3">
+                                                                        @foreach ($reasons as $r)
+                                                                            <div
+                                                                                class="p-4 rounded-xl bg-(--bg-main) border border-(--border-primary) text-sm text-(--text-secondary)">
+                                                                                {{ $r }}</div>
+                                                                        @endforeach
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </template>
+                                                </div>
+                                            @else
+                                                <span class="text-(--text-secondary)">—</span>
+                                            @endif
+                                        </td>
+                                    @endif
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="5" class="px-5 py-8 text-center text-(--text-secondary)">لا يوجد
+                                        أعضاء في اللجنة</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        @endif
+
+        {{-- Call to Actions --}}
+        @if (!$isLocked && $accreditationRequest->current_stage === 'stage_six')
+            <div class="flex flex-wrap items-center gap-3 mt-6 border-t border-(--border-primary) pt-6">
+                @if ($isChairEvaluator)
+                    @if (in_array($currentStatus, ['draft', 'returned_for_edit']))
+                        <button @click="tryRequestApproval()" :disabled="isValidating"
                             class="px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-md transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-wait">
-                        <template x-if="!isValidating">
-                            <div class="flex items-center gap-2">
-                                <i class="fa-solid fa-paper-plane"></i> طلب موافقة الأعضاء
-                            </div>
-                        </template>
-                        <template x-if="isValidating">
-                            <div class="flex items-center gap-2">
-                                <i class="fa-solid fa-spinner fa-spin"></i> جاري التحقق...
-                            </div>
-                        </template>
+                            <template x-if="!isValidating">
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-paper-plane"></i> طلب موافقة الأعضاء
+                                </div>
+                            </template>
+                            <template x-if="isValidating">
+                                <div class="flex items-center gap-2">
+                                    <i class="fa-solid fa-spinner fa-spin"></i> جاري التحقق...
+                                </div>
+                            </template>
+                        </button>
+                    @endif
+
+                    @if ($currentStatus === 'under_review')
+                        <button @click="showWithdrawModal = true"
+                            class="px-6 py-3 rounded-xl bg-orange-100 text-orange-700 hover:bg-orange-200 font-bold border border-orange-200 transition-colors flex items-center gap-2">
+                            <i class="fa-solid fa-arrow-rotate-left"></i> سحب الطلب للتعديل
+                        </button>
+                    @endif
+
+                    @if ($currentStatus === 'under_review' && $allMembersApproved)
+                        <button @click="showSignModal = true; submitType = 'chair'; resetSignatures();"
+                            class="px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-md transition-colors flex items-center gap-2">
+                            <i class="fa-solid fa-file-signature"></i> اعتماد ورفع التقرير للمجلس
+                        </button>
+                    @endif
+                @endif
+
+                @if ($isCommitteeMember && $memberApproval && $memberApproval->status === 'pending')
+                    <button @click="showRejectModal = true; rejectReasons = [''];"
+                        class="px-6 py-3 rounded-xl bg-red-100 text-red-700 hover:bg-red-200 font-bold border border-red-200 transition-colors flex items-center gap-2">
+                        <i class="fa-solid fa-xmark"></i> رفض لوجود ملاحظات
+                    </button>
+
+                    <button @click="showSignModal = true; submitType = 'member'; resetSignatures();"
+                        class="px-6 py-3 rounded-xl bg-green-600 hover:bg-green-700 text-white font-bold shadow-md transition-colors flex items-center gap-2">
+                        <i class="fa-solid fa-signature"></i> توقيع وموافقة
                     </button>
                 @endif
 
-                @if($currentStatus === 'under_review')
-                    <button @click="showWithdrawModal = true" class="px-6 py-3 rounded-xl bg-orange-100 text-orange-700 hover:bg-orange-200 font-bold border border-orange-200 transition-colors flex items-center gap-2">
-                        <i class="fa-solid fa-arrow-rotate-left"></i> سحب الطلب للتعديل
+                @if ($isCouncilCoordinator && $currentStatus === 'submitted_to_council')
+                    <button @click="showCouncilModal = true"
+                        class="px-6 py-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold shadow-md transition-colors flex items-center gap-2">
+                        <i class="fa-solid fa-file-arrow-up"></i> رفع خطاب التوصيات للمؤسسة التعليمية
                     </button>
                 @endif
+            </div>
+        @endif
 
-                @if($currentStatus === 'under_review' && $allMembersApproved)
-                    <button @click="showSignModal = true; submitType = 'chair'; resetSignatures();" class="px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-md transition-colors flex items-center gap-2">
-                        <i class="fa-solid fa-file-signature"></i> اعتماد ورفع التقرير للمجلس
-                    </button>
-                @endif
-            @endif
+        {{-- Null Indicators Warning Modal --}}
+        <template x-teleport="body">
+            <div x-show="showNullModal" style="display:none" class="relative z-[250]">
+                <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" @click="showNullModal = false"></div>
+                <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
+                    <div @click.away="showNullModal = false"
+                        class="relative w-full max-w-2xl rounded-2xl bg-(--surface-card) shadow-2xl border border-(--border-primary) flex flex-col max-h-[85vh]">
 
-            @if($isCommitteeMember && $memberApproval && $memberApproval->status === 'pending')
-                <button @click="showRejectModal = true; rejectReasons = [''];" class="px-6 py-3 rounded-xl bg-red-100 text-red-700 hover:bg-red-200 font-bold border border-red-200 transition-colors flex items-center gap-2">
-                    <i class="fa-solid fa-xmark"></i> رفض لوجود ملاحظات
-                </button>
-                
-                <button @click="showSignModal = true; submitType = 'member'; resetSignatures();" class="px-6 py-3 rounded-xl bg-green-600 hover:bg-green-700 text-white font-bold shadow-md transition-colors flex items-center gap-2">
-                    <i class="fa-solid fa-signature"></i> توقيع وموافقة
-                </button>
-            @endif
-
-            @if($isCouncilCoordinator && $currentStatus === 'submitted_to_council')
-                <button @click="showCouncilModal = true" class="px-6 py-3 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold shadow-md transition-colors flex items-center gap-2">
-                    <i class="fa-solid fa-file-arrow-up"></i> رفع خطاب التوصيات للمؤسسة التعليمية
-                </button>
-            @endif
-        </div>
-    @endif
-
-    {{-- Null Indicators Warning Modal --}}
-    <template x-teleport="body">
-        <div x-show="showNullModal" style="display:none" class="relative z-[250]">
-            <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" @click="showNullModal = false"></div>
-            <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
-                <div @click.away="showNullModal = false"
-                     class="relative w-full max-w-2xl rounded-2xl bg-(--surface-card) shadow-2xl border border-(--border-primary) flex flex-col max-h-[85vh]">
-
-                    {{-- Header --}}
-                    <div class="px-6 py-5 border-b border-(--border-primary) bg-(--bg-main) flex items-center justify-between shrink-0">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-xl bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 flex items-center justify-center border border-red-100 dark:border-red-500/20 shadow-inner shrink-0">
-                                <i class="fa-solid fa-triangle-exclamation"></i>
+                        {{-- Header --}}
+                        <div
+                            class="px-6 py-5 border-b border-(--border-primary) bg-(--bg-main) flex items-center justify-between shrink-0">
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="w-10 h-10 rounded-xl bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 flex items-center justify-center border border-red-100 dark:border-red-500/20 shadow-inner shrink-0">
+                                    <i class="fa-solid fa-triangle-exclamation"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-(--text-primary)">بيانات غير مكتملة في التقرير</h3>
+                                    <p class="text-xs text-(--text-secondary)">يجب إكمال جميع المتطلبات قبل طلب موافقة
+                                        الأعضاء</p>
+                                </div>
                             </div>
-                            <div>
-                                <h3 class="font-bold text-(--text-primary)">بيانات غير مكتملة في التقرير</h3>
-                                <p class="text-xs text-(--text-secondary)">يجب إكمال جميع المتطلبات قبل طلب موافقة الأعضاء</p>
+                            <button @click="showNullModal = false"
+                                class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors cursor-pointer">
+                                <i class="fa-solid fa-xmark text-xl"></i>
+                            </button>
+                        </div>
+
+                        {{-- Body --}}
+                        <div class="overflow-y-auto flex-1 p-6 space-y-6">
+
+                            {{-- Form 5 Issues (Visit Report) --}}
+                            <template x-if="form5Issues.length > 0">
+                                <div class="space-y-3">
+                                    <div
+                                        class="flex items-center gap-2 text-red-600 dark:text-red-400 font-bold text-sm">
+                                        <i class="fa-solid fa-file-circle-exclamation"></i>
+                                        <span>نواقص في تقرير الزيارة الميدانية (نموذج 5):</span>
+                                    </div>
+                                    <div class="grid grid-cols-1 gap-2">
+                                        <template x-for="(issue, i) in form5Issues" :key="i">
+                                            <div
+                                                class="p-3 rounded-xl bg-red-50 dark:bg-red-500/5 border border-red-100 dark:border-red-500/10 text-xs text-red-700 dark:text-red-300 flex items-center gap-2">
+                                                <i class="fa-solid fa-xmark-circle shrink-0"></i>
+                                                <span x-text="issue"></span>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+
+                            {{-- Form 6 Issues (Indicators) --}}
+                            <template x-if="nullScoredIndicators.length > 0">
+                                <div class="space-y-3">
+                                    <div
+                                        class="flex items-center gap-2 text-amber-600 dark:text-amber-400 font-bold text-sm">
+                                        <i class="fa-solid fa-list-check"></i>
+                                        <span>مؤشرات لم يتم تقييمها (نموذج 6):</span>
+                                    </div>
+                                    <div class="grid grid-cols-1 gap-3">
+                                        <template x-for="(standard, si) in nullScoredIndicators"
+                                            :key="si">
+                                            <div
+                                                class="flex items-center justify-between p-4 rounded-xl border border-(--border-primary) bg-(--surface-card) hover:bg-(--bg-main) transition-colors group">
+                                                <div class="flex items-center gap-3">
+                                                    <div
+                                                        class="w-10 h-10 rounded-lg bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center border border-blue-100 dark:border-blue-500/20 shadow-sm group-hover:scale-110 transition-transform">
+                                                        <i class="fa-solid fa-layer-group"></i>
+                                                    </div>
+                                                    <div>
+                                                        <p class="text-sm font-bold text-(--text-primary)"
+                                                            x-text="standard.standard_name"></p>
+                                                        <p class="text-[11px] text-(--text-secondary) mt-0.5">المعيار
+                                                            الرئيسي رقم <span x-text="si + 1"></span></p>
+                                                    </div>
+                                                </div>
+                                                <div class="flex items-center gap-2">
+                                                    <div
+                                                        class="px-3 py-1.5 rounded-lg bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-500/20 flex items-center gap-2">
+                                                        <span class="text-base font-black"
+                                                            x-text="standard.total_missing"></span>
+                                                        <span class="text-[10px] font-bold">مؤشر غير مقيم</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+
+                            {{-- Info only section --}}
+                            <template x-if="form5Info.length > 0">
+                                <div
+                                    class="p-3 rounded-xl bg-blue-50 dark:bg-blue-500/5 border border-blue-100 dark:border-blue-500/10 text-[11px] text-blue-700 dark:text-blue-300">
+                                    <div class="flex items-center gap-2 mb-1 font-bold">
+                                        <i class="fa-solid fa-circle-info"></i>
+                                        <span>معلومات إضافية:</span>
+                                    </div>
+                                    <template x-for="info in form5Info">
+                                        <p x-text="info" class="mr-5"></p>
+                                    </template>
+                                </div>
+                            </template>
+                        </div>
+
+                        {{-- Footer --}}
+                        <div
+                            class="px-6 py-4 border-t border-(--border-primary) bg-(--bg-main) flex justify-between items-center shrink-0">
+                            <span class="text-xs text-(--text-secondary)">
+                                <i class="fa-solid fa-circle-xmark text-red-500 ml-1"></i>
+                                لا يمكن طلب الموافقة حتى اكتمال التقييم
+                            </span>
+                            <div class="flex gap-2">
+                                <button @click="showNullModal = false"
+                                    class="px-5 py-2.5 rounded-xl border border-(--border-primary) font-bold text-(--text-primary) hover:bg-(--bg-main) transition">
+                                    إغلاق
+                                </button>
+                                <a href="{{ route('requests.stage_six.visit_report.edit', $accreditationRequest) }}"
+                                    x-show="form5Issues.length > 0"
+                                    class="px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold transition flex items-center gap-2">
+                                    <i class="fa-solid fa-pen"></i> إكمال تقرير الزيارة
+                                </a>
+                                <a href="{{ route('requests.stage_six.rubrics_edit', $accreditationRequest) }}"
+                                    x-show="nullScoredIndicators.length > 0"
+                                    class="px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold transition flex items-center gap-2">
+                                    <i class="fa-solid fa-list-check"></i> إكمال تقييم المعايير
+                                </a>
                             </div>
                         </div>
-                        <button @click="showNullModal = false" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors cursor-pointer">
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        {{-- Chair Modals --}}
+        @if ($isChairEvaluator)
+            <template x-teleport="body">
+                <div x-show="showRequestModal" style="display:none" class="relative z-[200]">
+                    <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" @click="showRequestModal = false"></div>
+                    <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
+                        <div @click.away="showRequestModal = false"
+                            class="relative w-full max-w-md rounded-2xl bg-(--surface-card) shadow-2xl text-start border border-(--border-primary)">
+                            <div class="p-6 text-center">
+                                <div
+                                    class="w-16 h-16 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-2xl mx-auto mb-4">
+                                    <i class="fa-solid fa-paper-plane"></i></div>
+                                <h3 class="font-bold text-lg text-(--text-primary)">تأكيد طلب الموافقة</h3>
+                                <p class="text-sm text-(--text-secondary) mt-2">سيتم إرسال إشعار لأعضاء اللجنة للدخول
+                                    وتوقيع النماذج. لن تتمكن من التعديل أثناء المراجعة.</p>
+                            </div>
+                            <div
+                                class="px-6 py-4 border-t border-(--border-primary) bg-(--bg-main) flex justify-end gap-3">
+                                <button @click="showRequestModal = false"
+                                    class="px-5 py-2.5 rounded-xl border border-(--border-primary) font-bold">إلغاء</button>
+                                <form method="POST"
+                                    action="{{ route('requests.stage_six.request_approval', $accreditationRequest) }}"
+                                    class="inline">
+                                    @csrf @method('PATCH')
+                                    <button type="submit"
+                                        class="px-6 py-2.5 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700">تأكيد
+                                        الطلب</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <template x-teleport="body">
+                <div x-show="showWithdrawModal" style="display:none" class="relative z-[200]">
+                    <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" @click="showWithdrawModal = false"></div>
+                    <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
+                        <div @click.away="showWithdrawModal = false"
+                            class="relative w-full max-w-md rounded-2xl bg-(--surface-card) shadow-2xl text-start border border-(--border-primary)">
+                            <div class="p-6 text-center">
+                                <div
+                                    class="w-16 h-16 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center text-2xl mx-auto mb-4">
+                                    <i class="fa-solid fa-arrow-rotate-left"></i></div>
+                                <h3 class="font-bold text-lg text-(--text-primary)">سحب الطلب للتعديل</h3>
+                                <p class="text-sm text-(--text-secondary) mt-2">سيتم إلغاء الموافقات المعلقة حالياً
+                                    للتمكن من تعديل النماذج، وسيتطلب الأمر إعادة إرسال طلب الموافقة.</p>
+                            </div>
+                            <div
+                                class="px-6 py-4 border-t border-(--border-primary) bg-(--bg-main) flex justify-end gap-3">
+                                <button @click="showWithdrawModal = false"
+                                    class="px-5 py-2.5 rounded-xl border border-(--border-primary) font-bold">إلغاء</button>
+                                <form method="POST"
+                                    action="{{ route('requests.stage_six.withdraw', $accreditationRequest) }}"
+                                    class="inline">
+                                    @csrf @method('PATCH')
+                                    <button type="submit"
+                                        class="px-6 py-2.5 rounded-xl bg-orange-600 text-white font-bold hover:bg-orange-700">تأكيد
+                                        السحب</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        @endif
+
+        {{-- Member Reject Modal --}}
+        @if ($isCommitteeMember)
+            <template x-teleport="body">
+                <div x-show="showRejectModal" style="display:none" class="relative z-[200]">
+                    <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" @click="showRejectModal = false"></div>
+                    <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
+                        <div @click.away="showRejectModal = false"
+                            class="relative w-full max-w-lg rounded-2xl bg-(--surface-card) shadow-2xl text-start border border-(--border-primary)">
+                            <div
+                                class="px-6 py-5 border-b border-(--border-primary) flex justify-between items-center bg-(--bg-main)">
+                                <h3 class="font-bold text-(--text-primary)"><i
+                                        class="fa-solid fa-xmark text-red-600 ml-2"></i> إرسال ملاحظات لرئيس اللجنة
+                                </h3>
+                                <button @click="showRejectModal = false"><i
+                                        class="fa-solid fa-xmark text-(--text-secondary)"></i></button>
+                            </div>
+                            <form method="POST"
+                                action="{{ route('requests.stage_six.member_reject', $accreditationRequest) }}">
+                                @csrf
+                                <div class="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
+                                    <template x-for="(reason, i) in rejectReasons" :key="i">
+                                        <div class="relative">
+                                            <textarea x-model="rejectReasons[i]" name="reject_reasons[]" rows="3" required
+                                                placeholder="اكتب ملاحظتك هنا..."
+                                                class="w-full rounded-xl border border-(--border-primary) bg-(--bg-main) text-(--text-primary) px-4 py-3 text-sm focus:ring-2 focus:ring-red-400"></textarea>
+                                            <button type="button" @click="removeReason(i)"
+                                                x-show="rejectReasons.length > 1"
+                                                class="absolute top-3 left-3 text-red-500 hover:text-red-700"><i
+                                                    class="fa-solid fa-trash"></i></button>
+                                        </div>
+                                    </template>
+                                    <button type="button" @click="addReason"
+                                        class="text-sm font-bold text-blue-600 hover:text-blue-700"><i
+                                            class="fa-solid fa-plus ml-1"></i> إضافة ملاحظة أخرى</button>
+                                </div>
+                                <div
+                                    class="px-6 py-4 border-t border-(--border-primary) bg-(--bg-main) flex justify-end gap-3">
+                                    <button type="button" @click="showRejectModal = false"
+                                        class="px-5 py-2.5 rounded-xl border border-(--border-primary) font-bold">إلغاء</button>
+                                    <button type="submit"
+                                        class="px-6 py-2.5 rounded-xl bg-red-600 text-white font-bold hover:bg-red-700">تأكيد
+                                        الرفض والإرسال</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        @endif
+
+
+        {{-- Interactive Signature Workflow Modal (For both Chair & Members) --}}
+        <template x-teleport="body">
+            <div x-show="showSignModal" style="display:none" class="relative z-[300]">
+                <div class="fixed inset-0 bg-black/60 backdrop-blur-md"></div>
+                <div class="fixed inset-0 z-10 flex items-center justify-center">
+
+                    {{-- Portrait Mode: show rotate prompt --}}
+                    <div x-show="isPortrait" style="display:none"
+                        class="relative w-full max-w-sm mx-4 bg-(--surface-card) shadow-2xl rounded-3xl border border-(--border-primary) overflow-hidden p-10 flex flex-col items-center justify-center text-center gap-6">
+                        <button @click="showSignModal = false"
+                            class="absolute top-4 left-4 w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 transition">
                             <i class="fa-solid fa-xmark text-xl"></i>
                         </button>
+                        <div class="w-24 h-24 relative">
+                            <div class="absolute inset-0 rounded-full animate-ping opacity-30"
+                                :class="submitType === 'chair' ? 'bg-indigo-100 dark:bg-indigo-500/20' :
+                                    'bg-green-100 dark:bg-green-500/20'">
+                            </div>
+                            <div class="relative w-full h-full rounded-full flex items-center justify-center border shadow-inner"
+                                :class="submitType === 'chair' ?
+                                    'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-100 dark:border-indigo-500/20' :
+                                    'bg-green-50 dark:bg-green-500/10 text-green-600 dark:text-green-400 border-green-100 dark:border-green-500/20'">
+                                <i class="fa-solid fa-mobile-screen-button text-4xl"
+                                    style="transform: rotate(90deg);"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-black text-(--text-primary) mb-2">يرجى تدوير الجهاز</h3>
+                            <p class="text-(--text-secondary) leading-relaxed font-bold text-sm">
+                                لتوقيع بشكل مريح، يرجى تدوير هاتفك إلى الوضع العرضي (Landscape).
+                            </p>
+                        </div>
                     </div>
 
-                    {{-- Body --}}
-                    <div class="overflow-y-auto flex-1 p-6 space-y-6">
-                        
-                        {{-- Form 5 Issues (Visit Report) --}}
-                        <template x-if="form5Issues.length > 0">
-                            <div class="space-y-3">
-                                <div class="flex items-center gap-2 text-red-600 dark:text-red-400 font-bold text-sm">
-                                    <i class="fa-solid fa-file-circle-exclamation"></i>
-                                    <span>نواقص في تقرير الزيارة الميدانية (نموذج 5):</span>
+                    {{-- Landscape Mode: full-screen signature --}}
+                    <div x-show="!isPortrait" style="display:none"
+                        class="fixed inset-0 bg-(--surface-card) flex flex-col md:relative md:w-full md:max-w-2xl md:h-[85vh] md:max-h-[700px] md:rounded-3xl md:shadow-2xl md:border md:border-(--border-primary)">
+
+                        {{-- Desktop/Tablet Header (hidden on small landscape phones) --}}
+                        <div
+                            class="px-6 py-4 border-b border-(--border-primary) bg-(--bg-main) shrink-0 hidden md:block">
+                            <div class="flex justify-between items-center mb-3">
+                                <h3 class="font-black text-lg text-(--text-primary)">
+                                    <i class="fa-solid fa-signature ml-2"
+                                        :class="submitType === 'chair' ? 'text-indigo-600' : 'text-green-600'"></i>
+                                    توقيع النماذج واعتمادها
+                                </h3>
+                                <button @click="showSignModal = false"
+                                    class="text-(--text-secondary) hover:text-(--text-primary) transition"><i
+                                        class="fa-solid fa-xmark text-xl"></i></button>
+                            </div>
+                            <div class="flex gap-2">
+                                <div class="flex-1 h-2 rounded-full transition-colors duration-300"
+                                    :class="signStep >= 1 ? (submitType === 'chair' ? 'bg-indigo-600' : 'bg-green-600') :
+                                        'bg-gray-200 dark:bg-gray-700'">
                                 </div>
-                                <div class="grid grid-cols-1 gap-2">
-                                    <template x-for="(issue, i) in form5Issues" :key="i">
-                                        <div class="p-3 rounded-xl bg-red-50 dark:bg-red-500/5 border border-red-100 dark:border-red-500/10 text-xs text-red-700 dark:text-red-300 flex items-center gap-2">
-                                            <i class="fa-solid fa-xmark-circle shrink-0"></i>
-                                            <span x-text="issue"></span>
-                                        </div>
-                                    </template>
+                                <div class="flex-1 h-2 rounded-full transition-colors duration-300"
+                                    :class="signStep >= 2 ? (submitType === 'chair' ? 'bg-indigo-600' : 'bg-green-600') :
+                                        'bg-gray-200 dark:bg-gray-700'">
+                                </div>
+                                <div class="flex-1 h-2 rounded-full transition-colors duration-300"
+                                    :class="signStep >= 3 ? (submitType === 'chair' ? 'bg-indigo-600' : 'bg-green-600') :
+                                        'bg-gray-200 dark:bg-gray-700'">
                                 </div>
                             </div>
-                        </template>
+                        </div>
 
-                        {{-- Form 6 Issues (Indicators) --}}
-                        <template x-if="nullScoredIndicators.length > 0">
-                            <div class="space-y-3">
-                                <div class="flex items-center gap-2 text-amber-600 dark:text-amber-400 font-bold text-sm">
-                                    <i class="fa-solid fa-list-check"></i>
-                                    <span>مؤشرات لم يتم تقييمها (نموذج 6):</span>
+                        {{-- Canvas area: full remaining space --}}
+                        <div class="flex-1 relative overflow-hidden bg-(--surface-card)">
+
+                            {{-- Step 1: Form 5 --}}
+                            <div class="absolute inset-0 flex flex-col transition-all duration-500 ease-in-out"
+                                :class="{ 'translate-x-0 opacity-100': signStep ===
+                                    1, '-translate-x-full opacity-0 pointer-events-none': signStep >
+                                    1, 'translate-x-full opacity-0 pointer-events-none': signStep < 1 }">
+                                {{-- Title shown only on desktop --}}
+                                <div class="hidden md:block px-6 pt-5 pb-3">
+                                    <h4 class="font-bold text-(--text-primary)">1. توقيع نموذج الزيارة الميدانية (Form
+                                        5)</h4>
+                                    <p class="text-xs text-(--text-secondary)">الرجاء رسم توقيعك أدناه.</p>
                                 </div>
-                                <div class="grid grid-cols-1 gap-3">
-                                    <template x-for="(standard, si) in nullScoredIndicators" :key="si">
-                                        <div class="flex items-center justify-between p-4 rounded-xl border border-(--border-primary) bg-(--surface-card) hover:bg-(--bg-main) transition-colors group">
-                                            <div class="flex items-center gap-3">
-                                                <div class="w-10 h-10 rounded-lg bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center border border-blue-100 dark:border-blue-500/20 shadow-sm group-hover:scale-110 transition-transform">
-                                                    <i class="fa-solid fa-layer-group"></i>
-                                                </div>
-                                                <div>
-                                                    <p class="text-sm font-bold text-(--text-primary)" x-text="standard.standard_name"></p>
-                                                    <p class="text-[11px] text-(--text-secondary) mt-0.5">المعيار الرئيسي رقم <span x-text="si + 1"></span></p>
-                                                </div>
-                                            </div>
-                                            <div class="flex items-center gap-2">
-                                                <div class="px-3 py-1.5 rounded-lg bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-500/20 flex items-center gap-2">
-                                                    <span class="text-base font-black" x-text="standard.total_missing"></span>
-                                                    <span class="text-[10px] font-bold">مؤشر غير مقيم</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </template>
-                                </div>
-                            </div>
-                        </template>
-
-                        {{-- Info only section --}}
-                        <template x-if="form5Info.length > 0">
-                            <div class="p-3 rounded-xl bg-blue-50 dark:bg-blue-500/5 border border-blue-100 dark:border-blue-500/10 text-[11px] text-blue-700 dark:text-blue-300">
-                                <div class="flex items-center gap-2 mb-1 font-bold">
-                                    <i class="fa-solid fa-circle-info"></i>
-                                    <span>معلومات إضافية:</span>
-                                </div>
-                                <template x-for="info in form5Info">
-                                    <p x-text="info" class="mr-5"></p>
-                                </template>
-                            </div>
-                        </template>
-                    </div>
-
-                    {{-- Footer --}}
-                    <div class="px-6 py-4 border-t border-(--border-primary) bg-(--bg-main) flex justify-between items-center shrink-0">
-                        <span class="text-xs text-(--text-secondary)">
-                            <i class="fa-solid fa-circle-xmark text-red-500 ml-1"></i>
-                            لا يمكن طلب الموافقة حتى اكتمال التقييم
-                        </span>
-                        <div class="flex gap-2">
-                            <button @click="showNullModal = false"
-                                    class="px-5 py-2.5 rounded-xl border border-(--border-primary) font-bold text-(--text-primary) hover:bg-(--bg-main) transition">
-                                إغلاق
-                            </button>
-                            <a href="{{ route('requests.stage_six.visit_report.edit', $accreditationRequest) }}"
-                               x-show="form5Issues.length > 0"
-                               class="px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold transition flex items-center gap-2">
-                                <i class="fa-solid fa-pen"></i> إكمال تقرير الزيارة
-                            </a>
-                            <a href="{{ route('requests.stage_six.rubrics_edit', $accreditationRequest) }}"
-                               x-show="nullScoredIndicators.length > 0"
-                               class="px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold transition flex items-center gap-2">
-                                <i class="fa-solid fa-list-check"></i> إكمال تقييم المعايير
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </template>
-
-    {{-- Chair Modals --}}
-    @if($isChairEvaluator)
-        <template x-teleport="body">
-            <div x-show="showRequestModal" style="display:none" class="relative z-[200]">
-                <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" @click="showRequestModal = false"></div>
-                <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
-                    <div @click.away="showRequestModal = false" class="relative w-full max-w-md rounded-2xl bg-(--surface-card) shadow-2xl text-start border border-(--border-primary)">
-                        <div class="p-6 text-center">
-                            <div class="w-16 h-16 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-2xl mx-auto mb-4"><i class="fa-solid fa-paper-plane"></i></div>
-                            <h3 class="font-bold text-lg text-(--text-primary)">تأكيد طلب الموافقة</h3>
-                            <p class="text-sm text-(--text-secondary) mt-2">سيتم إرسال إشعار لأعضاء اللجنة للدخول وتوقيع النماذج. لن تتمكن من التعديل أثناء المراجعة.</p>
-                        </div>
-                        <div class="px-6 py-4 border-t border-(--border-primary) bg-(--bg-main) flex justify-end gap-3">
-                            <button @click="showRequestModal = false" class="px-5 py-2.5 rounded-xl border border-(--border-primary) font-bold">إلغاء</button>
-                            <form method="POST" action="{{ route('requests.stage_six.request_approval', $accreditationRequest) }}" class="inline">
-                                @csrf @method('PATCH')
-                                <button type="submit" class="px-6 py-2.5 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700">تأكيد الطلب</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </template>
-
-        <template x-teleport="body">
-            <div x-show="showWithdrawModal" style="display:none" class="relative z-[200]">
-                <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" @click="showWithdrawModal = false"></div>
-                <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
-                    <div @click.away="showWithdrawModal = false" class="relative w-full max-w-md rounded-2xl bg-(--surface-card) shadow-2xl text-start border border-(--border-primary)">
-                        <div class="p-6 text-center">
-                            <div class="w-16 h-16 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center text-2xl mx-auto mb-4"><i class="fa-solid fa-arrow-rotate-left"></i></div>
-                            <h3 class="font-bold text-lg text-(--text-primary)">سحب الطلب للتعديل</h3>
-                            <p class="text-sm text-(--text-secondary) mt-2">سيتم إلغاء الموافقات المعلقة حالياً للتمكن من تعديل النماذج، وسيتطلب الأمر إعادة إرسال طلب الموافقة.</p>
-                        </div>
-                        <div class="px-6 py-4 border-t border-(--border-primary) bg-(--bg-main) flex justify-end gap-3">
-                            <button @click="showWithdrawModal = false" class="px-5 py-2.5 rounded-xl border border-(--border-primary) font-bold">إلغاء</button>
-                            <form method="POST" action="{{ route('requests.stage_six.withdraw', $accreditationRequest) }}" class="inline">
-                                @csrf @method('PATCH')
-                                <button type="submit" class="px-6 py-2.5 rounded-xl bg-orange-600 text-white font-bold hover:bg-orange-700">تأكيد السحب</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </template>
-    @endif
-
-    {{-- Member Reject Modal --}}
-    @if($isCommitteeMember)
-        <template x-teleport="body">
-            <div x-show="showRejectModal" style="display:none" class="relative z-[200]">
-                <div class="fixed inset-0 bg-black/60 backdrop-blur-sm" @click="showRejectModal = false"></div>
-                <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
-                    <div @click.away="showRejectModal = false" class="relative w-full max-w-lg rounded-2xl bg-(--surface-card) shadow-2xl text-start border border-(--border-primary)">
-                        <div class="px-6 py-5 border-b border-(--border-primary) flex justify-between items-center bg-(--bg-main)">
-                            <h3 class="font-bold text-(--text-primary)"><i class="fa-solid fa-xmark text-red-600 ml-2"></i> إرسال ملاحظات لرئيس اللجنة</h3>
-                            <button @click="showRejectModal = false"><i class="fa-solid fa-xmark text-(--text-secondary)"></i></button>
-                        </div>
-                        <form method="POST" action="{{ route('requests.stage_six.member_reject', $accreditationRequest) }}">
-                            @csrf
-                            <div class="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
-                                <template x-for="(reason, i) in rejectReasons" :key="i">
-                                    <div class="relative">
-                                        <textarea x-model="rejectReasons[i]" name="reject_reasons[]" rows="3" required placeholder="اكتب ملاحظتك هنا..." class="w-full rounded-xl border border-(--border-primary) bg-(--bg-main) text-(--text-primary) px-4 py-3 text-sm focus:ring-2 focus:ring-red-400"></textarea>
-                                        <button type="button" @click="removeReason(i)" x-show="rejectReasons.length > 1" class="absolute top-3 left-3 text-red-500 hover:text-red-700"><i class="fa-solid fa-trash"></i></button>
+                                {{-- Canvas fills all remaining space --}}
+                                <div
+                                    class="flex-1 relative bg-white border-t-2 md:mx-6 md:mb-4 md:rounded-2xl md:border-2 border-dashed border-indigo-200 dark:border-indigo-500/20 overflow-hidden">
+                                    <canvas x-ref="canvas5"
+                                        class="absolute inset-0 w-full h-full cursor-crosshair touch-none"></canvas>
+                                    {{-- Step indicator for mobile --}}
+                                    <div class="absolute top-3 right-3 md:hidden flex gap-1">
+                                        <span class="w-2 h-2 rounded-full"
+                                            :class="signStep === 1 ? (submitType === 'chair' ? 'bg-indigo-600' :
+                                                'bg-green-600') : 'bg-gray-300'"></span>
+                                        <span class="w-2 h-2 rounded-full"
+                                            :class="signStep === 2 ? (submitType === 'chair' ? 'bg-indigo-600' :
+                                                'bg-green-600') : 'bg-gray-300'"></span>
+                                        <span class="w-2 h-2 rounded-full"
+                                            :class="signStep === 3 ? (submitType === 'chair' ? 'bg-indigo-600' :
+                                                'bg-green-600') : 'bg-gray-300'"></span>
                                     </div>
-                                </template>
-                                <button type="button" @click="addReason" class="text-sm font-bold text-blue-600 hover:text-blue-700"><i class="fa-solid fa-plus ml-1"></i> إضافة ملاحظة أخرى</button>
-                            </div>
-                            <div class="px-6 py-4 border-t border-(--border-primary) bg-(--bg-main) flex justify-end gap-3">
-                                <button type="button" @click="showRejectModal = false" class="px-5 py-2.5 rounded-xl border border-(--border-primary) font-bold">إلغاء</button>
-                                <button type="submit" class="px-6 py-2.5 rounded-xl bg-red-600 text-white font-bold hover:bg-red-700">تأكيد الرفض والإرسال</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </template>
-    @endif
-
-
-    {{-- Interactive Signature Workflow Modal (For both Chair & Members) --}}
-    <template x-teleport="body">
-        <div x-show="showSignModal" style="display:none" class="relative z-[300]">
-            <div class="fixed inset-0 bg-black/60 backdrop-blur-md"></div>
-            <div class="fixed inset-0 z-10 flex items-center justify-center">
-
-                {{-- Portrait Mode: show rotate prompt --}}
-                <div x-show="isPortrait" style="display:none"
-                     class="relative w-full max-w-sm mx-4 bg-(--surface-card) shadow-2xl rounded-3xl border border-(--border-primary) overflow-hidden p-10 flex flex-col items-center justify-center text-center gap-6">
-                    <button @click="showSignModal = false" class="absolute top-4 left-4 w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 transition">
-                        <i class="fa-solid fa-xmark text-xl"></i>
-                    </button>
-                    <div class="w-24 h-24 relative">
-                        <div class="absolute inset-0 rounded-full animate-ping opacity-30"
-                             :class="submitType === 'chair' ? 'bg-indigo-100 dark:bg-indigo-500/20' : 'bg-green-100 dark:bg-green-500/20'"></div>
-                        <div class="relative w-full h-full rounded-full flex items-center justify-center border shadow-inner"
-                             :class="submitType === 'chair' ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-100 dark:border-indigo-500/20' : 'bg-green-50 dark:bg-green-500/10 text-green-600 dark:text-green-400 border-green-100 dark:border-green-500/20'">
-                            <i class="fa-solid fa-mobile-screen-button text-4xl" style="transform: rotate(90deg);"></i>
-                        </div>
-                    </div>
-                    <div>
-                        <h3 class="text-xl font-black text-(--text-primary) mb-2">يرجى تدوير الجهاز</h3>
-                        <p class="text-(--text-secondary) leading-relaxed font-bold text-sm">
-                            لتوقيع بشكل مريح، يرجى تدوير هاتفك إلى الوضع العرضي (Landscape).
-                        </p>
-                    </div>
-                </div>
-
-                {{-- Landscape Mode: full-screen signature --}}
-                <div x-show="!isPortrait" style="display:none" class="fixed inset-0 bg-(--surface-card) flex flex-col md:relative md:w-full md:max-w-2xl md:h-[85vh] md:max-h-[700px] md:rounded-3xl md:shadow-2xl md:border md:border-(--border-primary)">
-
-                    {{-- Desktop/Tablet Header (hidden on small landscape phones) --}}
-                    <div class="px-6 py-4 border-b border-(--border-primary) bg-(--bg-main) shrink-0 hidden md:block">
-                        <div class="flex justify-between items-center mb-3">
-                            <h3 class="font-black text-lg text-(--text-primary)">
-                                <i class="fa-solid fa-signature ml-2" :class="submitType === 'chair' ? 'text-indigo-600' : 'text-green-600'"></i> توقيع النماذج واعتمادها
-                            </h3>
-                            <button @click="showSignModal = false" class="text-(--text-secondary) hover:text-(--text-primary) transition"><i class="fa-solid fa-xmark text-xl"></i></button>
-                        </div>
-                        <div class="flex gap-2">
-                            <div class="flex-1 h-2 rounded-full transition-colors duration-300" :class="signStep >= 1 ? (submitType === 'chair' ? 'bg-indigo-600' : 'bg-green-600') : 'bg-gray-200 dark:bg-gray-700'"></div>
-                            <div class="flex-1 h-2 rounded-full transition-colors duration-300" :class="signStep >= 2 ? (submitType === 'chair' ? 'bg-indigo-600' : 'bg-green-600') : 'bg-gray-200 dark:bg-gray-700'"></div>
-                            <div class="flex-1 h-2 rounded-full transition-colors duration-300" :class="signStep >= 3 ? (submitType === 'chair' ? 'bg-indigo-600' : 'bg-green-600') : 'bg-gray-200 dark:bg-gray-700'"></div>
-                        </div>
-                    </div>
-
-                    {{-- Canvas area: full remaining space --}}
-                    <div class="flex-1 relative overflow-hidden bg-(--surface-card)">
-
-                        {{-- Step 1: Form 5 --}}
-                        <div class="absolute inset-0 flex flex-col transition-all duration-500 ease-in-out"
-                             :class="{ 'translate-x-0 opacity-100': signStep === 1, '-translate-x-full opacity-0 pointer-events-none': signStep > 1, 'translate-x-full opacity-0 pointer-events-none': signStep < 1 }">
-                            {{-- Title shown only on desktop --}}
-                            <div class="hidden md:block px-6 pt-5 pb-3">
-                                <h4 class="font-bold text-(--text-primary)">1. توقيع نموذج الزيارة الميدانية (Form 5)</h4>
-                                <p class="text-xs text-(--text-secondary)">الرجاء رسم توقيعك أدناه.</p>
-                            </div>
-                            {{-- Canvas fills all remaining space --}}
-                            <div class="flex-1 relative bg-white border-t-2 md:mx-6 md:mb-4 md:rounded-2xl md:border-2 border-dashed border-indigo-200 dark:border-indigo-500/20 overflow-hidden">
-                                <canvas x-ref="canvas5" class="absolute inset-0 w-full h-full cursor-crosshair touch-none"></canvas>
-                                {{-- Step indicator for mobile --}}
-                                <div class="absolute top-3 right-3 md:hidden flex gap-1">
-                                    <span class="w-2 h-2 rounded-full" :class="signStep === 1 ? (submitType === 'chair' ? 'bg-indigo-600' : 'bg-green-600') : 'bg-gray-300'"></span>
-                                    <span class="w-2 h-2 rounded-full" :class="signStep === 2 ? (submitType === 'chair' ? 'bg-indigo-600' : 'bg-green-600') : 'bg-gray-300'"></span>
-                                    <span class="w-2 h-2 rounded-full" :class="signStep === 3 ? (submitType === 'chair' ? 'bg-indigo-600' : 'bg-green-600') : 'bg-gray-300'"></span>
-                                </div>
-                                <button type="button" @click="clearPad(5)"
+                                    <button type="button" @click="clearPad(5)"
                                         class="absolute top-3 left-3 px-3 py-1.5 rounded-xl bg-white/90 backdrop-blur-sm border border-red-200 text-red-600 text-xs font-bold shadow-sm">
-                                    <i class="fa-solid fa-eraser ml-1"></i> مسح
-                                </button>
-                                {{-- Mobile: close button --}}
-                                <button @click="showSignModal = false"
+                                        <i class="fa-solid fa-eraser ml-1"></i> مسح
+                                    </button>
+                                    {{-- Mobile: close button --}}
+                                    <button @click="showSignModal = false"
                                         class="md:hidden absolute top-3 right-10 w-8 h-8 rounded-xl bg-white/90 backdrop-blur-sm border border-gray-200 text-gray-500 text-sm flex items-center justify-center shadow-sm">
-                                    <i class="fa-solid fa-xmark"></i>
-                                </button>
-                            </div>
-                        </div>
-
-                        {{-- Step 2: Form 6 --}}
-                        <div class="absolute inset-0 flex flex-col transition-all duration-500 ease-in-out"
-                             :class="{ 'translate-x-0 opacity-100': signStep === 2, '-translate-x-full opacity-0 pointer-events-none': signStep > 2, 'translate-x-full opacity-0 pointer-events-none': signStep < 2 }">
-                            <div class="hidden md:block px-6 pt-5 pb-3">
-                                <h4 class="font-bold text-(--text-primary)">2. توقيع نموذج تقييم المعايير (Form 6)</h4>
-                                <p class="text-xs text-(--text-secondary)">الرجاء رسم توقيعك لاعتماد نموذج تقييم البرنامج الأولي.</p>
-                            </div>
-                            <div class="flex-1 relative bg-white border-t-2 md:mx-6 md:mb-4 md:rounded-2xl md:border-2 border-dashed border-indigo-200 dark:border-indigo-500/20 overflow-hidden">
-                                <canvas x-ref="canvas6" class="absolute inset-0 w-full h-full cursor-crosshair touch-none"></canvas>
-                                <div class="absolute top-3 right-3 md:hidden flex gap-1">
-                                    <span class="w-2 h-2 rounded-full" :class="signStep === 1 ? (submitType === 'chair' ? 'bg-indigo-600' : 'bg-green-600') : 'bg-gray-300'"></span>
-                                    <span class="w-2 h-2 rounded-full" :class="signStep === 2 ? (submitType === 'chair' ? 'bg-indigo-600' : 'bg-green-600') : 'bg-gray-300'"></span>
-                                    <span class="w-2 h-2 rounded-full" :class="signStep === 3 ? (submitType === 'chair' ? 'bg-indigo-600' : 'bg-green-600') : 'bg-gray-300'"></span>
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </button>
                                 </div>
-                                <button type="button" @click="clearPad(6)"
+                            </div>
+
+                            {{-- Step 2: Form 6 --}}
+                            <div class="absolute inset-0 flex flex-col transition-all duration-500 ease-in-out"
+                                :class="{ 'translate-x-0 opacity-100': signStep ===
+                                    2, '-translate-x-full opacity-0 pointer-events-none': signStep >
+                                    2, 'translate-x-full opacity-0 pointer-events-none': signStep < 2 }">
+                                <div class="hidden md:block px-6 pt-5 pb-3">
+                                    <h4 class="font-bold text-(--text-primary)">2. توقيع نموذج تقييم المعايير (Form 6)
+                                    </h4>
+                                    <p class="text-xs text-(--text-secondary)">الرجاء رسم توقيعك لاعتماد نموذج تقييم
+                                        البرنامج الأولي.</p>
+                                </div>
+                                <div
+                                    class="flex-1 relative bg-white border-t-2 md:mx-6 md:mb-4 md:rounded-2xl md:border-2 border-dashed border-indigo-200 dark:border-indigo-500/20 overflow-hidden">
+                                    <canvas x-ref="canvas6"
+                                        class="absolute inset-0 w-full h-full cursor-crosshair touch-none"></canvas>
+                                    <div class="absolute top-3 right-3 md:hidden flex gap-1">
+                                        <span class="w-2 h-2 rounded-full"
+                                            :class="signStep === 1 ? (submitType === 'chair' ? 'bg-indigo-600' :
+                                                'bg-green-600') : 'bg-gray-300'"></span>
+                                        <span class="w-2 h-2 rounded-full"
+                                            :class="signStep === 2 ? (submitType === 'chair' ? 'bg-indigo-600' :
+                                                'bg-green-600') : 'bg-gray-300'"></span>
+                                        <span class="w-2 h-2 rounded-full"
+                                            :class="signStep === 3 ? (submitType === 'chair' ? 'bg-indigo-600' :
+                                                'bg-green-600') : 'bg-gray-300'"></span>
+                                    </div>
+                                    <button type="button" @click="clearPad(6)"
                                         class="absolute top-3 left-3 px-3 py-1.5 rounded-xl bg-white/90 backdrop-blur-sm border border-red-200 text-red-600 text-xs font-bold shadow-sm">
-                                    <i class="fa-solid fa-eraser ml-1"></i> مسح
-                                </button>
-                                <button @click="showSignModal = false"
+                                        <i class="fa-solid fa-eraser ml-1"></i> مسح
+                                    </button>
+                                    <button @click="showSignModal = false"
                                         class="md:hidden absolute top-3 right-10 w-8 h-8 rounded-xl bg-white/90 backdrop-blur-sm border border-gray-200 text-gray-500 text-sm flex items-center justify-center shadow-sm">
-                                    <i class="fa-solid fa-xmark"></i>
-                                </button>
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </button>
+                                </div>
                             </div>
+
+                            {{-- Step 3: Confirm --}}
+                            <div class="absolute inset-0 p-6 flex flex-col transition-all duration-500 ease-in-out"
+                                :class="{ 'translate-x-0 opacity-100': signStep ===
+                                    3, 'translate-x-full opacity-0 pointer-events-none': signStep < 3 }">
+                                <div class="flex-1 flex flex-col items-center justify-center text-center">
+                                    <div
+                                        class="w-20 h-20 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-4xl mb-6 shadow-inner">
+                                        <i class="fa-solid fa-check-double"></i></div>
+                                    <h4 class="font-black text-2xl text-(--text-primary) mb-3">تأكيد الاعتماد</h4>
+                                    <p class="text-(--text-secondary) max-w-sm leading-relaxed"
+                                        x-show="submitType === 'member'">بمجرد الضغط على تأكيد، سيتم حفظ توقيعاتك
+                                        واعتماد النماذج، وإرسال الموافقة إلى رئيس اللجنة.</p>
+                                    <p class="text-(--text-secondary) max-w-sm leading-relaxed"
+                                        x-show="submitType === 'chair'">بمجرد الضغط على تأكيد، سيتم حفظ توقيعاتك ورفع
+                                        التقرير النهائي إلى المجلس. هذه الخطوة لا يمكن التراجع عنها.</p>
+                                </div>
+                            </div>
+
                         </div>
 
-                        {{-- Step 3: Confirm --}}
-                        <div class="absolute inset-0 p-6 flex flex-col transition-all duration-500 ease-in-out"
-                             :class="{ 'translate-x-0 opacity-100': signStep === 3, 'translate-x-full opacity-0 pointer-events-none': signStep < 3 }">
-                            <div class="flex-1 flex flex-col items-center justify-center text-center">
-                                <div class="w-20 h-20 rounded-full bg-green-100 text-green-600 flex items-center justify-center text-4xl mb-6 shadow-inner"><i class="fa-solid fa-check-double"></i></div>
-                                <h4 class="font-black text-2xl text-(--text-primary) mb-3">تأكيد الاعتماد</h4>
-                                <p class="text-(--text-secondary) max-w-sm leading-relaxed" x-show="submitType === 'member'">بمجرد الضغط على تأكيد، سيتم حفظ توقيعاتك واعتماد النماذج، وإرسال الموافقة إلى رئيس اللجنة.</p>
-                                <p class="text-(--text-secondary) max-w-sm leading-relaxed" x-show="submitType === 'chair'">بمجرد الضغط على تأكيد، سيتم حفظ توقيعاتك ورفع التقرير النهائي إلى المجلس. هذه الخطوة لا يمكن التراجع عنها.</p>
-                            </div>
-                        </div>
-
-                    </div>
-
-                    {{-- Footer: regular on desktop, floating overlay on mobile --}}
-                    <div class="shrink-0 md:border-t md:border-(--border-primary) md:bg-(--bg-main) md:px-6 md:py-4
+                        {{-- Footer: regular on desktop, floating overlay on mobile --}}
+                        <div
+                            class="shrink-0 md:border-t md:border-(--border-primary) md:bg-(--bg-main) md:px-6 md:py-4
                                 flex justify-between
                                 absolute bottom-0 left-0 right-0 p-4
                                 md:relative md:bottom-auto md:left-auto md:right-auto">
-                        <button type="button" @click="prevStep()"
+                            <button type="button" @click="prevStep()"
                                 :class="signStep === 1 ? 'opacity-0 pointer-events-none' : ''"
                                 class="px-5 py-2.5 rounded-xl border border-(--border-primary) bg-(--surface-card)/90 backdrop-blur-sm font-bold flex items-center gap-2 shadow-sm">
-                            <i class="fa-solid fa-arrow-right"></i> السابق
-                        </button>
-
-                        <button type="button" @click="nextStep()" x-show="signStep < 3"
-                                class="px-6 py-2.5 rounded-xl text-white font-bold shadow-lg flex items-center gap-2 transition-colors"
-                                :class="submitType === 'chair' ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-green-600 hover:bg-green-700'">
-                            التالي <i class="fa-solid fa-arrow-left"></i>
-                        </button>
-
-                        <form x-show="signStep === 3" method="POST"
-                              :action="submitType === 'chair' ? '{{ route('requests.stage_six.submit_to_council', $accreditationRequest) }}' : '{{ route('requests.stage_six.member_approve', $accreditationRequest) }}'">
-                            @csrf
-                            <input type="hidden" name="form_5_signature" :value="signature5">
-                            <input type="hidden" name="form_6_signature" :value="signature6">
-                            <button type="submit" class="px-6 py-2.5 rounded-xl bg-green-600 text-white font-bold hover:bg-green-700 shadow-lg shadow-green-500/30 flex items-center gap-2">
-                                <i class="fa-solid fa-paper-plane"></i> تأكيد وإرسال
+                                <i class="fa-solid fa-arrow-right"></i> السابق
                             </button>
-                        </form>
-                    </div>
-                </div>
 
-            </div>
-        </div>
-    </template>
+                            <button type="button" @click="nextStep()" x-show="signStep < 3"
+                                class="px-6 py-2.5 rounded-xl text-white font-bold shadow-lg flex items-center gap-2 transition-colors"
+                                :class="submitType === 'chair' ? 'bg-indigo-600 hover:bg-indigo-700' :
+                                    'bg-green-600 hover:bg-green-700'">
+                                التالي <i class="fa-solid fa-arrow-left"></i>
+                            </button>
 
-    {{-- Council Coordinator Modal --}}
-    @if($isCouncilCoordinator)
-        <template x-teleport="body">
-            <div x-show="showCouncilModal" style="display:none" class="relative z-[300]">
-                <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" @click="showCouncilModal = false"></div>
-                <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
-                    <div @click.away="showCouncilModal = false" class="relative w-full max-w-md rounded-3xl bg-(--surface-card) shadow-2xl text-start border border-(--border-primary) overflow-hidden">
-                        
-                        <div class="px-8 py-8">
-                            <div class="flex items-center justify-between mb-6">
-                                <div>
-                                    <h3 class="font-black text-xl text-(--text-primary)">رفع خطاب التوصيات</h3>
-                                    <p class="text-xs text-(--text-secondary) mt-0.5">إرسال التقرير النهائي للمؤسسة التعليمية</p>
-                                </div>
-                                <button @click="showCouncilModal = false" class="w-10 h-10 rounded-xl hover:bg-(--bg-main) flex items-center justify-center transition-colors">
-                                    <i class="fa-solid fa-xmark text-(--text-secondary)"></i>
-                                </button>
-                            </div>
-
-                            <form method="POST" action="{{ route('requests.stage_six.council_upload', $accreditationRequest) }}" enctype="multipart/form-data" class="space-y-6">
+                            <form x-show="signStep === 3" method="POST"
+                                :action="submitType === 'chair' ?
+                                    '{{ route('requests.stage_six.submit_to_council', $accreditationRequest) }}' :
+                                    '{{ route('requests.stage_six.member_approve', $accreditationRequest) }}'">
                                 @csrf
-                                
-                                <div class="p-4 rounded-2xl bg-(--bg-main) border border-(--border-primary)">
-                                    <p class="text-xs text-(--text-secondary) leading-relaxed">
-                                        يرجى إرفاق خطاب توصيات لجنة المقيمين الموجه للمؤسسة التعليمية بصيغة <span class="font-bold text-(--text-primary)">PDF</span>.
-                                    </p>
+                                <input type="hidden" name="form_5_signature" :value="signature5">
+                                <input type="hidden" name="form_6_signature" :value="signature6">
+                                <button type="submit"
+                                    class="px-6 py-2.5 rounded-xl bg-green-600 text-white font-bold hover:bg-green-700 shadow-lg shadow-green-500/30 flex items-center gap-2">
+                                    <i class="fa-solid fa-paper-plane"></i> تأكيد وإرسال
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </template>
+
+        {{-- Council Coordinator Modal --}}
+        @if ($isCouncilCoordinator)
+            <template x-teleport="body">
+                <div x-show="showCouncilModal" style="display:none" class="relative z-[300]">
+                    <div class="fixed inset-0 bg-black/40 backdrop-blur-sm" @click="showCouncilModal = false"></div>
+                    <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
+                        <div @click.away="showCouncilModal = false"
+                            class="relative w-full max-w-md rounded-3xl bg-(--surface-card) shadow-2xl text-start border border-(--border-primary) overflow-hidden">
+
+                            <div class="px-8 py-8">
+                                <div class="flex items-center justify-between mb-6">
+                                    <div>
+                                        <h3 class="font-black text-xl text-(--text-primary)">رفع خطاب التوصيات</h3>
+                                        <p class="text-xs text-(--text-secondary) mt-0.5">إرسال التقرير النهائي للمؤسسة
+                                            التعليمية</p>
+                                    </div>
+                                    <button @click="showCouncilModal = false"
+                                        class="w-10 h-10 rounded-xl hover:bg-(--bg-main) flex items-center justify-center transition-colors">
+                                        <i class="fa-solid fa-xmark text-(--text-secondary)"></i>
+                                    </button>
                                 </div>
 
-                                <div class="space-y-3">
-                                    <label class="block text-xs font-bold text-(--text-secondary) mr-1">ملف الخطاب</label>
-                                    <input type="file" name="recommendations_pdf" accept=".pdf" required
-                                        class="block w-full text-sm text-(--text-secondary)
+                                <form method="POST"
+                                    action="{{ route('requests.stage_six.council_upload', $accreditationRequest) }}"
+                                    enctype="multipart/form-data" class="space-y-6">
+                                    @csrf
+
+                                    <div class="p-4 rounded-2xl bg-(--bg-main) border border-(--border-primary)">
+                                        <p class="text-xs text-(--text-secondary) leading-relaxed">
+                                            يرجى إرفاق خطاب توصيات لجنة المقيمين الموجه للمؤسسة التعليمية بصيغة <span
+                                                class="font-bold text-(--text-primary)">PDF</span>.
+                                        </p>
+                                    </div>
+
+                                    <div class="space-y-3">
+                                        <label class="block text-xs font-bold text-(--text-secondary) mr-1">ملف
+                                            الخطاب</label>
+                                        <input type="file" name="recommendations_pdf" accept=".pdf" required
+                                            class="block w-full text-sm text-(--text-secondary)
                                         file:ml-4 file:py-2.5 file:px-5
                                         file:rounded-xl file:border-0
                                         file:text-xs file:font-black
@@ -953,23 +1172,25 @@
                                         hover:file:bg-slate-200 dark:hover:file:bg-slate-700
                                         bg-(--bg-main) border border-(--border-primary) rounded-2xl
                                         focus:outline-none transition-all cursor-pointer">
-                                </div>
+                                    </div>
 
-                                <div class="flex items-center gap-3 pt-2">
-                                    <button type="submit" class="flex-1 px-6 py-3.5 rounded-2xl bg-purple-600 text-white font-black hover:bg-purple-700 shadow-lg shadow-purple-500/20 transition-all flex items-center justify-center gap-2">
-                                        <i class="fa-solid fa-check"></i> تأكيد الرفع والإرسال
-                                    </button>
-                                    <button type="button" @click="showCouncilModal = false" class="px-6 py-3.5 rounded-2xl border border-(--border-primary) font-bold text-(--text-secondary) hover:bg-(--bg-main) transition-colors">
-                                        إلغاء
-                                    </button>
-                                </div>
-                            </form>
+                                    <div class="flex items-center gap-3 pt-2">
+                                        <button type="submit"
+                                            class="flex-1 px-6 py-3.5 rounded-2xl bg-purple-600 text-white font-black hover:bg-purple-700 shadow-lg shadow-purple-500/20 transition-all flex items-center justify-center gap-2">
+                                            <i class="fa-solid fa-check"></i> تأكيد الرفع والإرسال
+                                        </button>
+                                        <button type="button" @click="showCouncilModal = false"
+                                            class="px-6 py-3.5 rounded-2xl border border-(--border-primary) font-bold text-(--text-secondary) hover:bg-(--bg-main) transition-colors">
+                                            إلغاء
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </template>
-    @endif
+            </template>
+        @endif
 
-</div>
+    </div>
 @endif

@@ -192,15 +192,18 @@
 
     .signature-wrapper {
         width: 100%;
-        height: 60px;
+        height: 120px;
         display: flex;
         align-items: center;
         justify-content: center;
+        padding: 8px;
     }
 
     .signature-wrapper svg {
-        max-height: 50px;
+        max-height: 100px;
         max-width: 100%;
+        width: auto;
+        height: auto;
     }
 
     @media print {

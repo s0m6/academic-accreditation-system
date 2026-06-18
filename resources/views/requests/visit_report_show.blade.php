@@ -330,7 +330,7 @@
         }
 
         .committee-table td.signature-cell {
-            height: 100px;
+            height: 130px;
             background: #fcfcfc;
             padding: 0;
         }
@@ -345,7 +345,7 @@
         }
 
         .signature-wrapper svg {
-            max-height: 80px;
+            max-height: 110px;
             max-width: 100%;
             width: auto !important;
             height: auto !important;

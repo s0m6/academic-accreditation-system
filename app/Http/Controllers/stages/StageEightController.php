@@ -448,10 +448,10 @@ class StageEightController extends Controller
             $councilCoordinator = $accreditationRequest->councilCoordinator;
             if ($councilCoordinator) {
                 $councilCoordinator->notify(new RealTimeNotification(
-                    title: 'الاعتماد النهائي للتقرير',
-                    message: "تم الاعتماد النهائي للتقرير للبرنامج ({$programName}) من قبل رئيس اللجنة.",
-                    type: 'info',
-                    actionUrl: route('requests.stage', [$accreditationRequest, 'stage_eight'])
+                    title: 'مطلوب إصدار قرار نهائي',
+                    message: "تم اعتماد التقرير النهائي للبرنامج ({$programName}) من قبل رئيس لجنة التقييم وانتقل الطلب للمرحلة التاسعة. يرجى مراجعة الطلب وإصدار القرار النهائي.",
+                    type: 'warning',
+                    actionUrl: route('requests.stage', [$accreditationRequest, 'stage_nine'])
                 ));
             }
 

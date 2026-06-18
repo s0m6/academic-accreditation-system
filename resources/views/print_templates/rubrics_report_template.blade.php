@@ -21,7 +21,7 @@
         .signature-wrapper {
             position: relative !important;
             width: 100% !important;
-            height: 90px !important;
+            height: 130px !important;
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
@@ -33,7 +33,7 @@
         .signature-wrapper svg {
             position: relative !important;
             display: block !important;
-            max-height: 70px !important;
+            max-height: 110px !important;
             max-width: 100% !important;
             width: auto !important;
             height: auto !important;
