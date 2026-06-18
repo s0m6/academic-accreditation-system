@@ -327,7 +327,7 @@
                                                         <i class="fa-solid fa-users"></i>أعضاء اللجنة
                                                     </button>
 
-                                                    <a href="{{ route('requests.stage', ['accreditationRequest' => $invitation->committee->accreditation_request_id, 'stage' => 'stage_one']) }}"
+                                                    <a href="{{ route('requests.show', $invitation->committee->accreditation_request_id) }}"
                                                     class="w-full px-8 py-5 rounded-2xl bg-(--surface-card) text-(--text-primary) border-2 border-(--border-primary) font-black hover:bg-(--bg-main) transition-all duration-300 flex items-center justify-center gap-3 shadow-sm group/link">
                                                         <i class="fa-solid fa-gauge-high text-indigo-500"></i>لوحة الطلب
                                                     </a>
