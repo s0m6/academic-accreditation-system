@@ -33,7 +33,7 @@ return [
         'chrome_path' => env('LARAVEL_PDF_CHROME_PATH'),
         'node_modules_path' => env('LARAVEL_PDF_NODE_MODULES_PATH'),
         'bin_path' => env('LARAVEL_PDF_BIN_PATH'),
-        'temp_path' => env('LARAVEL_PDF_TEMP_PATH'),
+        'temp_path' => env('LARAVEL_PDF_TEMP_PATH', storage_path('app/pdf-tmp')),
 
         /*
          * Other Browsershot configuration options.
