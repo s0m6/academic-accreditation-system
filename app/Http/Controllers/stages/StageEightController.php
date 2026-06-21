@@ -823,10 +823,40 @@ class StageEightController extends Controller
         ));
     }
 
+    /**
+     * Authorize that the current user is associated with the accreditation request.
+     */
+    private function authorizeComparisonAccess(AccreditationRequest $accreditationRequest): void
+    {
+        $user = request()->user();
+        $allowed = false;
+
+        if ($user->role === 'council_secretariat') {
+            $allowed = true;
+        } elseif ($user->role === 'program_coordinator') {
+            $allowed = ($accreditationRequest->program_coord_id === $user->id);
+        } elseif ($user->role === 'council_coordinator') {
+            $allowed = ($accreditationRequest->council_coord_id === $user->id);
+        } elseif ($user->role === 'accreditation_officer') {
+            $accreditationRequest->loadMissing('program.department.college.university');
+            $allowed = ($accreditationRequest->program?->department?->college?->university?->accreditation_officer_id === $user->id);
+        } elseif ($user->role === 'evaluator') {
+            $committee = $accreditationRequest->committee;
+            $allowed = $committee && (
+                $committee->chair_evaluator_id === $user->evaluator?->id ||
+                $committee->acceptedMembers()->where('evaluator_id', $user->evaluator?->id ?? 0)->exists()
+            );
+        }
+
+        if (! $allowed) {
+            abort(403, 'غير مصرح لك بالوصول إلى واجهة المقارنة.');
+        }
+    }
+
     // Show a comparison view between Stage 6 (Initial) and Stage 8 (Final) rubrics.
     public function showComparison(AccreditationRequest $accreditationRequest)
     {
-        $this->authorizeAccess($accreditationRequest, false);
+        $this->authorizeComparisonAccess($accreditationRequest);
 
         $report = $accreditationRequest->committeeReport;
         if (! $report) {
