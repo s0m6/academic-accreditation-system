@@ -23,6 +23,7 @@
     },
     "dependencies": {
         "@fortawesome/fontawesome-free": "^7.2.0",
+        "chart.js": "^4.5.1",
         "flyonui": "^2.4.1",
         "signature_pad": "^5.1.3",
         "sweetalert2": "^11.26.24"
